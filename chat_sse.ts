@@ -9,11 +9,14 @@ function renderToolBlock(t: ToolBlock, highlighted?: string): string {
   const border = t.isError ? "border-red-200 bg-red-50" : t.result != null ? "border-green-200 bg-green-50" : "border-yellow-200 bg-yellow-50";
   const resultBorder = t.isError ? "border-red-200 text-red-700" : "border-green-200 text-gray-600";
 
-  // Parse args for display
+  // Parse args for display — hide large values like file content
   let argsDisplay = t.args;
   try {
     const parsed = JSON.parse(t.args);
-    argsDisplay = Object.entries(parsed).map(([k, v]) => `${k}: ${v}`).join(", ");
+    argsDisplay = Object.entries(parsed)
+      .filter(([k]) => k !== "content" && k !== "edits")
+      .map(([k, v]) => `${k}: ${v}`)
+      .join(", ");
   } catch {}
 
   let html = `<div data-entity="tool" data-status="${status}" class="mb-3"><div class="rounded-lg border text-sm ${border}">`;
@@ -23,9 +26,15 @@ function renderToolBlock(t: ToolBlock, highlighted?: string): string {
     // HTML widget — render inline without escaping
     html += `<div class="border-t ${resultBorder} p-3" data-role="tool-result">${t.resultHtml}</div>`;
   } else if (t.result != null) {
-    const resultContent = highlighted || escapeHtml(t.result);
-    html += `<details class="border-t ${resultBorder}"><summary class="px-3 py-1.5 text-xs cursor-pointer hover:bg-black/5">Output (${t.result.split("\n").length} lines)</summary>`;
-    html += `<div class="px-3 py-2 text-xs font-mono whitespace-pre-wrap max-h-80 overflow-y-auto" data-role="tool-result">${resultContent}</div>`;
+    // For write/edit: show the written code in the collapsible, not the status message
+    const code = getToolCode(t);
+    const displayContent = highlighted || (code ? escapeHtml(code) : escapeHtml(t.result));
+    const lineCount = (code || t.result).split("\n").length;
+    const label = t.name === "write" ? `${escapeHtml(t.result)} — ${lineCount} lines`
+                : t.name === "edit" ? `${escapeHtml(t.result)} — diff`
+                : `Output (${lineCount} lines)`;
+    html += `<details class="border-t ${resultBorder}"><summary class="px-3 py-1.5 text-xs cursor-pointer hover:bg-black/5">${label}</summary>`;
+    html += `<div class="px-3 py-2 text-xs whitespace-pre-wrap max-h-80 overflow-y-auto" data-role="tool-result">${displayContent}</div>`;
     html += `</details>`;
   } else {
     html += `<div class="px-3 py-1.5 border-t border-yellow-200 text-xs text-gray-400 flex items-center gap-1"><svg class="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Running...</div>`;
@@ -34,21 +43,24 @@ function renderToolBlock(t: ToolBlock, highlighted?: string): string {
   return html;
 }
 
+const TOOLS_WITH_PATH = new Set(["read", "write", "edit"]);
+
+const EXT_TO_LANG: Record<string, string> = {
+  ts: "typescript", tsx: "tsx", js: "javascript", jsx: "jsx",
+  json: "json", css: "css", html: "html", sql: "sql",
+  py: "python", rb: "ruby", go: "go", rs: "rust",
+  java: "java", yaml: "yaml", yml: "yaml", toml: "toml",
+  sh: "bash", bash: "bash", md: "markdown", xml: "xml",
+  dockerfile: "dockerfile", diff: "diff",
+};
+
 function detectLang(t: ToolBlock): string | null {
-  if (t.name !== "read") return null;
+  if (!TOOLS_WITH_PATH.has(t.name)) return null;
   try {
     const parsed = JSON.parse(t.args);
     const path = parsed.path as string;
     const ext = path.split(".").pop()?.toLowerCase();
-    const map: Record<string, string> = {
-      ts: "typescript", tsx: "tsx", js: "javascript", jsx: "jsx",
-      json: "json", css: "css", html: "html", sql: "sql",
-      py: "python", rb: "ruby", go: "go", rs: "rust",
-      java: "java", yaml: "yaml", yml: "yaml", toml: "toml",
-      sh: "bash", bash: "bash", md: "markdown", xml: "xml",
-      dockerfile: "dockerfile", diff: "diff",
-    };
-    return ext ? map[ext] ?? null : null;
+    return ext ? EXT_TO_LANG[ext] ?? null : null;
   } catch { return null; }
 }
 
@@ -58,6 +70,29 @@ function stripLineNumbers(text: string): string {
     const m = l.match(/^\d+\t(.*)/);
     return m ? m[1]! : l;
   }).join("\n");
+}
+
+// Extract code to highlight from a tool block
+function getToolCode(t: ToolBlock): string | null {
+  if (t.name === "read" && t.result) {
+    return stripLineNumbers(t.result);
+  }
+  if (t.name === "write") {
+    try { return JSON.parse(t.args).content; } catch { return null; }
+  }
+  if (t.name === "edit") {
+    // Show edits as diff-like: oldText → newText
+    try {
+      const parsed = JSON.parse(t.args);
+      if (parsed.edits) {
+        return parsed.edits.map((e: any) =>
+          `// --- old ---\n${e.oldText}\n// --- new ---\n${e.newText}`
+        ).join("\n\n");
+      }
+    } catch {}
+    return null;
+  }
+  return null;
 }
 
 export function chat_createSSEStream(
@@ -112,8 +147,9 @@ export function chat_createSSEStream(
       for (const t of allTools) {
         const lang = detectLang(t);
         let highlighted: string | undefined;
-        if (lang && t.result) {
-          highlighted = await ai_highlightCode(stripLineNumbers(t.result), lang);
+        if (lang) {
+          const code = getToolCode(t);
+          if (code) highlighted = await ai_highlightCode(code, lang);
         }
         html += renderToolBlock(t, highlighted);
       }
