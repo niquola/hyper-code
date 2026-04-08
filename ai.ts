@@ -1,5 +1,7 @@
 // ai — LLM streaming via OpenAI-compatible APIs
 export { ai_stream } from "./ai_stream.ts";
+export { ai_streamResponses } from "./ai_streamResponses.ts";
+export { ai_shortHash } from "./ai_shortHash.ts";
 export { AI_MODELS, MODELS, ai_getModel, ai_getModels, ai_getProviders } from "./ai_models.ts";
 export { ai_getEnvApiKey } from "./ai_getEnvApiKey.ts";
 export { ai_calculateCost } from "./ai_calculateCost.ts";
