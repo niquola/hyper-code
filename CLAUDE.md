@@ -388,5 +388,5 @@ bun -e "import {cdp} from './cdp.ts'; await cdp.screenshot('/tmp/screen.png')"
 3. POST body comes via stdin
 4. Write HTML to stdout — htmx attributes work for interactivity
 5. Use `hx-target="#hyper-ui-<name>"` for self-updating
-6. POST to `/dispatch` with `text` field to send message back to agent
+6. Use `hx-post="/dispatch"` (not plain `action`) to send message back to agent — stays in chat
 7. Agent can show widget via `tool_hyper_ui` with `action=show`

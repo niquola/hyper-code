@@ -27,7 +27,10 @@ const server = Bun.serve({
       const ctx = await chat_getCtx();
       // Run agent in background with the dispatch message
       agent_run(ctx, `[User interaction from widget] ${text}`, () => {});
-      return new Response("ok");
+      return new Response(
+        `<div class="text-xs text-green-600 py-1">✓ Sent to agent</div>`,
+        { headers: { "Content-Type": "text/html" } },
+      );
     }
 
     return new Response("Not found", { status: 404 });

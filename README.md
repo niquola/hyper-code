@@ -170,11 +170,13 @@ if (method === "GET") {
 **Dispatch (widget → agent):**
 
 ```html
-<form action="/dispatch" method="POST">
+<form hx-post="/dispatch" hx-swap="outerHTML">
   <input type="hidden" name="text" value="User approved the changes" />
   <button type="submit">Approve</button>
 </form>
 ```
+
+Always use `hx-post` (htmx), not plain `action` — to stay in chat without page navigation.
 
 ## Data Attributes
 

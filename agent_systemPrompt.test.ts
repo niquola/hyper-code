@@ -45,10 +45,12 @@ describe("agent_buildSystemPrompt", () => {
     expect(prompt).toContain("hx-target");
   });
 
-  test("explains dispatch mechanism", () => {
+  test("explains dispatch mechanism with htmx", () => {
     const prompt = agent_buildSystemPrompt("/tmp", []);
+    expect(prompt).toContain("hx-post");
     expect(prompt).toContain("/dispatch");
     expect(prompt).toContain("Approve");
+    expect(prompt).toContain("never plain");
   });
 
   test("lists use cases for widgets", () => {
