@@ -9,6 +9,6 @@ export default async function (req: Request) {
     return new Response(null, { status: 302, headers: { Location: "/" } });
   }
 
-  const ctx = chat_getCtx();
+  const ctx = await chat_getCtx();
   return chat_createSSEStream((onEvent) => agent_run(ctx, prompt, onEvent));
 }

@@ -16,4 +16,5 @@ logs
 .DS_Store
 .chrome-profile
 .port
+.settings.json
 pi-mono
