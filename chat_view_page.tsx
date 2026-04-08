@@ -110,6 +110,29 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
         var html = lines.join('\\n');
         if (html) {
           streamDiv.innerHTML = html;
+          // Load stylesheets
+          streamDiv.querySelectorAll('link[rel=stylesheet]').forEach(function(old) {
+            if (!document.querySelector('link[href=\"' + old.getAttribute('href') + '\"]')) {
+              var l = document.createElement('link');
+              l.rel = 'stylesheet';
+              l.href = old.getAttribute('href');
+              document.head.appendChild(l);
+            }
+          });
+          // Execute scripts sequentially (externals load in order, then inlines)
+          (function execScripts(el) {
+            var scripts = [].slice.call(el.querySelectorAll('script'));
+            var idx = 0;
+            function next() {
+              if (idx >= scripts.length) { if (typeof htmx !== 'undefined') htmx.process(el); return; }
+              var old = scripts[idx++];
+              var s = document.createElement('script');
+              if (old.src) { s.src = old.src; s.onload = next; s.onerror = next; }
+              else { s.textContent = old.textContent; setTimeout(next, 0); }
+              old.replaceWith(s);
+            }
+            next();
+          })(streamDiv);
           messages.scrollTop = messages.scrollHeight;
         }
       }
