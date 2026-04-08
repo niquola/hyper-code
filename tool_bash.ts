@@ -1,4 +1,5 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
+import { tool_truncateOutput } from "./tool_truncate.ts";
 
 export function tool_bash(cwd: string): AgentTool {
   return {
@@ -33,12 +34,7 @@ export function tool_bash(cwd: string): AgentTool {
 
       clearTimeout(timer);
 
-      let output = stdout + stderr;
-      const MAX = 50_000;
-      if (output.length > MAX) {
-        output = output.slice(-MAX) + "\n\n[Truncated: showing last 50KB]";
-      }
-
+      const { text: output } = tool_truncateOutput(stdout + stderr, 2000, 50_000, "tail");
       const text = output + (exitCode !== 0 ? `\n\nExit code: ${exitCode}` : "");
       return { content: [{ type: "text", text }] };
     },

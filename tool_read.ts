@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
 import { homedir } from "node:os";
 import type { AgentTool } from "./agent_type_Tool.ts";
+import { tool_truncateOutput } from "./tool_truncate.ts";
 
 function resolvePath(path: string, cwd: string): string {
   if (path.startsWith("~/")) return resolve(homedir(), path.slice(2));
@@ -36,15 +37,10 @@ export function tool_read(cwd: string): AgentTool {
         lines = lines.slice(0, params.limit);
       }
 
-      const MAX_LINES = 2000;
-      const truncated = lines.length > MAX_LINES;
-      if (truncated) lines = lines.slice(0, MAX_LINES);
-
       const startLine = params.offset || 1;
       const numbered = lines.map((l, i) => `${startLine + i}\t${l}`).join("\n");
 
-      let text = numbered;
-      if (truncated) text += `\n\n[Truncated: showing ${MAX_LINES} of ${totalLines} lines. Use offset/limit for more.]`;
+      const { text } = tool_truncateOutput(numbered, 2000, 50_000, "head");
 
       return { content: [{ type: "text", text }] };
     },
