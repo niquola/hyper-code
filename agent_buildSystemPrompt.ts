@@ -83,7 +83,11 @@ Widget HTML is wrapped in a \`.hyper-ui\` container with default styles for form
 - \`.badge-green\`, \`.badge-red\`, \`.badge-blue\`, \`.badge-gray\` — small badges
 - \`button.secondary\`, \`button.danger\`, \`button.success\`, \`button.sm\` — button variants
 
+### Built-in widgets
+- **editor** — CodeMirror code editor. Show with: \`hyper_ui action=show, name=editor\` (pass \`?file=path\` in query). User can edit and save files with syntax highlighting, Ctrl+S.
+
 Use widgets when the user needs to:
+- Edit code interactively (editor widget)
 - Choose from options (checkboxes, selects)
 - Approve/reject changes (buttons)
 - Configure parameters (forms)
