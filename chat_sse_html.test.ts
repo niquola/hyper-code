@@ -1,0 +1,49 @@
+import { test, expect, describe } from "bun:test";
+import { chat_createSSEStream } from "./chat_sse.ts";
+import type { AgentEvent } from "./agent_type_Event.ts";
+
+async function collectSSE(response: Response): Promise<string> {
+  const text = await response.text();
+  return text.split("\n\n").filter(Boolean).map((chunk) => {
+    return chunk.split("\n").filter((l) => l.startsWith("data: ")).map((l) => l.slice(6)).join("\n");
+  }).filter(Boolean).join("");
+}
+
+describe("SSE HTML content rendering", () => {
+  test("renders HTML tool results without escaping", async () => {
+    const res = chat_createSSEStream(async (onEvent) => {
+      onEvent({ type: "agent_start" });
+      onEvent({
+        type: "tool_execution_start",
+        toolCallId: "tc1",
+        toolName: "hyper_ui",
+        args: { action: "show", name: "hello" },
+      });
+      onEvent({
+        type: "tool_execution_end",
+        toolCallId: "tc1",
+        toolName: "hyper_ui",
+        result: {
+          content: [{ type: "html", html: '<div id="hyper-ui-hello"><h1>Hello Widget</h1><form><button>Click</button></form></div>' }],
+        },
+        isError: false,
+      });
+      onEvent({ type: "text_delta", delta: "Here is the widget." });
+      onEvent({ type: "turn_end", message: {
+        role: "assistant", content: [{ type: "text", text: "Here is the widget." }],
+        provider: "t", model: "t",
+        usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } },
+        stopReason: "stop", timestamp: 1,
+      }});
+      onEvent({ type: "agent_end", messages: [] });
+    });
+
+    const html = await collectSSE(res);
+    // HTML content should be rendered without escaping
+    expect(html).toContain('<div id="hyper-ui-hello">');
+    expect(html).toContain("<h1>Hello Widget</h1>");
+    expect(html).toContain("<form>");
+    // Should NOT have escaped HTML
+    expect(html).not.toContain("&lt;h1&gt;");
+  });
+});

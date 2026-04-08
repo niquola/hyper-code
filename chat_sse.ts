@@ -2,7 +2,7 @@ import type { AgentEvent } from "./agent_type_Event.ts";
 import { escapeHtml } from "./jsx.ts";
 import { ai_renderMarkdown, ai_highlightCode } from "./ai_renderMarkdown.ts";
 
-type ToolBlock = { id: string; name: string; args: string; result?: string; isError?: boolean };
+type ToolBlock = { id: string; name: string; args: string; result?: string; resultHtml?: string; isError?: boolean };
 
 function renderToolBlock(t: ToolBlock, highlighted?: string): string {
   const status = t.isError ? "error" : t.result != null ? "done" : "running";
@@ -19,7 +19,10 @@ function renderToolBlock(t: ToolBlock, highlighted?: string): string {
   let html = `<div data-entity="tool" data-status="${status}" class="mb-3"><div class="rounded-lg border text-sm ${border}">`;
   html += `<div class="px-3 py-2 font-mono text-xs flex items-center gap-2"><span class="font-semibold text-gray-700" data-role="tool-name">${escapeHtml(t.name)}</span><span class="text-gray-400" data-role="tool-args">${escapeHtml(argsDisplay)}</span></div>`;
 
-  if (t.result != null) {
+  if (t.resultHtml) {
+    // HTML widget — render inline without escaping
+    html += `<div class="border-t ${resultBorder} p-3" data-role="tool-result">${t.resultHtml}</div>`;
+  } else if (t.result != null) {
     const resultContent = highlighted || escapeHtml(t.result);
     html += `<details class="border-t ${resultBorder}"><summary class="px-3 py-1.5 text-xs cursor-pointer hover:bg-black/5">Output (${t.result.split("\n").length} lines)</summary>`;
     html += `<div class="px-3 py-2 text-xs font-mono whitespace-pre-wrap max-h-80 overflow-y-auto" data-role="tool-result">${resultContent}</div>`;
@@ -152,7 +155,12 @@ export function chat_createSSEStream(
           case "tool_execution_end": {
             const t = tools.find((t) => t.id === event.toolCallId);
             if (t) {
-              t.result = event.result.content.map((c) => c.type === "text" ? c.text : "[image]").join("\n");
+              const htmlBlocks = event.result.content.filter((c) => c.type === "html");
+              const textBlocks = event.result.content.filter((c) => c.type !== "html");
+              t.result = textBlocks.map((c) => c.type === "text" ? c.text : "[image]").join("\n");
+              if (htmlBlocks.length > 0) {
+                t.resultHtml = htmlBlocks.map((c) => (c as any).html).join("");
+              }
               t.isError = event.isError;
             }
             renderStreaming();

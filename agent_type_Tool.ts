@@ -1,7 +1,7 @@
-import type { TextContent, ImageContent } from "./ai_type_Message.ts";
+import type { TextContent, ImageContent, HtmlContent } from "./ai_type_Message.ts";
 
 export type AgentToolResult = {
-  content: (TextContent | ImageContent)[];
+  content: (TextContent | ImageContent | HtmlContent)[];
 };
 
 export type AgentTool = {

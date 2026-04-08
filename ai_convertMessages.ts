@@ -71,8 +71,11 @@ export function ai_convertMessages(model: Model, context: Context): ChatCompleti
       for (; i < transformed.length && transformed[i]!.role === "toolResult"; i++) {
         const toolMsg = transformed[i] as ToolResultMessage;
         const textResult = toolMsg.content
-          .filter((c) => c.type === "text")
-          .map((c) => (c as TextContent).text)
+          .map((c) => {
+            if (c.type === "text") return (c as TextContent).text;
+            if (c.type === "html") return "[HTML widget rendered in UI]";
+            return "[image]";
+          })
           .join("\n");
 
         const toolResultMsg: ChatCompletionToolMessageParam = {

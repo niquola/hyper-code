@@ -1,10 +1,37 @@
 import { router_buildRoutes } from "./router_buildRoutes.ts";
+import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
+import { chat_getCtx } from "./chat_ctx.ts";
+import { agent_run } from "./agent_run.ts";
+import { chat_createSSEStream } from "./chat_sse.ts";
 
 const routes = await router_buildRoutes(".");
+const cwd = process.cwd();
 
 const server = Bun.serve({
   port: 0,
   routes,
+  async fetch(req) {
+    const url = new URL(req.url);
+
+    // /ui/{name}/* — hyper_ui CGI widgets
+    if (url.pathname.startsWith("/ui/")) {
+      return hyper_ui_handleRequest(cwd, req);
+    }
+
+    // /dispatch — widget → agent feedback
+    if (url.pathname === "/dispatch" && req.method === "POST") {
+      const form = await req.formData();
+      const text = form.get("text") as string || [...form.entries()].map(([k, v]) => `${k}: ${v}`).join("\n");
+      if (!text.trim()) return new Response("empty", { status: 400 });
+
+      const ctx = await chat_getCtx();
+      // Run agent in background with the dispatch message
+      agent_run(ctx, `[User interaction from widget] ${text}`, () => {});
+      return new Response("ok");
+    }
+
+    return new Response("Not found", { status: 404 });
+  },
 });
 
 await Bun.write(".port", String(server.port));

@@ -111,17 +111,33 @@ Both can coexist on the same page. htmx uses `hx-*` attributes, Datastar uses `d
 - `agent_createCtx(opts)` — create with defaults
 - `agent_executeTools(ctx, toolCalls, onEvent)` — sequential tool execution
 
-**tools** — Coding tools (read, write, edit, bash)
+**tools** — Coding tools (read, write, edit, bash, grep, find, ls, hyper_ui)
 - `tool_read(cwd)` — read file with line numbers, offset/limit
 - `tool_write(cwd)` — create/overwrite file
 - `tool_edit(cwd)` — exact text replacement (oldText must be unique)
 - `tool_bash(cwd)` — run shell command with timeout
+- `tool_grep(cwd)` — search file contents with regex (ripgrep)
+- `tool_find(cwd)` — find files by glob pattern (Bun.Glob)
+- `tool_ls(cwd)` — list directory contents
+- `tool_hyper_ui(cwd)` — list/show interactive HTML widgets
+
+**hyper_ui** — Interactive HTML widgets (CGI style)
+- Agent creates `.hyper_ui.ts` (or `.py`, `.sh`) scripts
+- Scripts read env vars (`REQUEST_METHOD`, `PATH_INFO`, `QUERY_STRING`, `WORKSPACE_DIR`) + stdin
+- Scripts write HTML to stdout
+- Served at `/ui/{name}/*`, htmx handles all interaction
+- Tools can return `{ type: "html", html: "..." }` for inline HTML in chat
+- POST `/dispatch` sends user interaction back to agent
+- `hyper_ui_run(cwd, name, req)` — CGI runner
+- `hyper_ui_list(cwd)` — list available widgets
+- `hyper_ui_route.ts` — HTTP handler for `/ui/*`
 
 **chat** — Web UI with SSE streaming
-- `chat_getCtx()` — shared agent ctx with model + tools
+- `chat_getCtx()` — shared agent ctx with model + tools (async, loads settings)
 - `chat_createSSEStream(runAgent)` — agent events → SSE HTML fragments
-- Views: `chat_view_page`, `chat_view_message` (user/assistant/tool)
-- `form_chat_POST.tsx` → POST /chat starts agent, returns SSE stream
+- `chat_settings.ts` — persistent provider/model/API key config (.settings.json)
+- Views: `chat_view_page`, `chat_view_message`, `chat_view_settings`, `chat_view_stats`
+- Routes: `POST /chat`, `POST /reset`, `POST /abort`, `GET /settings`, `POST /settings`
 
 ## Calling Functions with `bun -e`
 
@@ -359,6 +375,18 @@ bun -e "import {cdp} from './cdp.ts'; await cdp.screenshot('/tmp/screen.png')"
 
 1. Create `tool_<name>.ts` exporting a function `tool_<name>(cwd: string): AgentTool`
 2. Return `{ name, description, parameters (JSON Schema), execute(params, signal) }`
-3. Add to `chat_ctx.ts` tools array
-4. Write tests in `tool_<name>.test.ts`
-5. Restart server
+3. Tools can return `{ type: "text", text }`, `{ type: "image", data, mimeType }`, or `{ type: "html", html }` content
+4. HTML content renders inline in chat without escaping — use for interactive widgets
+5. Add to `chat_ctx.ts` tools array
+6. Write tests in `tool_<name>.test.ts`
+7. Restart server
+
+## Adding a hyper_ui widget
+
+1. Create `<name>.hyper_ui.ts` (or `.py`, `.sh`) in workspace
+2. Script reads `REQUEST_METHOD`, `PATH_INFO`, `QUERY_STRING` from env vars
+3. POST body comes via stdin
+4. Write HTML to stdout — htmx attributes work for interactivity
+5. Use `hx-target="#hyper-ui-<name>"` for self-updating
+6. POST to `/dispatch` with `text` field to send message back to agent
+7. Agent can show widget via `tool_hyper_ui` with `action=show`

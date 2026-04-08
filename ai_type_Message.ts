@@ -3,6 +3,11 @@ export type TextContent = {
   text: string;
 };
 
+export type HtmlContent = {
+  type: "html";
+  html: string;
+};
+
 export type ThinkingContent = {
   type: "thinking";
   thinking: string;
@@ -62,7 +67,7 @@ export type ToolResultMessage = {
   role: "toolResult";
   toolCallId: string;
   toolName: string;
-  content: (TextContent | ImageContent)[];
+  content: (TextContent | ImageContent | HtmlContent)[];
   isError: boolean;
   timestamp: number;
 };
