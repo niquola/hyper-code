@@ -8,7 +8,7 @@ let tmpDir: string;
 
 beforeAll(() => {
   tmpDir = mkdtempSync(join(tmpdir(), "tool-hyper-ui-"));
-  writeFileSync(join(tmpDir, "hello.hyper_ui.ts"), `console.log('<h1>Hello from widget</h1>');`);
+  writeFileSync(join(tmpDir, "hyper_ui_hello.ts"), `console.log('<h1>Hello from widget</h1>');`);
 });
 
 afterAll(() => {

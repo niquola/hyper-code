@@ -31,8 +31,8 @@ export async function hyper_ui_handleRequest(cwd: string, req: Request): Promise
     body,
   });
 
-  // Wrap in container div with id for htmx targeting
-  const wrapped = `<div id="hyper-ui-${Bun.escapeHTML(name)}" data-entity="widget" data-id="${Bun.escapeHTML(name)}">${html}</div>`;
+  // Wrap in container div with hyper-ui class for default styles + htmx targeting
+  const wrapped = `<div id="hyper-ui-${Bun.escapeHTML(name)}" data-entity="widget" data-id="${Bun.escapeHTML(name)}" class="hyper-ui">${html}</div>`;
 
   return new Response(wrapped, {
     headers: { "Content-Type": "text/html; charset=utf-8" },

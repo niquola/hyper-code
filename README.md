@@ -69,11 +69,11 @@ tool_hyper_ui.ts          → list/show interactive HTML widgets
 
 ```
 hyper_ui_run.ts           → CGI runner: env vars + stdin → stdout HTML
-hyper_ui_list.ts          → list *.hyper_ui.* scripts in workspace
+hyper_ui_list.ts          → list hyper_ui_* scripts in workspace
 hyper_ui_route.ts         → HTTP handler for /ui/{name}/*
 ```
 
-Any `.hyper_ui.ts` (or `.py`, `.sh`) file in the workspace is a CGI script.
+Any `hyper_ui_<name>.ts` (or `.py`, `.sh`) file in the workspace is a CGI script.
 The agent can create widgets, show them in chat, and users interact via htmx forms.
 Widgets can dispatch messages back to the agent via POST /dispatch.
 
@@ -125,18 +125,19 @@ test_html.ts              → HTML query helpers for unit tests
 
 ## hyper_ui — Interactive Widgets
 
-CGI-style widgets that the agent can create. A `.hyper_ui.ts` script reads request from env vars and writes HTML to stdout. htmx handles interaction — no client JS needed.
+CGI-style widgets that the agent can create. A `hyper_ui_<name>.ts` script reads request from env vars and writes HTML to stdout. htmx handles interaction — no client JS needed. Widgets are wrapped in a `.hyper-ui` container with default styles for forms, tables, buttons.
 
-**Three interaction patterns:**
+**Four interaction patterns:**
 
-1. **Tool HTML response** — tool returns `{ type: "html", html: "..." }`, rendered inline in chat
-2. **CGI widget** — `.hyper_ui.ts` file served at `/ui/{name}/`, full htmx interactivity
-3. **Dispatch** — widget POSTs to `/dispatch`, message goes back to agent
+1. **One-off HTML via bash** — `bun -e "console.log('<h2>...</h2>')"` for quick disposable UI
+2. **Tool HTML response** — tool returns `{ type: "html", html: "..." }`, rendered inline in chat
+3. **CGI widget** — `hyper_ui_<name>.ts` file served at `/ui/{name}/`, full htmx interactivity
+4. **Dispatch** — widget `hx-post="/dispatch"`, message goes back to agent
 
 **Creating a widget:**
 
 ```ts
-// tasks.hyper_ui.ts
+// hyper_ui_tasks.ts
 const method = process.env.REQUEST_METHOD || "GET";
 const path = process.env.PATH_INFO || "/";
 const file = Bun.file(process.env.WORKSPACE_DIR + "/.tasks.json");

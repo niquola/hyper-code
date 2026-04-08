@@ -1,4 +1,5 @@
 import { PAGE_STATE_SCRIPT } from "./pageState_script.ts";
+import { HYPER_UI_STYLES } from "./hyper_ui_styles.ts";
 
 export function layout_view_page(title: string, body: string): string {
   return (
@@ -10,6 +11,7 @@ export function layout_view_page(title: string, body: string): string {
         <script src="https://unpkg.com/htmx.org@2.0.4"></script>
         <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
         <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+        <style dangerouslySetInnerHTML={{ __html: HYPER_UI_STYLES }} />
         <script dangerouslySetInnerHTML={{ __html: PAGE_STATE_SCRIPT }} />
       </head>
       <body className="bg-gray-50 min-h-screen">

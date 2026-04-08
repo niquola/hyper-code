@@ -11,7 +11,7 @@ beforeAll(() => {
   tmpDir = mkdtempSync(join(tmpdir(), "hyper-ui-test-"));
 
   // Simple hello widget
-  writeFileSync(join(tmpDir, "hello.hyper_ui.ts"), `
+  writeFileSync(join(tmpDir, "hyper_ui_hello.ts"), `
     const method = process.env.REQUEST_METHOD || "GET";
     const path = process.env.PATH_INFO || "/";
     if (method === "GET" && path === "/") {
@@ -28,7 +28,7 @@ beforeAll(() => {
   `);
 
   // Tasks widget with state
-  writeFileSync(join(tmpDir, "tasks.hyper_ui.ts"), `
+  writeFileSync(join(tmpDir, "hyper_ui_tasks.ts"), `
     const method = process.env.REQUEST_METHOD || "GET";
     const path = process.env.PATH_INFO || "/";
     const file = Bun.file(process.env.WORKSPACE_DIR + "/.tasks.json");
@@ -56,7 +56,7 @@ beforeAll(() => {
   `);
 
   // Bash widget
-  writeFileSync(join(tmpDir, "status.hyper_ui.sh"), `#!/bin/bash
+  writeFileSync(join(tmpDir, "hyper_ui_status.sh"), `#!/bin/bash
 echo "<h2>System Status</h2>"
 echo "<pre>$(date)</pre>"
 echo "<pre>$(uname -a)</pre>"

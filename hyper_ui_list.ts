@@ -6,13 +6,14 @@ export type HyperUIWidget = {
   ext: string;
 };
 
+// Detects hyper_ui_<name>.ts/py/sh files (prefix convention)
 export async function hyper_ui_list(cwd: string): Promise<HyperUIWidget[]> {
   const widgets: HyperUIWidget[] = [];
   try {
     const entries = readdirSync(cwd);
     for (const entry of entries) {
-      const match = entry.match(/^(.+)\.hyper_ui\.(\w+)$/);
-      if (match) {
+      const match = entry.match(/^hyper_ui_([^.]+)\.(\w+)$/);
+      if (match && ["ts", "js", "py", "sh"].includes(match[2]!)) {
         widgets.push({ name: match[1]!, file: entry, ext: match[2]! });
       }
     }

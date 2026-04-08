@@ -27,7 +27,7 @@ describe("agent_buildSystemPrompt", () => {
   test("contains hyper_ui instructions", () => {
     const prompt = agent_buildSystemPrompt("/tmp", []);
     expect(prompt).toContain("hyper_ui");
-    expect(prompt).toContain(".hyper_ui.ts");
+    expect(prompt).toContain("hyper_ui_");
     expect(prompt).toContain("CGI");
     expect(prompt).toContain("/dispatch");
   });

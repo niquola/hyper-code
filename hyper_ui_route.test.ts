@@ -8,7 +8,7 @@ let tmpDir: string;
 
 beforeAll(() => {
   tmpDir = mkdtempSync(join(tmpdir(), "hyper-route-test-"));
-  writeFileSync(join(tmpDir, "counter.hyper_ui.ts"), `
+  writeFileSync(join(tmpDir, "hyper_ui_counter.ts"), `
     const method = process.env.REQUEST_METHOD || "GET";
     const path = process.env.PATH_INFO || "/";
     if (method === "GET") {

@@ -23,8 +23,8 @@ function renderToolBlock(t: ToolBlock, highlighted?: string): string {
   html += `<div class="px-3 py-2 font-mono text-xs flex items-center gap-2"><span class="font-semibold text-gray-700" data-role="tool-name">${escapeHtml(t.name)}</span><span class="text-gray-400" data-role="tool-args">${escapeHtml(argsDisplay)}</span></div>`;
 
   if (t.resultHtml) {
-    // HTML widget — render inline without escaping
-    html += `<div class="border-t ${resultBorder} p-3" data-role="tool-result">${t.resultHtml}</div>`;
+    // HTML widget — render inline with hyper-ui default styles
+    html += `<div class="hyper-ui border-t ${resultBorder} p-3" data-role="tool-result">${t.resultHtml}</div>`;
   } else if (t.result != null) {
     // For write/edit: show the written code in the collapsible, not the status message
     const code = getToolCode(t);

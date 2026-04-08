@@ -38,7 +38,7 @@ export function tool_hyper_ui(cwd: string): AgentTool {
           return { content: [{ type: "text", text: `Widget "${params.name}" not found` }] };
         }
 
-        const wrapped = `<div id="hyper-ui-${Bun.escapeHTML(params.name)}" data-entity="widget" data-id="${Bun.escapeHTML(params.name)}" class="border border-blue-200 bg-blue-50 rounded-lg p-4 my-2">${html}</div>`;
+        const wrapped = `<div id="hyper-ui-${Bun.escapeHTML(params.name)}" data-entity="widget" data-id="${Bun.escapeHTML(params.name)}" class="hyper-ui border border-blue-200 bg-blue-50 rounded-lg p-4 my-2">${html}</div>`;
         return { content: [{ type: "html", html: wrapped }] };
       }
 

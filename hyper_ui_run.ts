@@ -70,7 +70,7 @@ export async function hyper_ui_run(
 function findScript(cwd: string, name: string): string | null {
   const extensions = Object.keys(RUNNERS);
   for (const ext of extensions) {
-    const filename = `${name}.hyper_ui.${ext}`;
+    const filename = `hyper_ui_${name}.${ext}`;
     try {
       const entries = readdirSync(cwd);
       if (entries.includes(filename)) return filename;

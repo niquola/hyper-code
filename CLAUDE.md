@@ -122,7 +122,7 @@ Both can coexist on the same page. htmx uses `hx-*` attributes, Datastar uses `d
 - `tool_hyper_ui(cwd)` — list/show interactive HTML widgets
 
 **hyper_ui** — Interactive HTML widgets (CGI style)
-- Agent creates `.hyper_ui.ts` (or `.py`, `.sh`) scripts
+- Agent creates `hyper_ui_<name>.ts` (or `.py`, `.sh`) scripts
 - Scripts read env vars (`REQUEST_METHOD`, `PATH_INFO`, `QUERY_STRING`, `WORKSPACE_DIR`) + stdin
 - Scripts write HTML to stdout
 - Served at `/ui/{name}/*`, htmx handles all interaction
@@ -383,7 +383,7 @@ bun -e "import {cdp} from './cdp.ts'; await cdp.screenshot('/tmp/screen.png')"
 
 ## Adding a hyper_ui widget
 
-1. Create `<name>.hyper_ui.ts` (or `.py`, `.sh`) in workspace
+1. Create `hyper_ui_<name>.ts` (or `.py`, `.sh`) in workspace
 2. Script reads `REQUEST_METHOD`, `PATH_INFO`, `QUERY_STRING` from env vars
 3. POST body comes via stdin
 4. Write HTML to stdout — htmx attributes work for interactivity
