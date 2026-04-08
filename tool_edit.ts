@@ -1,0 +1,57 @@
+import { readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { homedir } from "node:os";
+import type { AgentTool } from "./agent_type_Tool.ts";
+
+function resolvePath(path: string, cwd: string): string {
+  if (path.startsWith("~/")) return resolve(homedir(), path.slice(2));
+  if (path.startsWith("/")) return path;
+  return resolve(cwd, path);
+}
+
+export function tool_edit(cwd: string): AgentTool {
+  return {
+    name: "edit",
+    description: "Edit a file by replacing exact text matches. Each oldText must be unique in the file.",
+    parameters: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "File path" },
+        edits: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              oldText: { type: "string", description: "Exact text to find (must be unique)" },
+              newText: { type: "string", description: "Replacement text" },
+            },
+            required: ["oldText", "newText"],
+          },
+          description: "List of edits to apply",
+        },
+      },
+      required: ["path", "edits"],
+    },
+    execute: async (params: { path: string; edits: { oldText: string; newText: string }[] }) => {
+      const abs = resolvePath(params.path, cwd);
+      let content = await readFile(abs, "utf-8");
+
+      // Strip BOM
+      if (content.charCodeAt(0) === 0xFEFF) content = content.slice(1);
+
+      for (const edit of params.edits) {
+        const count = content.split(edit.oldText).length - 1;
+        if (count === 0) {
+          return { content: [{ type: "text" as const, text: `Error: oldText not found in ${params.path}:\n${edit.oldText.slice(0, 200)}` }] };
+        }
+        if (count > 1) {
+          return { content: [{ type: "text" as const, text: `Error: oldText found ${count} times in ${params.path} (must be unique):\n${edit.oldText.slice(0, 200)}` }] };
+        }
+        content = content.replace(edit.oldText, edit.newText);
+      }
+
+      await writeFile(abs, content, "utf-8");
+      return { content: [{ type: "text", text: `Applied ${params.edits.length} edit(s) to ${params.path}` }] };
+    },
+  };
+}

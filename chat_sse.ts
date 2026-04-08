@@ -1,0 +1,197 @@
+import type { AgentEvent } from "./agent_type_Event.ts";
+import { escapeHtml } from "./jsx.ts";
+import { ai_renderMarkdown, ai_highlightCode } from "./ai_renderMarkdown.ts";
+
+type ToolBlock = { id: string; name: string; args: string; result?: string; isError?: boolean };
+
+function renderToolBlock(t: ToolBlock, highlighted?: string): string {
+  const status = t.isError ? "error" : t.result != null ? "done" : "running";
+  const border = t.isError ? "border-red-200 bg-red-50" : t.result != null ? "border-green-200 bg-green-50" : "border-yellow-200 bg-yellow-50";
+  const resultBorder = t.isError ? "border-red-200 text-red-700" : "border-green-200 text-gray-600";
+
+  // Parse args for display
+  let argsDisplay = t.args;
+  try {
+    const parsed = JSON.parse(t.args);
+    argsDisplay = Object.entries(parsed).map(([k, v]) => `${k}: ${v}`).join(", ");
+  } catch {}
+
+  let html = `<div data-entity="tool" data-status="${status}" class="mb-3"><div class="rounded-lg border text-sm ${border}">`;
+  html += `<div class="px-3 py-2 font-mono text-xs flex items-center gap-2"><span class="font-semibold text-gray-700" data-role="tool-name">${escapeHtml(t.name)}</span><span class="text-gray-400" data-role="tool-args">${escapeHtml(argsDisplay)}</span></div>`;
+
+  if (t.result != null) {
+    const resultContent = highlighted || escapeHtml(t.result);
+    html += `<details class="border-t ${resultBorder}"><summary class="px-3 py-1.5 text-xs cursor-pointer hover:bg-black/5">Output (${t.result.split("\n").length} lines)</summary>`;
+    html += `<div class="px-3 py-2 text-xs font-mono whitespace-pre-wrap max-h-80 overflow-y-auto" data-role="tool-result">${resultContent}</div>`;
+    html += `</details>`;
+  } else {
+    html += `<div class="px-3 py-1.5 border-t border-yellow-200 text-xs text-gray-400 flex items-center gap-1"><svg class="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Running...</div>`;
+  }
+  html += `</div></div>`;
+  return html;
+}
+
+function detectLang(t: ToolBlock): string | null {
+  if (t.name !== "read") return null;
+  try {
+    const parsed = JSON.parse(t.args);
+    const path = parsed.path as string;
+    const ext = path.split(".").pop()?.toLowerCase();
+    const map: Record<string, string> = {
+      ts: "typescript", tsx: "tsx", js: "javascript", jsx: "jsx",
+      json: "json", css: "css", html: "html", sql: "sql",
+      py: "python", rb: "ruby", go: "go", rs: "rust",
+      java: "java", yaml: "yaml", yml: "yaml", toml: "toml",
+      sh: "bash", bash: "bash", md: "markdown", xml: "xml",
+      dockerfile: "dockerfile", diff: "diff",
+    };
+    return ext ? map[ext] ?? null : null;
+  } catch { return null; }
+}
+
+// Strip line numbers (1\t...) from read tool output for highlighting
+function stripLineNumbers(text: string): string {
+  return text.split("\n").map(l => {
+    const m = l.match(/^\d+\t(.*)/);
+    return m ? m[1]! : l;
+  }).join("\n");
+}
+
+export function chat_createSSEStream(
+  runAgent: (onEvent: (event: AgentEvent) => void) => Promise<void>,
+): Response {
+  let text = "";
+  let thinking = "";
+  let tools: ToolBlock[] = [];
+  let finishedTools: ToolBlock[] = []; // accumulate across turns for final render
+  let controller: ReadableStreamDefaultController<Uint8Array>;
+  let renderQueue = Promise.resolve();
+
+  const encoder = new TextEncoder();
+
+  function send(html: string) {
+    const lines = html.split("\n").map((l) => `data: ${l}`).join("\n");
+    controller.enqueue(encoder.encode(`${lines}\n\n`));
+  }
+
+  function renderStreaming() {
+    let html = `<div data-entity="message" data-status="assistant" class="mb-4">`;
+    html += `<div class="text-xs font-medium text-blue-600 mb-1" data-role="label">Assistant</div>`;
+
+    if (thinking) {
+      html += `<details class="mb-2" open><summary class="text-xs text-gray-400 cursor-pointer">Thinking...</summary><div class="text-xs text-gray-400 italic whitespace-pre-wrap mt-1" data-role="thinking">${escapeHtml(thinking)}</div></details>`;
+    }
+
+    // Show completed tools from previous turns
+    for (const t of finishedTools) html += renderToolBlock(t);
+    // Show current turn tools
+    for (const t of tools) html += renderToolBlock(t);
+
+    if (text) {
+      html += `<div class="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 whitespace-pre-wrap" data-role="content">${escapeHtml(text)}</div>`;
+    } else if (tools.length === 0 && finishedTools.length === 0) {
+      html += `<div class="flex items-center gap-2 text-gray-400 text-sm"><svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Thinking...</div>`;
+    }
+
+    html += `</div>`;
+    send(html);
+  }
+
+  function queueFinalRender(finalText: string, finalThinking: string, allTools: ToolBlock[]) {
+    renderQueue = renderQueue.then(async () => {
+      let html = `<div data-entity="message" data-status="assistant" class="mb-4">`;
+      html += `<div class="text-xs font-medium text-blue-600 mb-1" data-role="label">Assistant</div>`;
+
+      if (finalThinking) {
+        html += `<details class="mb-2"><summary class="text-xs text-gray-400 cursor-pointer">Thinking</summary><div class="text-xs text-gray-400 italic whitespace-pre-wrap mt-1" data-role="thinking">${escapeHtml(finalThinking)}</div></details>`;
+      }
+
+      for (const t of allTools) {
+        const lang = detectLang(t);
+        let highlighted: string | undefined;
+        if (lang && t.result) {
+          highlighted = await ai_highlightCode(stripLineNumbers(t.result), lang);
+        }
+        html += renderToolBlock(t, highlighted);
+      }
+
+      if (finalText) {
+        const rendered = await ai_renderMarkdown(finalText);
+        html += `<div class="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 prose prose-sm max-w-none" data-role="content">${rendered}</div>`;
+      }
+
+      html += `</div>`;
+      send(html);
+    });
+  }
+
+  const stream = new ReadableStream<Uint8Array>({
+    start(ctrl) {
+      controller = ctrl;
+
+      runAgent((event) => {
+        switch (event.type) {
+          case "agent_start":
+            renderStreaming();
+            break;
+
+          case "thinking_delta":
+            thinking += event.delta;
+            break;
+
+          case "text_delta":
+            text += event.delta;
+            renderStreaming();
+            break;
+
+          case "tool_execution_start":
+            tools.push({ id: event.toolCallId, name: event.toolName, args: JSON.stringify(event.args) });
+            renderStreaming();
+            break;
+
+          case "tool_execution_end": {
+            const t = tools.find((t) => t.id === event.toolCallId);
+            if (t) {
+              t.result = event.result.content.map((c) => c.type === "text" ? c.text : "[image]").join("\n");
+              t.isError = event.isError;
+            }
+            renderStreaming();
+            break;
+          }
+
+          case "turn_end":
+            // Move current tools to finishedTools
+            finishedTools.push(...tools);
+            // Final render with markdown for this turn's text
+            if (text) queueFinalRender(text, thinking, [...finishedTools]);
+            text = "";
+            thinking = "";
+            tools = [];
+            break;
+
+          case "error":
+            send(`<div data-entity="message" data-status="error" class="mb-4"><div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm" data-role="content">${escapeHtml(event.error)}</div></div>`);
+            break;
+
+          case "agent_end":
+            renderQueue.then(() => {
+              send(``);
+              controller.close();
+            });
+            break;
+        }
+      }).catch((err) => {
+        send(`<div data-entity="message" data-status="error" class="mb-4"><div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm" data-role="content">${escapeHtml(String(err))}</div></div>`);
+        try { controller.close(); } catch {}
+      });
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+    },
+  });
+}

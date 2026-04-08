@@ -1,0 +1,21 @@
+{
+  "name": "hyper-code",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "bun test ./*.test.ts ./*.test.tsx",
+    "typecheck": "bun tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "openai": "^6.33.0",
+    "partial-json": "^0.1.7",
+    "shiki": "^4.0.2"
+  }
+}

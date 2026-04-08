@@ -1,0 +1,12 @@
+[submodule "docs/htmx_reference"]
+	path = docs/htmx_reference
+	url = https://github.com/bigskysoftware/htmx.git
+[submodule "docs/tailwind_reference"]
+	path = docs/tailwind_reference
+	url = https://github.com/tailwindlabs/tailwindcss.com.git
+[submodule "docs/datastar_reference"]
+	path = docs/datastar_reference
+	url = https://github.com/starfederation/datastar.git
+[submodule "docs/bun_reference"]
+	path = docs/bun_reference
+	url = https://github.com/oven-sh/bun.git
