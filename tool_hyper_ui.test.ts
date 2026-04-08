@@ -52,11 +52,12 @@ describe("tool_hyper_ui", () => {
     expect(text).toContain("not found");
   });
 
-  test("action=list returns empty message when no widgets", async () => {
+  test("action=list always shows built-in widgets", async () => {
     const emptyDir = mkdtempSync(join(tmpdir(), "empty-"));
     const tool = tool_hyper_ui(emptyDir);
     const result = await tool.execute({ action: "list" });
-    expect((result.content[0] as any).text).toContain("No widgets");
+    expect((result.content[0] as any).text).toContain("editor");
+    expect((result.content[0] as any).text).toContain("built-in");
     rmSync(emptyDir, { recursive: true });
   });
 });

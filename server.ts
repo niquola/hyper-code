@@ -1,8 +1,8 @@
 import { router_buildRoutes } from "./router_buildRoutes.ts";
 import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
+import { widget_editor } from "./widget_editor.ts";
 import { chat_getCtx } from "./chat_ctx.ts";
 import { agent_run } from "./agent_run.ts";
-import { chat_createSSEStream } from "./chat_sse.ts";
 
 const routes = await router_buildRoutes(".");
 const cwd = process.cwd();
@@ -13,7 +13,12 @@ const server = Bun.serve({
   async fetch(req) {
     const url = new URL(req.url);
 
-    // /ui/{name}/* — hyper_ui CGI widgets
+    // /w/editor/* — built-in editor widget
+    if (url.pathname.startsWith("/w/editor")) {
+      return widget_editor(req, cwd);
+    }
+
+    // /ui/{name}/* — user CGI widgets from workspace
     if (url.pathname.startsWith("/ui/")) {
       return hyper_ui_handleRequest(cwd, req);
     }

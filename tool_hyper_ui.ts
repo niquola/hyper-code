@@ -1,28 +1,35 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
 import { hyper_ui_run } from "./hyper_ui_run.ts";
 import { hyper_ui_list } from "./hyper_ui_list.ts";
+import { widget_editor } from "./widget_editor.ts";
+
+const BUILTIN_WIDGETS = ["editor"];
 
 export function tool_hyper_ui(cwd: string): AgentTool {
   return {
     name: "hyper_ui",
-    description: "Manage interactive HTML widgets. action=list to see available widgets, action=show to render a widget in chat. Built-in: editor (?file=path). Widgets are hyper_ui_<name>.ts CGI scripts.",
+    description: "Show interactive HTML widgets in chat. Built-in: editor (query: file=path). Custom: hyper_ui_<name>.ts CGI scripts in workspace.",
     parameters: {
       type: "object",
       properties: {
         action: { type: "string", enum: ["list", "show"], description: "list: show available widgets. show: render a widget." },
-        name: { type: "string", description: "Widget name (for action=show). E.g. 'editor'" },
-        query: { type: "string", description: "Query string for the widget. E.g. 'file=server.ts'" },
+        name: { type: "string", description: "Widget name. Built-in: 'editor'. Or custom hyper_ui_<name>.ts" },
+        query: { type: "string", description: "Query string. E.g. 'file=server.ts' for editor" },
       },
       required: ["action"],
     },
     execute: async (params: { action: string; name?: string; query?: string }) => {
       if (params.action === "list") {
-        const widgets = await hyper_ui_list(cwd);
-        if (widgets.length === 0) {
-          return { content: [{ type: "text", text: "No widgets found. Create a hyper_ui_<name>.ts file to add one." }] };
+        const custom = await hyper_ui_list(cwd);
+        const lines = [
+          "Built-in widgets:",
+          ...BUILTIN_WIDGETS.map((w) => `- ${w} (built-in)`),
+        ];
+        if (custom.length > 0) {
+          lines.push("", "Custom widgets:");
+          for (const w of custom) lines.push(`- ${w.name} (${w.file})`);
         }
-        const text = widgets.map((w) => `- ${w.name} (${w.file})`).join("\n");
-        return { content: [{ type: "text", text }] };
+        return { content: [{ type: "text", text: lines.join("\n") }] };
       }
 
       if (params.action === "show") {
@@ -30,16 +37,25 @@ export function tool_hyper_ui(cwd: string): AgentTool {
           return { content: [{ type: "text", text: "Error: name is required for action=show" }] };
         }
 
-        const html = await hyper_ui_run(cwd, params.name, {
-          method: "GET", path: "/", query: params.query || "", body: "",
-        });
+        let html: string;
 
-        if (html.includes("not found")) {
-          return { content: [{ type: "text", text: `Widget "${params.name}" not found` }] };
+        // Built-in widgets: serve directly
+        if (params.name === "editor") {
+          const url = `http://localhost/w/editor/?${params.query || ""}`;
+          const res = await widget_editor(new Request(url), cwd);
+          html = await res.text();
+        } else {
+          // Custom CGI widget
+          html = await hyper_ui_run(cwd, params.name, {
+            method: "GET", path: "/", query: params.query || "", body: "",
+          });
+          if (html.includes("not found")) {
+            return { content: [{ type: "text", text: `Widget "${params.name}" not found` }] };
+          }
+          html = `<div id="hyper-ui-${Bun.escapeHTML(params.name)}" data-entity="widget" data-id="${Bun.escapeHTML(params.name)}" class="hyper-ui">${html}</div>`;
         }
 
-        const wrapped = `<div id="hyper-ui-${Bun.escapeHTML(params.name)}" data-entity="widget" data-id="${Bun.escapeHTML(params.name)}" class="hyper-ui border border-blue-200 bg-blue-50 rounded-lg p-4 my-2">${html}</div>`;
-        return { content: [{ type: "html", html: wrapped }] };
+        return { content: [{ type: "html", html }] };
       }
 
       return { content: [{ type: "text", text: `Unknown action: ${params.action}` }] };
