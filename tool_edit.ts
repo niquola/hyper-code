@@ -1,4 +1,3 @@
-import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { homedir } from "node:os";
 import type { AgentTool } from "./agent_type_Tool.ts";
@@ -34,7 +33,7 @@ export function tool_edit(cwd: string): AgentTool {
     },
     execute: async (params: { path: string; edits: { oldText: string; newText: string }[] }) => {
       const abs = resolvePath(params.path, cwd);
-      let content = await readFile(abs, "utf-8");
+      let content = await Bun.file(abs).text();
 
       // Strip BOM
       if (content.charCodeAt(0) === 0xFEFF) content = content.slice(1);
@@ -50,7 +49,7 @@ export function tool_edit(cwd: string): AgentTool {
         content = content.replace(edit.oldText, edit.newText);
       }
 
-      await writeFile(abs, content, "utf-8");
+      await Bun.write(abs, content);
       return { content: [{ type: "text", text: `Applied ${params.edits.length} edit(s) to ${params.path}` }] };
     },
   };

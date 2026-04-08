@@ -1,5 +1,6 @@
 import type { Message } from "./ai_type_Message.ts";
 import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall } from "./chat_view_message.tsx";
+import { chat_view_stats } from "./chat_view_stats.tsx";
 
 export async function chat_view_page(messages: Message[]): Promise<string> {
   const rendered: string[] = [];
@@ -22,6 +23,7 @@ export async function chat_view_page(messages: Message[]): Promise<string> {
         {rendered.join("")}
         <div id="stream"></div>
       </div>
+      {chat_view_stats(messages)}
       <div id="input-area" className="border-t border-gray-200 pt-4 pb-2">
         <form id="chat-form" data-form="prompt" method="POST" action="/chat">
           <div className="flex gap-2">
@@ -39,6 +41,13 @@ export async function chat_view_page(messages: Message[]): Promise<string> {
               data-action="send"
               className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition self-end"
             >Send</button>
+            <button
+              id="abort-btn"
+              type="button"
+              data-action="abort"
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition self-end hidden"
+              onclick="fetch('/abort',{method:'POST'}).then(()=>window.location.reload())"
+            >Stop</button>
           </div>
         </form>
       </div>
@@ -52,14 +61,16 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
   e.preventDefault();
   var form = e.target;
   var textarea = form.querySelector('textarea');
-  var btn = form.querySelector('button');
+  var btn = form.querySelector('#send-btn');
+  var abortBtn = document.getElementById('abort-btn');
   var prompt = textarea.value.trim();
   if (!prompt) return;
 
-  // Disable input
+  // Disable input, show abort
   textarea.disabled = true;
   btn.disabled = true;
-  btn.textContent = '...';
+  btn.classList.add('hidden');
+  abortBtn.classList.remove('hidden');
   form.setAttribute('data-status', 'streaming');
 
   // Add user message to UI
@@ -112,10 +123,11 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
     messages.insertBefore(streamDiv.firstChild, streamDiv);
   }
 
-  // Re-enable input
+  // Re-enable input, hide abort
   textarea.disabled = false;
   btn.disabled = false;
-  btn.textContent = 'Send';
+  btn.classList.remove('hidden');
+  abortBtn.classList.add('hidden');
   form.removeAttribute('data-status');
   textarea.focus();
 });

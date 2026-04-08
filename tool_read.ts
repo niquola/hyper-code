@@ -1,5 +1,4 @@
-import { readFile, access } from "node:fs/promises";
-import { resolve, extname } from "node:path";
+import { resolve } from "node:path";
 import { homedir } from "node:os";
 import type { AgentTool } from "./agent_type_Tool.ts";
 
@@ -24,8 +23,9 @@ export function tool_read(cwd: string): AgentTool {
     },
     execute: async (params: { path: string; offset?: number; limit?: number }, signal) => {
       const abs = resolvePath(params.path, cwd);
-      await access(abs);
-      const raw = await readFile(abs, "utf-8");
+      const file = Bun.file(abs);
+      if (!await file.exists()) throw new Error(`File not found: ${params.path}`);
+      const raw = await file.text();
       let lines = raw.split("\n");
       const totalLines = lines.length;
 
@@ -36,12 +36,10 @@ export function tool_read(cwd: string): AgentTool {
         lines = lines.slice(0, params.limit);
       }
 
-      // Truncate if too long
       const MAX_LINES = 2000;
       const truncated = lines.length > MAX_LINES;
       if (truncated) lines = lines.slice(0, MAX_LINES);
 
-      // Add line numbers
       const startLine = params.offset || 1;
       const numbered = lines.map((l, i) => `${startLine + i}\t${l}`).join("\n");
 

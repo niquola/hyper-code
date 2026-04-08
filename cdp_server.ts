@@ -4,7 +4,6 @@
 // Launches Chrome with remote debugging, proxies CDP commands via HTTP:
 //   POST /s/<session> → forwards JSON to Chrome DevTools WebSocket, returns result
 
-import { spawn } from "node:child_process";
 import { existsSync, mkdirSync } from "node:fs";
 
 const CDP_PORT = Number(process.env.CDP_PORT || 2230);
@@ -21,7 +20,7 @@ function findChrome(): string {
   ];
   for (const c of candidates) {
     try {
-      if (c.startsWith("/") && existsSync(c)) return c;
+      if (c.startsWith("/") && Bun.file(c).size > 0) return c;
     } catch {}
   }
   return candidates[0]!;
@@ -30,16 +29,16 @@ function findChrome(): string {
 // Launch Chrome
 if (!existsSync(PROFILE_DIR)) mkdirSync(PROFILE_DIR, { recursive: true });
 
-const chrome = spawn(findChrome(), [
+const chrome = Bun.spawn([findChrome(),
   `--remote-debugging-port=${CHROME_PORT}`,
   `--user-data-dir=${PROFILE_DIR}`,
   "--no-first-run",
   "--no-default-browser-check",
   "--disable-features=Translate",
   "about:blank",
-], { stdio: "ignore", detached: false });
+], { stdout: "ignore", stderr: "ignore" });
 
-chrome.on("error", (err) => console.error("Chrome launch failed:", err.message));
+// Bun.spawn throws on error, no need for error handler
 
 // Wait for Chrome to be ready
 async function waitForChrome(maxWait = 10_000): Promise<void> {

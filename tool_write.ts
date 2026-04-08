@@ -1,6 +1,6 @@
-import { writeFile, mkdir } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { homedir } from "node:os";
+import { mkdir } from "node:fs/promises";
 import type { AgentTool } from "./agent_type_Tool.ts";
 
 function resolvePath(path: string, cwd: string): string {
@@ -24,7 +24,7 @@ export function tool_write(cwd: string): AgentTool {
     execute: async (params: { path: string; content: string }) => {
       const abs = resolvePath(params.path, cwd);
       await mkdir(dirname(abs), { recursive: true });
-      await writeFile(abs, params.content, "utf-8");
+      await Bun.write(abs, params.content);
       const bytes = Buffer.byteLength(params.content, "utf-8");
       return { content: [{ type: "text", text: `Wrote ${bytes} bytes to ${params.path}` }] };
     },

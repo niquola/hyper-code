@@ -1,4 +1,3 @@
-import { spawn } from "node:child_process";
 import type { AgentTool } from "./agent_type_Tool.ts";
 
 export function tool_bash(cwd: string): AgentTool {
@@ -16,45 +15,32 @@ export function tool_bash(cwd: string): AgentTool {
     execute: async (params: { command: string; timeout?: number }, signal) => {
       const timeout = (params.timeout || 30) * 1000;
 
-      return new Promise((resolve) => {
-        const chunks: Buffer[] = [];
-        const proc = spawn("bash", ["-c", params.command], {
-          cwd,
-          stdio: ["ignore", "pipe", "pipe"],
-          env: { ...process.env, TERM: "dumb" },
-        });
-
-        const timer = setTimeout(() => {
-          proc.kill("SIGTERM");
-          setTimeout(() => proc.kill("SIGKILL"), 1000);
-        }, timeout);
-
-        signal?.addEventListener("abort", () => {
-          proc.kill("SIGTERM");
-        });
-
-        proc.stdout?.on("data", (d: Buffer) => chunks.push(d));
-        proc.stderr?.on("data", (d: Buffer) => chunks.push(d));
-
-        proc.on("close", (code) => {
-          clearTimeout(timer);
-          let output = Buffer.concat(chunks).toString("utf-8");
-
-          // Truncate if too long
-          const MAX = 50_000;
-          if (output.length > MAX) {
-            output = output.slice(-MAX) + "\n\n[Truncated: showing last 50KB]";
-          }
-
-          const text = output + (code !== 0 ? `\n\nExit code: ${code}` : "");
-          resolve({ content: [{ type: "text", text }] });
-        });
-
-        proc.on("error", (err) => {
-          clearTimeout(timer);
-          resolve({ content: [{ type: "text", text: `Error: ${err.message}` }] });
-        });
+      const proc = Bun.spawn(["bash", "-c", params.command], {
+        cwd,
+        stdout: "pipe",
+        stderr: "pipe",
+        env: { ...process.env, TERM: "dumb" },
       });
+
+      const timer = setTimeout(() => proc.kill(), timeout);
+      signal?.addEventListener("abort", () => proc.kill());
+
+      const [stdout, stderr, exitCode] = await Promise.all([
+        new Response(proc.stdout).text(),
+        new Response(proc.stderr).text(),
+        proc.exited,
+      ]);
+
+      clearTimeout(timer);
+
+      let output = stdout + stderr;
+      const MAX = 50_000;
+      if (output.length > MAX) {
+        output = output.slice(-MAX) + "\n\n[Truncated: showing last 50KB]";
+      }
+
+      const text = output + (exitCode !== 0 ? `\n\nExit code: ${exitCode}` : "");
+      return { content: [{ type: "text", text }] };
     },
   };
 }

@@ -6,7 +6,7 @@ export function chat_view_userMessage(content: string): string {
   return (
     <div data-entity="message" data-status="user" className="mb-4">
       <div className="text-xs font-medium text-gray-500 mb-1" data-role="label">You</div>
-      <div className="bg-gray-100 rounded-lg px-4 py-3 text-gray-900 whitespace-pre-wrap" data-role="content">{content}</div>
+      <div className="bg-gray-100 rounded-lg px-4 py-3 text-gray-900 whitespace-pre-wrap" data-role="content">{escapeHtml(content)}</div>
     </div>
   );
 }

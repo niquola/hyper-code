@@ -10,12 +10,7 @@ const VOID_ELEMENTS = new Set([
 ]);
 
 export function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+  return Bun.escapeHTML(str);
 }
 
 function toKebabCase(str: string): string {

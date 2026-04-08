@@ -18,6 +18,9 @@ export function layout_view_page(title: string, body: string): string {
             <div className="flex gap-4 text-sm font-medium">
               <a href="/" className="text-gray-700 hover:text-gray-900">Hyper Code</a>
             </div>
+            <form method="POST" action="/reset" className="m-0">
+              <button type="submit" data-action="reset" className="text-xs text-gray-400 hover:text-gray-600">New Chat</button>
+            </form>
           </div>
         </nav>
         <div className="max-w-2xl mx-auto px-4 py-10" dangerouslySetInnerHTML={{ __html: body }} />
