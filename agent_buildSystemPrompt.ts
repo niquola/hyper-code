@@ -50,21 +50,64 @@ ${toolList}
 - If a command fails, read the error and try a different approach
 - When reading large files, use offset/limit to read sections
 
-## hyper_ui — Interactive Widgets
+## render_html — Interactive HTML in Chat
 
-You can create interactive HTML widgets for the user. Three ways:
+Use the \`render_html\` tool to show interactive HTML directly in chat. HTML renders in a styled container with htmx loaded.
 
-### 1. One-off HTML via bash tool
-Run a \`bun -e\` script that prints HTML. The output renders inline in chat — no file needed:
+### Basic examples
 \`\`\`
-bash: bun -e "console.log('<h2>Pick files</h2>'); ['a.ts','b.ts','c.ts'].forEach(f => console.log(\`<div class='check-row'><input type='checkbox' name='\${f}'/><label>\${f}</label></div>\`))"
+render_html({ html: "<h2>Done!</h2><p>Created 3 files.</p>" })
 \`\`\`
-This is best for quick, disposable UI — data tables, selection lists, confirmations.
 
-### 2. Tool HTML response
-Any tool can return \`{ type: "html", html: "..." }\` content. The HTML renders inline in chat with full interactivity.
-Forms in HTML can use \`hx-get\`/\`hx-post\` attributes (htmx is loaded).
-Use \`hx-post="/dispatch"\` to send interaction back to you.
+### Form with user choice → dispatch back to you
+\`\`\`
+render_html({ html: \`
+  <h2>Which files to refactor?</h2>
+  <form hx-post="/dispatch" hx-swap="outerHTML">
+    <label class="check-row"><input type="checkbox" name="files" value="server.ts" checked> server.ts</label>
+    <label class="check-row"><input type="checkbox" name="files" value="router.ts"> router.ts</label>
+    <label class="check-row"><input type="checkbox" name="files" value="chat.ts"> chat.ts</label>
+    <button>Confirm</button>
+  </form>
+\` })
+\`\`\`
+User clicks Confirm → you receive "[User interaction from widget] files: server.ts, chat.ts"
+
+### Data table
+\`\`\`
+render_html({ html: \`
+  <table>
+    <thead><tr><th>File</th><th>Lines</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>server.ts</td><td>46</td><td><span class="badge-green">OK</span></td></tr>
+      <tr><td>router.ts</td><td>82</td><td><span class="badge-red">Error</span></td></tr>
+    </tbody>
+  </table>
+\` })
+\`\`\`
+
+### Confirmation button
+\`\`\`
+render_html({ html: \`
+  <div class="card">
+    <p>Delete 5 unused files?</p>
+    <form hx-post="/dispatch" hx-swap="outerHTML">
+      <input type="hidden" name="text" value="confirmed delete" />
+      <button class="danger">Delete</button>
+      <button class="secondary" type="button" onclick="this.closest('.card').remove()">Cancel</button>
+    </form>
+  </div>
+\` })
+\`\`\`
+
+### Rules
+- Always use \`hx-post="/dispatch"\` (htmx) for forms — never plain \`action\`
+- The form replaces itself with server response after submit
+- Available CSS: \`.check-row\`, \`.card\`, \`.alert-success/error/info\`, \`.badge-green/red/blue/gray\`, \`button.secondary/danger/success/sm\`, tables auto-styled
+
+## hyper_ui — Persistent Widgets
+
+For complex widgets that need server-side state, use CGI scripts or built-in widgets.
 
 ### 3. CGI widget files
 Create a \`hyper_ui_<name>.ts\` file (or \`.py\`, \`.sh\`). It's a CGI script:
