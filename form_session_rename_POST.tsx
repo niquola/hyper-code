@@ -1,4 +1,4 @@
-import { chat_sessionSetTitle } from "./chat_session.ts";
+import { getDb } from "./chat_db.ts";
 
 export default async function (req: Request) {
   const form = await req.formData();
@@ -8,6 +8,6 @@ export default async function (req: Request) {
     return new Response(null, { status: 302, headers: { Location: "/" } });
   }
 
-  await chat_sessionSetTitle(filename, title.trim());
+  getDb().setSessionTitle(filename, title.trim());
   return new Response(null, { status: 302, headers: { Location: "/" } });
 }

@@ -1,4 +1,4 @@
-import { chat_sessionCreate, chat_sessionSetTitle, chat_sessionSetModel } from "./chat_session.ts";
+import { getDb } from "./chat_db.ts";
 import { chat_loadSettings } from "./chat_settings.ts";
 
 export default async function (req: Request) {
@@ -7,16 +7,11 @@ export default async function (req: Request) {
   const provider = (form.get("provider") as string)?.trim();
   const modelId = (form.get("modelId") as string)?.trim();
 
-  const filename = chat_sessionCreate();
-  if (title) await chat_sessionSetTitle(filename, title);
+  const db = getDb();
+  const settings = await chat_loadSettings();
+  const model = provider && modelId ? `${provider}/${modelId}` : `${settings.provider}/${settings.modelId}`;
 
-  // Set model — from form or current settings
-  if (provider && modelId) {
-    await chat_sessionSetModel(filename, `${provider}/${modelId}`);
-  } else {
-    const settings = await chat_loadSettings();
-    await chat_sessionSetModel(filename, `${settings.provider}/${settings.modelId}`);
-  }
+  const filename = db.createSession({ title: title || undefined, model });
 
   return new Response(null, {
     status: 302,

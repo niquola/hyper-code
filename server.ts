@@ -4,11 +4,10 @@ import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
 import { chat_getCtx, chat_loadSessionByName } from "./chat_ctx.ts";
 import { chat_createSSEStream } from "./chat_sse.ts";
-import { chat_sessionRewrite, chat_sessionAppend, chat_sessionLoadRaw } from "./chat_session.ts";
+import { getDb } from "./chat_db.ts";
 import { agent_run } from "./agent_run.ts";
 import { layout_view_page } from "./layout_view_page.tsx";
 import { chat_view_page } from "./chat_view_page.tsx";
-import { chat_markRead } from "./chat_unread.ts";
 
 const routes = await router_buildRoutes(".");
 const cwd = process.cwd();
@@ -73,7 +72,7 @@ const server = Bun.serve({
         const index = parseInt(url.searchParams.get("index") || "0", 10);
         if (index >= 0 && index < session.messages.length) {
           session.messages = session.messages.slice(0, index);
-          chat_sessionRewrite(sessionFilename, session.messages);
+          getDb().rewindMessages(sessionFilename, index);
         }
         return new Response(null, { status: 302, headers: { Location: `/session/${encodeURIComponent(sessionFilename)}/` } });
       }
@@ -94,7 +93,10 @@ const server = Bun.serve({
             onEvent(event);
             if (event.type === "agent_end") {
               const newMsgs = session.messages.slice(msgsBefore);
-              if (newMsgs.length > 0) chat_sessionAppend(sessionFilename, ...newMsgs);
+              if (newMsgs.length > 0) {
+                const db = getDb();
+                for (const m of newMsgs) db.addMessage(sessionFilename, { role: m.role, content: m.role === "user" ? (typeof m.content === "string" ? m.content : JSON.stringify(m.content)) : JSON.stringify(m), timestamp: m.timestamp });
+              }
             }
           }),
         );
@@ -134,7 +136,7 @@ const server = Bun.serve({
           }
         }
         if (replaced) {
-          chat_sessionRewrite(session.filename, session.messages);
+          // In-memory mutation is enough — will be saved at agent_end
           break;
         }
       }
@@ -167,9 +169,14 @@ const server = Bun.serve({
       const filename = decodeURIComponent(sessionMatch[1]!);
       const ctx = await chat_getCtx();
       const session = await chat_loadSessionByName(filename);
-      chat_markRead(session.filename, session.messages.length);
+      getDb().markRead(session.filename, session.messages.length);
       // Render only own messages (not parent chain) for UI
-      const visibleMessages = await chat_sessionLoadRaw(filename);
+      // Show only this session's own messages (not parent chain)
+      const db = getDb();
+      const visibleMessages = db.getMessages(filename).map((r) => {
+        if (r.role === "user") return { role: "user" as const, content: r.content, timestamp: r.timestamp };
+        try { return JSON.parse(r.content); } catch { return { role: "user" as const, content: r.content, timestamp: r.timestamp }; }
+      });
       const body = await chat_view_page(visibleMessages, session.filename, session.isStreaming);
       return new Response(layout_view_page("Hyper Code", body, session.model.name || session.model.id), {
         headers: { "Content-Type": "text/html; charset=utf-8" },

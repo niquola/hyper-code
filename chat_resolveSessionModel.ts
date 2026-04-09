@@ -1,10 +1,12 @@
 import type { Model } from "./ai_type_Model.ts";
-import { chat_sessionGetModel } from "./chat_session.ts";
+import { getDb } from "./chat_db.ts";
 import { chat_loadSettings, chat_resolveModel } from "./chat_settings.ts";
 import { chat_getApiKey } from "./chat_apiKeys.ts";
 
 export async function chat_resolveSessionModel(filename: string): Promise<{ model: Model; apiKey: string }> {
-  const modelStr = await chat_sessionGetModel(filename);
+  const db = getDb();
+  const session = db.getSession(filename);
+  const modelStr = session?.model || null;
   const settings = await chat_loadSettings();
 
   if (modelStr && modelStr.includes("/")) {
