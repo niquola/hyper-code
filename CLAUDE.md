@@ -158,17 +158,24 @@ Both can coexist on the same page. htmx uses `hx-*` attributes, Datastar uses `d
 - `chat_switchSession(filename)` — switch to a different session
 - `chat_createSSEStream(runAgent)` — agent events → SSE HTML fragments
 - `chat_settings.ts` — persistent provider/model/API key config (.settings.json)
-- `chat_session.ts` — session persistence (`.hyper/<timestamp>-<id>.jsonl`), title management
-- `chat_type_Session.ts` — Session type definition
+- `chat_db.ts` — SQLite storage (`bun:sqlite`): sessions, messages, api_keys, unread. Single `.hyper/hyper.db` file.
+- `chat_type_Session.ts` — Session type definition (runtime state: model, apiKey, systemPrompt, queues)
 - Views: `chat_view_page`, `chat_view_message`, `chat_view_settings`
 
+**Storage (SQLite)**
+- All persistent state in `.hyper/hyper.db` (WAL mode)
+- Tables: `sessions`, `messages`, `api_keys`, `unread`
+- `chat_db.ts` — all DB operations as pure functions
+- `getDb()` — singleton accessor
+- API keys stored per-provider in `api_keys` table (not in .settings.json)
+- `search_chats` tool — full text search across all sessions
+
 **Session management**
-- Sessions stored in `.hyper/` as JSONL files (one JSON message per line, append-only)
-- Custom titles in `.hyper/<filename>.title` (optional, falls back to first user message)
-- URL-based navigation: `/session/:filename`
-- `/` redirects to latest non-empty session
+- URL-based navigation: `/session/:filename/`
+- `/` redirects to latest session
 - `/session/new` — form to create session (title, provider, model)
-- Sidebar: dark panel with session list, delete (×), rename (dblclick)
+- Per-session model in `sessions.model` column
+- Sub-agent sessions: `parent` + `offset` columns
 
 **Steering & follow-up**
 - Enter during streaming → follow-up (queued, runs after current turn)

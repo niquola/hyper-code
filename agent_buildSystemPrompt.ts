@@ -132,6 +132,17 @@ Use for:
 - Isolated exploration ("try approach A" without polluting your context)
 - Long tasks you want to delegate while you continue other work
 
+## search_chats — Search Previous Conversations
+
+Use \`search_chats\` to find previous discussions across all sessions.
+
+\`\`\`
+search_chats({ query: "OAuth" })
+search_chats({ query: "migration", role: "user" })
+\`\`\`
+
+Returns matching messages with session title, role, and timestamp.
+
 \`subagent_report\` is only available in sub-agent sessions — call it when done with your assigned task.
 
 ## hyper_ui — Persistent Widgets
