@@ -19,7 +19,7 @@ export function tool_html_dialog(): AgentTool {
       const id = `dlg-${Date.now()}-${++dialogCounter}`;
       const submitLabel = params.submit_label || "Submit";
       const html = `<dialog id="${id}" data-widget-id="${id}" class="rounded-lg shadow-xl border border-gray-200 p-0 max-w-md w-full backdrop:bg-black/30">
-  <form hx-post="dispatch" hx-swap="none" class="p-5" onsubmit="setTimeout(()=>this.closest('dialog').remove(),0)">
+  <form class="p-5" onsubmit="return submitDialog(event, this)">
     <h3 class="text-lg font-semibold text-gray-900 mb-4">${params.title}</h3>
     <div class="space-y-3 mb-5">${params.html}</div>
     <div class="flex justify-end gap-2">

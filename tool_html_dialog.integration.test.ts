@@ -74,7 +74,7 @@ describe("html_dialog dispatch integration", () => {
     // Structure
     expect(html).toContain("<dialog");
     expect(html).toContain("data-widget-id=");
-    expect(html).toContain('hx-post="dispatch"');
+    expect(html).toContain("submitDialog");
 
     // Content
     expect(html).toContain("Pick files");
@@ -100,7 +100,7 @@ describe("html_dialog dispatch integration", () => {
     const html = (result.content[0] as any).html;
 
     // Must be relative "dispatch" not absolute "/dispatch"
-    expect(html).toContain('hx-post="dispatch"');
-    expect(html).not.toContain('hx-post="/dispatch"');
+    expect(html).toContain("submitDialog");
+    expect(html).not.toContain('action="/dispatch"');
   });
 });

@@ -81,6 +81,22 @@ var queueInd = document.getElementById('queue-indicator');
 
 function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
+function submitDialog(e, form) {
+  e.preventDefault();
+  var dlg = form.closest('dialog');
+  var body = new FormData(form);
+  dlg.remove();
+
+  // Get session from page
+  var page = document.querySelector('[data-page=chat]');
+  var sessionFile = page?.dataset.session;
+  if (!sessionFile) return false;
+
+  var dispatchUrl = '/session/' + encodeURIComponent(sessionFile) + '/dispatch';
+  fetch(dispatchUrl, { method: 'POST', body: body });
+  return false;
+}
+
 function addUserBubble(text, label) {
   var div = document.createElement('div');
   div.setAttribute('data-entity', 'message');

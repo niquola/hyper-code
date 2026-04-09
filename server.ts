@@ -62,31 +62,16 @@ const server = Bun.serve({
         }
       }
 
-      const filename = session.filename;
-      const msgsBefore = session.messages.length;
+      // If agent is streaming — inject as steer (will be seen next turn)
+      // If not — queue as follow-up (will run when next message sent)
+      if (session.isStreaming) {
+        session.steerQueue.push(`[User interaction from widget] ${text}`);
+      } else {
+        session.followUpQueue.push(`[User interaction from widget] ${text}`);
+      }
 
-      // Start agent with SSE broadcasting (for reconnected clients)
-      // We consume the SSE Response body to keep the stream alive
-      const sseResponse = chat_createSSEStream(session, (onEvent) =>
-        agent_run(ctx, session, `[User interaction from widget] ${text}`, (event) => {
-          onEvent(event);
-          if (event.type === "agent_end") {
-            const newMsgs = session.messages.slice(msgsBefore);
-            if (newMsgs.length > 0) {
-              chat_sessionAppend(filename, ...newMsgs);
-            }
-          }
-        }),
-      );
-      // Drain the SSE response in background (keeps broadcast alive)
-      sseResponse.body?.pipeTo(new WritableStream()).catch(() => {});
-
-      // Return completed HTML + HX-Trigger to tell page to reconnect to stream
       return new Response(completedHtml, {
-        headers: {
-          "Content-Type": "text/html",
-          "HX-Trigger": "dispatch-sent",
-        },
+        headers: { "Content-Type": "text/html" },
       });
     }
 

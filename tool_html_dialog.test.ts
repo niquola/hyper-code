@@ -9,7 +9,7 @@ test("returns dialog HTML with form", async () => {
   expect(html).toContain("<dialog");
   expect(html).toContain("Pick one");
   expect(html).toContain('name="choice"');
-  expect(html).toContain('hx-post="dispatch"');
+  expect(html).toContain("submitDialog");
   expect(html).toContain("Submit");
   expect(html).toContain("Cancel");
   expect(html).toContain("data-widget-id");
