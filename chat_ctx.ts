@@ -3,7 +3,7 @@ import { agent_buildSystemPrompt } from "./agent_buildSystemPrompt.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
 import type { Session } from "./chat_type_Session.ts";
 import { chat_loadSettings, chat_resolveModel, chat_resolveApiKey } from "./chat_settings.ts";
-import { chat_sessionLatest, chat_sessionCreate, chat_sessionLoad, chat_sessionAppend } from "./chat_session.ts";
+import { chat_sessionLatest, chat_sessionCreate, chat_sessionLoad, chat_sessionLoadRaw, chat_sessionAppend } from "./chat_session.ts";
 import type { Message } from "./ai_type_Message.ts";
 import { tool_read } from "./tool_read.ts";
 import { tool_write } from "./tool_write.ts";
@@ -17,6 +17,7 @@ import { tool_html_message } from "./tool_html_message.ts";
 import { tool_html_dialog } from "./tool_html_dialog.ts";
 import { tool_subagent } from "./tool_subagent.ts";
 import { tool_subagent_report } from "./tool_subagent_report.ts";
+import { tool_websearch } from "./tool_websearch.ts";
 import { chat_sessionGetParent } from "./chat_session.ts";
 
 let ctx: Ctx | null = null;
@@ -44,6 +45,7 @@ export async function chat_getCtx(): Promise<Ctx> {
         }
         return null;
       }),
+      tool_websearch(),
     ];
 
     ctx = agent_createCtx({
@@ -64,7 +66,16 @@ async function loadSession(filename: string): Promise<Session> {
   const cached = sessions.get(filename);
   if (cached) return cached;
 
-  const messages = await chat_sessionLoad(filename);
+  // For child sessions: use cached parent messages (in-memory, may have unsaved msgs)
+  const parentFilename = await chat_sessionGetParent(filename);
+  let messages: Message[];
+  if (parentFilename && sessions.has(parentFilename)) {
+    const parentSession = sessions.get(parentFilename)!;
+    const ownMessages = await chat_sessionLoadRaw(filename);
+    messages = [...parentSession.messages, ...ownMessages];
+  } else {
+    messages = await chat_sessionLoad(filename);
+  }
   const session: Session = {
     filename,
     messages,

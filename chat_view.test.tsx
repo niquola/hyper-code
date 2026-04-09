@@ -97,7 +97,7 @@ describe("chat_view_page", () => {
     expect(state.page).toBe("chat");
     expect(state.forms).toHaveLength(1);
     expect(state.forms[0]!.name).toBe("prompt");
-    expect(state.actions.map(a => a.action)).toContain("send");
+    // send button removed — Enter to send
   });
 
   test("renders messages in history", async () => {
@@ -118,13 +118,13 @@ describe("chat_view_page", () => {
     expect(state.entities[1]!.status).toBe("assistant");
   });
 
-  test("renders tool results in history", async () => {
+  test("renders tool results paired with tool calls", async () => {
     const messages: Message[] = [
-      { role: "toolResult", toolCallId: "tc1", toolName: "read", content: [{ type: "text", text: "file data" }], isError: false, timestamp: 1 },
+      { role: "assistant", content: [{ type: "toolCall", id: "tc1", name: "read", arguments: { path: "test.ts" } }], provider: "t", model: "t", usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } }, stopReason: "stop", timestamp: 1 },
+      { role: "toolResult", toolCallId: "tc1", toolName: "read", content: [{ type: "text", text: "file data" }], isError: false, timestamp: 2 },
     ];
     const html = await chat_view_page(messages);
     const state = pageState(html);
-    expect(state.entities).toHaveLength(1);
-    expect(state.entities[0]!.type).toBe("tool");
+    expect(state.entities.filter(e => e.type === "tool")).toHaveLength(1);
   });
 });

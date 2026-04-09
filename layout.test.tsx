@@ -33,6 +33,6 @@ describe("layout_view_page", () => {
 
   test("has new chat button", () => {
     const html = layout_view_page("T", "");
-    expect(queryExists(html, '[data-action="reset"]')).toBe(true);
+    expect(queryExists(html, '[data-action="new"]')).toBe(true);
   });
 });
