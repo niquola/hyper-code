@@ -19,7 +19,7 @@ export async function chat_view_assistantMessage(text: string, thinking?: string
       {thinking && (
         <details className="mb-2">
           <summary className="text-xs text-gray-400 cursor-pointer">Thinking...</summary>
-          <div className="text-xs text-gray-400 italic whitespace-pre-wrap mt-1" data-role="thinking">{thinking}</div>
+          <div className="text-xs text-gray-400 italic whitespace-pre-wrap mt-1" data-role="thinking">{escapeHtml(thinking!)}</div>
         </details>
       )}
       <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 prose prose-sm max-w-none" data-role="content" dangerouslySetInnerHTML={{ __html: html }}></div>
@@ -32,11 +32,14 @@ export function chat_view_toolCall(toolName: string, args: string, result?: stri
     <div data-entity="tool" data-status={isError ? "error" : result != null ? "done" : "running"} className="mb-3 ml-4">
       <div className={`rounded border text-sm ${isError ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}>
         <div className="px-3 py-1.5 font-mono text-xs">
-          <span className="font-semibold text-gray-700" data-role="tool-name">{toolName}</span>
-          <span className="text-gray-400 ml-2" data-role="tool-args">{args}</span>
+          <span className="font-semibold text-gray-700" data-role="tool-name">{escapeHtml(toolName)}</span>
+          <span className="text-gray-400 ml-2" data-role="tool-args">{escapeHtml(args)}</span>
         </div>
         {result != null && (
-          <div className={`px-3 py-1.5 border-t text-xs font-mono whitespace-pre-wrap ${isError ? "border-red-200 text-red-700" : "border-green-200 text-gray-600"}`} data-role="tool-result">{result}</div>
+          <details className={`border-t ${isError ? "border-red-200 text-red-700" : "border-green-200 text-gray-600"}`}>
+            <summary className="px-3 py-1.5 text-xs cursor-pointer hover:bg-black/5">Output ({result.split("\n").length} lines)</summary>
+            <div className="px-3 py-2 text-xs font-mono whitespace-pre-wrap max-h-60 overflow-y-auto" data-role="tool-result">{escapeHtml(result)}</div>
+          </details>
         )}
       </div>
     </div>

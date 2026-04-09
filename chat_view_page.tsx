@@ -17,8 +17,8 @@ export async function chat_view_page(messages: Message[]): Promise<string> {
     }
   }
   return (
-    <div data-page="chat" className="flex flex-col h-full">
-      <div id="messages" className="flex-1 min-h-0 overflow-y-auto py-4">
+    <div data-page="chat" className="flex flex-col" style="height: calc(100dvh - 45px)">
+      <div id="messages" className="flex-1 overflow-y-auto py-4" style="min-height: 0">
         {rendered.join("")}
         <div id="stream"></div>
       </div>

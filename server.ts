@@ -7,8 +7,11 @@ import { agent_run } from "./agent_run.ts";
 const routes = await router_buildRoutes(".");
 const cwd = process.cwd();
 
+const savedPort = await Bun.file(".port").text().catch(() => "");
+const port = savedPort.trim() ? Number(savedPort.trim()) : 0;
+
 const server = Bun.serve({
-  port: 0,
+  port,
   idleTimeout: 255,
   routes,
   async fetch(req) {

@@ -32,7 +32,7 @@ export function layout_view_page(title: string, body: string, modelName?: string
             </div>
           </div>
         </nav>
-        <div className="flex-1 min-h-0 max-w-3xl w-full mx-auto px-4" dangerouslySetInnerHTML={{ __html: body }} />
+        <div className="flex-1 min-h-0 flex flex-col max-w-3xl w-full mx-auto px-4" dangerouslySetInnerHTML={{ __html: body }} />
       </body>
     </html>
   );

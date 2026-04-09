@@ -33,8 +33,9 @@ function renderToolBlock(t: ToolBlock, highlighted?: string): string {
     const label = t.name === "write" ? `${escapeHtml(t.result)} — ${lineCount} lines`
                 : t.name === "edit" ? `${escapeHtml(t.result)} — diff`
                 : `Output (${lineCount} lines)`;
+    const hasHighlight = !!(highlighted || code);
     html += `<details class="border-t ${resultBorder}"><summary class="px-3 py-1.5 text-xs cursor-pointer hover:bg-black/5">${label}</summary>`;
-    html += `<div class="px-3 py-2 text-xs whitespace-pre-wrap max-h-80 overflow-y-auto" data-role="tool-result">${displayContent}</div>`;
+    html += `<div class="${hasHighlight ? '' : 'px-3 py-2 '}text-xs whitespace-pre-wrap max-h-80 overflow-y-auto" data-role="tool-result">${displayContent}</div>`;
     html += `</details>`;
   } else {
     html += `<div class="px-3 py-1.5 border-t border-yellow-200 text-xs text-gray-400 flex items-center gap-1"><svg class="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Running...</div>`;
