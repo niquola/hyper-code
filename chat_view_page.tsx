@@ -237,8 +237,10 @@ function connectStream() {
     .catch(function() { streaming = false; });
 }
 
-// Auto-reconnect on page load if session is streaming
+// On load: scroll to bottom, focus input, reconnect if streaming
 (function() {
+  messages.scrollTop = messages.scrollHeight;
+  textarea.focus();
   var page = document.querySelector('[data-page=chat]');
   if (page && page.dataset.streaming === 'true') connectStream();
 })();
