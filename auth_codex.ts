@@ -110,7 +110,7 @@ export async function auth_codexRefresh(refreshToken: string): Promise<CodexCred
 
 // --- OAuth flow ---
 
-export async function auth_codexLogin(): Promise<{ authUrl: string; waitForCredentials: () => Promise<CodexCredentials> }> {
+export async function auth_codexLogin(returnPort?: number): Promise<{ authUrl: string; waitForCredentials: () => Promise<CodexCredentials> }> {
   const { verifier, challenge } = await generatePKCE();
   const state = randomBytes(16).toString("hex");
 
@@ -142,9 +142,12 @@ export async function auth_codexLogin(): Promise<{ authUrl: string; waitForCrede
       try {
         const creds = await exchangeCode(code, verifier);
         resolve(creds);
-        return new Response("<html><body><h2>Authenticated! You can close this tab.</h2></body></html>", {
-          headers: { "Content-Type": "text/html" },
-        });
+        const returnUrl = returnPort ? `http://localhost:${returnPort}/settings` : "";
+        const redirectScript = returnUrl ? `<script>setTimeout(()=>location.href='${returnUrl}',1000)</script>` : "";
+        return new Response(
+          `<html><body><h2>✓ Authenticated!</h2><p>Redirecting back...</p>${redirectScript}</body></html>`,
+          { headers: { "Content-Type": "text/html" } },
+        );
       } catch (err: any) {
         reject(err);
         return new Response(`<html><body><h2>Error: ${Bun.escapeHTML(err.message)}</h2></body></html>`, {

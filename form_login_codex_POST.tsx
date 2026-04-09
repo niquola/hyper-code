@@ -4,7 +4,9 @@ import { chat_resetCtx } from "./chat_ctx.ts";
 
 export default async function (req: Request) {
   try {
-    const { authUrl, waitForCredentials } = await auth_codexLogin();
+    // Pass our server port so callback page can redirect back
+    const port = Number(await Bun.file(".port").text().catch(() => "3000"));
+    const { authUrl, waitForCredentials } = await auth_codexLogin(port);
 
     // Wait for OAuth callback in background, save credentials when done
     waitForCredentials().then(async (creds) => {
