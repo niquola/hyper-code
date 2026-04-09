@@ -18,7 +18,7 @@ export function tool_html_dialog(): AgentTool {
     execute: async (params: { title: string; html: string; submit_label?: string }) => {
       const id = `dlg-${Date.now()}-${++dialogCounter}`;
       const submitLabel = params.submit_label || "Submit";
-      const html = `<dialog id="${id}" data-widget-id="${id}" class="rounded-lg shadow-xl border border-gray-200 p-0 max-w-md w-full backdrop:bg-black/30" open>
+      const html = `<dialog id="${id}" data-widget-id="${id}" class="rounded-lg shadow-xl border border-gray-200 p-0 max-w-md w-full backdrop:bg-black/30">
   <form method="dialog" hx-post="dispatch" hx-swap="outerHTML" class="p-5">
     <h3 class="text-lg font-semibold text-gray-900 mb-4">${params.title}</h3>
     <div class="space-y-3 mb-5">${params.html}</div>
