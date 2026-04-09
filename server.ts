@@ -1,10 +1,13 @@
 import { router_buildRoutes } from "./router_buildRoutes.ts";
 import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
-import { chat_getCtx, chat_getSession, chat_loadSessionByName } from "./chat_ctx.ts";
+import { chat_getCtx, chat_getSession, chat_loadSessionByName, chat_switchSession } from "./chat_ctx.ts";
 import { chat_createSSEStream } from "./chat_sse.ts";
 import { chat_sessionRewrite, chat_sessionAppend } from "./chat_session.ts";
 import { agent_run } from "./agent_run.ts";
+import { layout_view_page } from "./layout_view_page.tsx";
+import { chat_view_page } from "./chat_view_page.tsx";
+import { chat_markRead } from "./chat_unread.ts";
 
 const routes = await router_buildRoutes(".");
 const cwd = process.cwd();
@@ -90,8 +93,15 @@ const server = Bun.serve({
     // /session/:id/ (trailing slash) — serve session page
     const sessionMatch = url.pathname.match(/^\/session\/([^/]+)\/$/);
     if (sessionMatch && req.method === "GET") {
-      const mod = await import("./page_session_$filename.tsx");
-      return mod.default(req, { filename: decodeURIComponent(sessionMatch[1]!) });
+      const filename = decodeURIComponent(sessionMatch[1]!);
+      await chat_switchSession(filename);
+      const ctx = await chat_getCtx();
+      const session = await chat_getSession();
+      chat_markRead(session.filename, session.messages.length);
+      const body = await chat_view_page(session.messages, session.filename, session.isStreaming);
+      return new Response(layout_view_page("Hyper Code", body, ctx.model.name || ctx.model.id), {
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
     }
 
     return new Response("Not found", { status: 404 });
