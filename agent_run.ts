@@ -105,9 +105,49 @@ export async function agent_run(
     session.abortController = null;
   }
 
-  // Process follow-up queue
-  if (session.followUpQueue.length > 0) {
+  // Process follow-up queue (loop, not recursion)
+  while (session.followUpQueue.length > 0) {
     const next = session.followUpQueue.shift()!;
-    await agent_run(ctx, session, next, onEvent);
+    session.isStreaming = true;
+    session.abortController = new AbortController();
+    session.messages.push({ role: "user", content: next, timestamp: Date.now() });
+    onEvent({ type: "agent_start" });
+
+    try {
+      while (true) {
+        while (session.steerQueue.length > 0) {
+          const steerMsg = session.steerQueue.shift()!;
+          session.messages.push({ role: "user", content: `[STEER] ${steerMsg}`, timestamp: Date.now() });
+          onEvent({ type: "steer", message: steerMsg });
+        }
+        onEvent({ type: "turn_start" });
+        const llmTools: Tool[] = ctx.tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters }));
+        const stream = ai_stream(ctx.model, { systemPrompt: ctx.systemPrompt, messages: session.messages, tools: llmTools.length > 0 ? llmTools : undefined }, { apiKey: ctx.apiKey, signal: session.abortController.signal });
+        let assistantMessage: AssistantMessage | null = null;
+        for await (const event of stream) {
+          if (event.type === "text_delta") onEvent({ type: "text_delta", delta: event.delta });
+          else if (event.type === "thinking_delta") onEvent({ type: "thinking_delta", delta: event.delta });
+          else if (event.type === "done") assistantMessage = event.message;
+          else if (event.type === "error") assistantMessage = event.error;
+        }
+        if (!assistantMessage) break;
+        session.messages.push(assistantMessage);
+        if (assistantMessage.stopReason === "error" || assistantMessage.stopReason === "aborted") {
+          onEvent({ type: "error", error: assistantMessage.errorMessage || "Unknown error" });
+          break;
+        }
+        onEvent({ type: "turn_end", message: assistantMessage });
+        const toolCalls = assistantMessage.content.filter((b) => b.type === "toolCall") as ToolCall[];
+        if (toolCalls.length === 0) break;
+        const toolResults = await agent_executeTools(ctx, toolCalls, onEvent, session.abortController?.signal);
+        session.messages.push(...toolResults);
+      }
+      onEvent({ type: "agent_end", messages: session.messages });
+    } catch (err) {
+      onEvent({ type: "error", error: err instanceof Error ? err.message : String(err) });
+    } finally {
+      session.isStreaming = false;
+      session.abortController = null;
+    }
   }
 }
