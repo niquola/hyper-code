@@ -169,7 +169,7 @@ const server = Bun.serve({
       const filename = decodeURIComponent(sessionMatch[1]!);
       const ctx = await chat_getCtx();
       const session = await chat_loadSessionByName(filename);
-      getDb().markRead(session.filename, session.messages.length);
+      getDb().markRead(session.session_id, session.messages.length);
       // Render only own messages (not parent chain) for UI
       // Show only this session's own messages (not parent chain)
       const db = getDb();
@@ -177,7 +177,7 @@ const server = Bun.serve({
         if (r.role === "user") return { role: "user" as const, content: r.content, timestamp: r.timestamp };
         try { return JSON.parse(r.content); } catch { return { role: "user" as const, content: r.content, timestamp: r.timestamp }; }
       });
-      const body = await chat_view_page(visibleMessages, session.filename, session.isStreaming);
+      const body = await chat_view_page(visibleMessages, session.session_id, session.isStreaming);
       return new Response(layout_view_page("Hyper Code", body, session.model.name || session.model.id), {
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });

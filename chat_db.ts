@@ -3,7 +3,7 @@
 import { Database } from "bun:sqlite";
 
 export type SessionRow = {
-  filename: string;
+  session_id: string;
   title: string;
   parent: string | null;
   model: string;
@@ -30,7 +30,7 @@ export type SearchResult = {
 
 const SCHEMA = `
 CREATE TABLE IF NOT EXISTS sessions (
-  filename TEXT PRIMARY KEY,
+  session_id TEXT PRIMARY KEY,
   title TEXT NOT NULL DEFAULT 'New Chat',
   parent TEXT,
   model TEXT NOT NULL DEFAULT '',
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS messages (
   role TEXT NOT NULL,
   content TEXT NOT NULL,
   timestamp INTEGER NOT NULL DEFAULT 0,
-  FOREIGN KEY (session) REFERENCES sessions(filename) ON DELETE CASCADE
+  FOREIGN KEY (session) REFERENCES sessions(session_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS api_keys (
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
 );
 
 CREATE TABLE IF NOT EXISTS unread (
-  filename TEXT PRIMARY KEY,
+  session_id TEXT PRIMARY KEY,
   last_seen INTEGER NOT NULL DEFAULT 0
 );
 
@@ -94,35 +94,35 @@ export function chat_db(path?: string) {
   function createSession(opts: { title?: string; model?: string; parent?: string; offset?: number } = {}): string {
     const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
     const id = Math.random().toString(36).slice(2, 8);
-    const filename = `${ts}-${id}`;
+    const sessionId = `${ts}-${id}`;
     const now = Date.now();
     db.run(
-      `INSERT INTO sessions (filename, title, parent, model, "offset", created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [filename, opts.title || "New Chat", opts.parent || null, opts.model || "", opts.offset ?? null, now, now],
+      `INSERT INTO sessions (session_id, title, parent, model, "offset", created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [sessionId, opts.title || "New Chat", opts.parent || null, opts.model || "", opts.offset ?? null, now, now],
     );
-    return filename;
+    return sessionId;
   }
 
-  function getSession(filename: string): SessionRow | null {
-    return db.query("SELECT * FROM sessions WHERE filename = ?").get(filename) as SessionRow | null;
+  function getSession(sessionId: string): SessionRow | null {
+    return db.query("SELECT * FROM sessions WHERE session_id = ?").get(sessionId) as SessionRow | null;
   }
 
   function listSessions(): SessionRow[] {
-    return db.query("SELECT * FROM sessions ORDER BY created_at DESC, filename DESC").all() as SessionRow[];
+    return db.query("SELECT * FROM sessions ORDER BY created_at DESC, session_id DESC").all() as SessionRow[];
   }
 
-  function deleteSession(filename: string): void {
-    db.run("DELETE FROM messages WHERE session = ?", [filename]);
-    db.run("DELETE FROM unread WHERE filename = ?", [filename]);
-    db.run("DELETE FROM sessions WHERE filename = ?", [filename]);
+  function deleteSession(sessionId: string): void {
+    db.run("DELETE FROM messages WHERE session = ?", [sessionId]);
+    db.run("DELETE FROM unread WHERE session_id = ?", [sessionId]);
+    db.run("DELETE FROM sessions WHERE session_id = ?", [sessionId]);
   }
 
-  function setSessionTitle(filename: string, title: string): void {
-    db.run("UPDATE sessions SET title = ?, updated_at = ? WHERE filename = ?", [title, Date.now(), filename]);
+  function setSessionTitle(sessionId: string, title: string): void {
+    db.run("UPDATE sessions SET title = ?, updated_at = ? WHERE session_id = ?", [title, Date.now(), sessionId]);
   }
 
-  function setSessionModel(filename: string, model: string): void {
-    db.run("UPDATE sessions SET model = ?, updated_at = ? WHERE filename = ?", [model, Date.now(), filename]);
+  function setSessionModel(sessionId: string, model: string): void {
+    db.run("UPDATE sessions SET model = ?, updated_at = ? WHERE session_id = ?", [model, Date.now(), sessionId]);
   }
 
   function forkSession(parentFilename: string, task: string, offset?: number): string {
@@ -147,7 +147,7 @@ export function chat_db(path?: string) {
       "INSERT INTO messages (session, role, content, timestamp) VALUES (?, ?, ?, ?)",
       [session, msg.role, msg.content, msg.timestamp],
     );
-    db.run("UPDATE sessions SET updated_at = ? WHERE filename = ?", [Date.now(), session]);
+    db.run("UPDATE sessions SET updated_at = ? WHERE session_id = ?", [Date.now(), session]);
     return Number(result.lastInsertRowid);
   }
 
@@ -155,7 +155,7 @@ export function chat_db(path?: string) {
     const stmt = db.prepare("INSERT INTO messages (session, role, content, timestamp) VALUES (?, ?, ?, ?)");
     const tx = db.transaction(() => {
       for (const msg of msgs) stmt.run(session, msg.role, msg.content, msg.timestamp);
-      db.run("UPDATE sessions SET updated_at = ? WHERE filename = ?", [Date.now(), session]);
+      db.run("UPDATE sessions SET updated_at = ? WHERE session_id = ?", [Date.now(), session]);
     });
     tx();
   }
@@ -164,8 +164,8 @@ export function chat_db(path?: string) {
     return db.query("SELECT * FROM messages WHERE session = ? ORDER BY id").all(session) as MessageRow[];
   }
 
-  function getMessageCount(session: string): number {
-    const row = db.query("SELECT COUNT(*) as count FROM messages WHERE session = ?").get(session) as { count: number };
+  function getMessageCount(sessionId: string): number {
+    const row = db.query("SELECT COUNT(*) as count FROM messages WHERE session = ?").get(sessionId) as { count: number };
     return row.count;
   }
 
@@ -214,12 +214,12 @@ export function chat_db(path?: string) {
 
   // --- Unread ---
 
-  function markRead(filename: string, messageCount: number): void {
-    db.run("INSERT OR REPLACE INTO unread (filename, last_seen) VALUES (?, ?)", [filename, messageCount]);
+  function markRead(sessionId: string, messageCount: number): void {
+    db.run("INSERT OR REPLACE INTO unread (session_id, last_seen) VALUES (?, ?)", [sessionId, messageCount]);
   }
 
-  function getUnread(filename: string, messageCount: number): number {
-    const row = db.query("SELECT last_seen FROM unread WHERE filename = ?").get(filename) as { last_seen: number } | null;
+  function getUnread(sessionId: string, messageCount: number): number {
+    const row = db.query("SELECT last_seen FROM unread WHERE session_id = ?").get(sessionId) as { last_seen: number } | null;
     if (!row) return 0;
     return Math.max(0, messageCount - row.last_seen);
   }
@@ -232,7 +232,7 @@ export function chat_db(path?: string) {
       SELECT m.session, s.title as sessionTitle, m.role, m.content, m.timestamp, bm25(messages_fts) as score
       FROM messages_fts
       JOIN messages m ON messages_fts.rowid = m.id
-      JOIN sessions s ON m.session = s.filename
+      JOIN sessions s ON m.session = s.session_id
       WHERE messages_fts MATCH ?`;
     const ftsQuery = query.replace(/[^\w\s]/g, " ").trim();
     if (!ftsQuery) return [];

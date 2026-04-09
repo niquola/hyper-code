@@ -6,12 +6,12 @@ type TreeNode = SessionRow & { children: TreeNode[]; depth: number; msgCount: nu
 function buildTree(sessions: SessionRow[], db: ReturnType<typeof getDb>): TreeNode[] {
   const nodeMap = new Map<string, TreeNode>();
   for (const s of sessions) {
-    nodeMap.set(s.filename, { ...s, children: [], depth: 0, msgCount: db.getMessageCount(s.filename) });
+    nodeMap.set(s.session_id, { ...s, children: [], depth: 0, msgCount: db.getMessageCount(s.session_id) });
   }
 
   const roots: TreeNode[] = [];
   for (const s of sessions) {
-    const node = nodeMap.get(s.filename)!;
+    const node = nodeMap.get(s.session_id)!;
     if (s.parent && nodeMap.has(s.parent)) {
       nodeMap.get(s.parent)!.children.push(node);
     } else {
@@ -33,14 +33,14 @@ function buildTree(sessions: SessionRow[], db: ReturnType<typeof getDb>): TreeNo
 }
 
 function renderSession(s: TreeNode, current: string | null, db: ReturnType<typeof getDb>): string {
-  const active = s.filename === current;
-  const unread = db.getUnread(s.filename, s.msgCount);
+  const active = s.session_id === current;
+  const unread = db.getUnread(s.session_id, s.msgCount);
   const cls = active ? "bg-gray-100 text-gray-900" : "hover:bg-gray-50 text-gray-600";
-  const enc = encodeURIComponent(s.filename);
+  const enc = encodeURIComponent(s.session_id);
   const indent = s.depth > 0 ? `padding-left: ${s.depth * 16 + 12}px` : "";
   const isChild = s.depth > 0;
 
-  let html = `<div class="group flex items-center rounded ${cls}" data-entity="session" data-id="${escapeHtml(s.filename)}" style="${indent}">`;
+  let html = `<div class="group flex items-center rounded ${cls}" data-entity="session" data-id="${escapeHtml(s.session_id)}" style="${indent}">`;
   html += `<a href="/session/${enc}/" class="flex-1 min-w-0 px-3 py-2 block">`;
   if (isChild) html += `<span class="text-gray-300 text-xs mr-1">↳</span>`;
   html += `<div class="truncate text-sm">${escapeHtml(s.title)}</div>`;
@@ -48,7 +48,7 @@ function renderSession(s: TreeNode, current: string | null, db: ReturnType<typeo
   html += `</a>`;
   if (unread > 0 && !active) html += `<span class="shrink-0 w-2 h-2 rounded-full bg-blue-400 mr-1"></span>`;
   html += `<form method="POST" action="/session/delete" class="m-0 pr-2 opacity-0 group-hover:opacity-100">`;
-  html += `<input type="hidden" name="filename" value="${escapeHtml(s.filename)}" />`;
+  html += `<input type="hidden" name="filename" value="${escapeHtml(s.session_id)}" />`;
   html += `<button type="submit" class="text-gray-500 hover:text-red-400 text-xs" onclick="return confirm('Delete?')">×</button>`;
   html += `</form></div>`;
   return html;

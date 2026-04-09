@@ -92,7 +92,7 @@ async function loadSession(filename: string): Promise<Session> {
   const systemPrompt = agent_buildSystemPrompt(process.cwd(), sessionCtx.tools, filename, sessionModel.name || sessionModel.id);
 
   const session: Session = {
-    filename,
+    session_id: filename,
     messages,
     model: sessionModel,
     apiKey: sessionApiKey,
@@ -123,8 +123,8 @@ function rowToMessage(row: { role: string; content: string; timestamp: number })
 export async function chat_getSession(): Promise<Session> {
   const db = getDb();
   const list = db.listSessions();
-  const latest = list.find(s => db.getMessageCount(s.filename) > 0) || list[0];
-  if (latest) return loadSession(latest.filename);
+  const latest = list.find(s => db.getMessageCount(s.session_id) > 0) || list[0];
+  if (latest) return loadSession(latest.session_id);
   // No sessions — create one
   const filename = db.createSession({});
   return loadSession(filename);

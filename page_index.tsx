@@ -4,12 +4,12 @@ export default async function (req: Request) {
   const db = getDb();
   const sessions = db.listSessions();
   // Find latest non-empty session or create new
-  const latest = sessions.find(s => db.getMessageCount(s.filename) > 0) || sessions[0];
+  const latest = sessions.find(s => db.getMessageCount(s.session_id) > 0) || sessions[0];
 
   if (latest) {
     return new Response(null, {
       status: 302,
-      headers: { Location: `/session/${encodeURIComponent(latest.filename)}/` },
+      headers: { Location: `/session/${encodeURIComponent(latest.session_id)}/` },
     });
   }
 

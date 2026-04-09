@@ -16,9 +16,9 @@ export function tool_subagent_report(
       required: ["result"],
     },
     execute: async (ctx: Ctx, session: Session, params: { result: string }) => {
-      const parentSession = findParent(session.filename);
+      const parentSession = findParent(session.session_id);
       if (parentSession) {
-        const resolve = parentSession.pendingDialogs.get(`subagent:${session.filename}`);
+        const resolve = parentSession.pendingDialogs.get(`subagent:${session.session_id}`);
         if (resolve) resolve(params.result);
       }
       return { content: [{ type: "text", text: `Report sent: ${params.result}` }] };

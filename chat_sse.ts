@@ -77,9 +77,9 @@ export function chat_createSSEStream(
     }
 
     // Show completed tools from previous turns
-    for (const t of finishedTools) html += renderToolBlock(t, undefined, session.filename);
+    for (const t of finishedTools) html += renderToolBlock(t, undefined, session.session_id);
     // Show current turn tools
-    for (const t of tools) html += renderToolBlock(t, undefined, session.filename);
+    for (const t of tools) html += renderToolBlock(t, undefined, session.session_id);
 
     if (text) {
       const md = (Bun as any).markdown.html(text);
@@ -107,7 +107,7 @@ export function chat_createSSEStream(
           const code = getToolCode(t.name, t.args, t.result);
           if (code) highlighted = await ai_highlightCode(code, lang);
         }
-        html += renderToolBlock(t, highlighted, session.filename);
+        html += renderToolBlock(t, highlighted, session.session_id);
       }
 
       if (finalText) {

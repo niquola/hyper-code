@@ -5,7 +5,7 @@ export type SSEListener = (html: string) => void;
 export type DialogResolver = (response: string) => void;
 
 export type Session = {
-  filename: string;
+  session_id: string;
   messages: Message[];
   model: Model;
   apiKey: string;

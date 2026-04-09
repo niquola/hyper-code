@@ -19,8 +19,8 @@ export function tool_subagent(
     },
     execute: async (ctx: Ctx, session: Session, params: { task: string }) => {
       const db = getDb();
-      const savedCount = db.getMessageCount(session.filename);
-      const childFilename = db.forkSession(session.filename, params.task, savedCount);
+      const savedCount = db.getMessageCount(session.session_id);
+      const childFilename = db.forkSession(session.session_id, params.task, savedCount);
 
       const { promise, resolve } = Promise.withResolvers<string>();
       session.pendingDialogs.set(`subagent:${childFilename}`, resolve);
