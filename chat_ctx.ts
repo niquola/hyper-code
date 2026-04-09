@@ -15,7 +15,10 @@ import { tool_ls } from "./tool_ls.ts";
 import { tool_hyper_ui } from "./tool_hyper_ui.ts";
 
 let ctx: Ctx | null = null;
-let session: Session | null = null;
+
+// Session cache — keeps sessions alive even when switching
+const sessions = new Map<string, Session>();
+let currentFilename: string | null = null;
 
 export async function chat_getCtx(): Promise<Ctx> {
   if (!ctx) {
@@ -38,37 +41,13 @@ export async function chat_getCtx(): Promise<Ctx> {
   return ctx;
 }
 
-export async function chat_getSession(): Promise<Session> {
-  if (!session) {
-    const filename = chat_sessionLatest() || chat_sessionCreate();
-    const messages = await chat_sessionLoad(filename);
-    session = {
-      filename,
-      messages,
-      steerQueue: [],
-      followUpQueue: [],
-      abortController: null,
-      isStreaming: false,
-    };
-  }
-  return session;
-}
+async function loadSession(filename: string): Promise<Session> {
+  // Return cached session if exists (preserves in-memory messages from running agent)
+  const cached = sessions.get(filename);
+  if (cached) return cached;
 
-/** Append new messages to session file */
-export function chat_saveMessages(...msgs: Message[]): void {
-  if (session && msgs.length > 0) {
-    chat_sessionAppend(session.filename, ...msgs);
-  }
-}
-
-export function chat_getSessionFile(): string | null {
-  return session?.filename ?? null;
-}
-
-/** Switch to a specific session */
-export async function chat_switchSession(filename: string): Promise<void> {
   const messages = await chat_sessionLoad(filename);
-  session = {
+  const session: Session = {
     filename,
     messages,
     steerQueue: [],
@@ -76,11 +55,30 @@ export async function chat_switchSession(filename: string): Promise<void> {
     abortController: null,
     isStreaming: false,
   };
+  sessions.set(filename, session);
+  return session;
+}
+
+export async function chat_getSession(): Promise<Session> {
+  if (!currentFilename) {
+    currentFilename = chat_sessionLatest() || chat_sessionCreate();
+  }
+  return loadSession(currentFilename);
+}
+
+export function chat_getSessionFile(): string | null {
+  return currentFilename;
+}
+
+/** Switch to a specific session (cached if already loaded) */
+export async function chat_switchSession(filename: string): Promise<void> {
+  currentFilename = filename;
+  await loadSession(filename);
 }
 
 /** Reset — new session on next request */
 export function chat_resetCtx(): void {
-  session = null;
+  currentFilename = null;
 }
 
 /** Reset ctx config (e.g. after settings change) */

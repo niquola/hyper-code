@@ -1,6 +1,7 @@
 import { agent_run } from "./agent_run.ts";
 import { chat_createSSEStream } from "./chat_sse.ts";
-import { chat_getCtx, chat_getSession, chat_saveMessages } from "./chat_ctx.ts";
+import { chat_getCtx, chat_getSession } from "./chat_ctx.ts";
+import { chat_sessionAppend } from "./chat_session.ts";
 
 export default async function (req: Request) {
   const form = await req.formData();
@@ -20,6 +21,8 @@ export default async function (req: Request) {
     });
   }
 
+  // Capture filename — session object may be replaced if user switches sessions
+  const filename = session.filename;
   const msgsBefore = session.messages.length;
 
   return chat_createSSEStream((onEvent) =>
@@ -27,7 +30,9 @@ export default async function (req: Request) {
       onEvent(event);
       if (event.type === "agent_end") {
         const newMsgs = session.messages.slice(msgsBefore);
-        chat_saveMessages(...newMsgs);
+        if (newMsgs.length > 0) {
+          chat_sessionAppend(filename, ...newMsgs);
+        }
       }
     }),
   );
