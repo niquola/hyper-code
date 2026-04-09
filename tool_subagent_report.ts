@@ -3,7 +3,7 @@ import type { Session } from "./chat_type_Session.ts";
 
 export function tool_subagent_report(
   getSession: () => Session,
-  getParentSession?: () => Session | null,
+  findParent?: (childFilename: string) => Session | null,
 ): AgentTool {
   return {
     name: "subagent_report",
@@ -17,15 +17,13 @@ export function tool_subagent_report(
     },
     execute: async (params: { result: string }) => {
       const session = getSession();
-      const parentSession = getParentSession?.();
+      const key = `subagent:${session.filename}`;
 
+      // Search all cached sessions for the one waiting for this subagent
+      const parentSession = findParent?.(session.filename);
       if (parentSession) {
-        // Resolve pending subagent in parent
-        const key = `subagent:${session.filename}`;
         const resolve = parentSession.pendingDialogs.get(key);
-        if (resolve) {
-          resolve(params.result);
-        }
+        if (resolve) resolve(params.result);
       }
 
       return {

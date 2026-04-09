@@ -46,15 +46,10 @@ export async function chat_getCtx(): Promise<Ctx> {
       ),
       tool_subagent_report(
         () => { const fn = currentFilename; return fn ? sessions.get(fn)! : null!; },
-        () => {
-          // Find parent session from cache
-          const fn = currentFilename;
-          if (!fn) return null;
-          const s = sessions.get(fn);
-          if (!s) return null;
-          // Sync check for parent (loaded sessions only)
-          for (const [name, sess] of sessions) {
-            if (sess.pendingDialogs.has(`subagent:${fn}`)) return sess;
+        (childFilename: string) => {
+          // Search all cached sessions for the one with pending subagent
+          for (const [, sess] of sessions) {
+            if (sess.pendingDialogs.has(`subagent:${childFilename}`)) return sess;
           }
           return null;
         },

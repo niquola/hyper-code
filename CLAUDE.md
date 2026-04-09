@@ -53,10 +53,12 @@ ls cdp*.ts                     # CDP browser testing
 - `ls <module>.ts` = module boundaries (barrels)
 - Functions take everything they need as parameters — no hidden internal state, no singletons, no closures over mutable variables.
 - Prefer explicit data flow: pass dependencies in, return results out.
-- **All agent/chat procedures must accept `ctx: Ctx` and `session: Session` as explicit parameters.** No reading global state. `Ctx` is immutable config (model, tools). `Session` is mutable state (messages, queues, streaming status).
-  - Global getters (`chat_getCtx()`, `chat_getSession()`) exist only for bootstrap (page_index redirect, page_session_new).
-  - All per-session endpoints in `server.ts` use `chat_loadSessionByName(filename)` — session from URL, not global state.
-  - Tools receive session via closure from `chat_ctx.ts` tool registration.
+- **STRICT: All procedures accept `ctx: Ctx` and `session: Session` as explicit parameters.**
+  - **FORBIDDEN: closures over mutable global state (`currentFilename`, `let ctx`, module-level `Map`).** Every function receives what it needs via arguments. No hidden state.
+  - `Ctx` = immutable config (model, tools, apiKey). `Session` = mutable state (messages, queues, streaming).
+  - Global getters (`chat_getCtx()`, `chat_getSession()`) exist ONLY in `server.ts` HTTP handlers as entry points. Everything below receives ctx/session explicitly.
+  - Tools must receive session as parameter, not via closure. If a tool needs session, it takes `(ctx, session, params)`.
+  - **DEBT: tools currently use closures — this is a known violation that must be fixed.**
 - **Don't do extra.** Don't add features, abstractions, or "improvements" beyond what was asked. Don't guess requirements — ask.
 - **Interview before building.** When a new feature is requested, first gather minimal requirements and use cases. Ask: what exactly should it do? Who uses it? What's the simplest version? Don't jump into coding — clarify scope first.
 - **Strict TDD.** Always write tests BEFORE implementing the function. Red → Green → Refactor. No exceptions.

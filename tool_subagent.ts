@@ -28,33 +28,30 @@ export function tool_subagent(
       const { promise, resolve } = Promise.withResolvers<string>();
       parentSession.pendingDialogs.set(`subagent:${childFilename}`, resolve);
 
-      // Notify parent SSE that subagent started
+      // Notify parent SSE
       parentSession.emitHtml?.(`<div class="text-xs text-blue-500 border border-blue-200 rounded px-3 py-2 bg-blue-50 mb-2">Sub-agent started: ${Bun.escapeHTML(params.task.slice(0, 80))}</div>`);
 
-      // Load child session and run agent in background
+      // Load child session and run agent
       const { ctx, loadSession } = await getCtxAndRun();
       const childSession = await loadSession(childFilename);
 
-      // Add task as user message
-      childSession.messages.push({ role: "user", content: params.task, timestamp: Date.now() });
-      chat_sessionAppend(childFilename, childSession.messages[childSession.messages.length - 1]!);
+      const taskWithInstructions = `[SUB-AGENT TASK] ${params.task}
 
-      // Run agent in child session (background)
+When you are done, you MUST call subagent_report({ result: "..." }) with a summary of what you accomplished. This sends your result back to the parent agent. Do NOT skip this step.`;
+
       const msgsBefore = childSession.messages.length;
-      agent_run(ctx, childSession, params.task, (event) => {
+      agent_run(ctx, childSession, taskWithInstructions, (event) => {
         if (event.type === "agent_end") {
           const newMsgs = childSession.messages.slice(msgsBefore);
           if (newMsgs.length > 0) chat_sessionAppend(childFilename, ...newMsgs);
         }
-      }).catch(() => {});
+      }).catch((err) => console.error("[subagent]", err));
 
-      // Block until subagent_report resolves
+      // Block until report
       const result = await promise;
       parentSession.pendingDialogs.delete(`subagent:${childFilename}`);
 
-      return {
-        content: [{ type: "text", text: `Sub-agent report: ${result}` }],
-      };
+      return { content: [{ type: "text", text: `Sub-agent report: ${result}` }] };
     },
   };
 }
