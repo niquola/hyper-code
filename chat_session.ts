@@ -75,12 +75,7 @@ export function chat_sessionRewrite(filename: string, messages: Message[]): void
   Bun.write(path, data);
 }
 
-export type SessionInfo = {
-  filename: string;
-  title: string;
-  createdAt: string;
-  messageCount: number;
-};
+export type { SessionInfo } from "./chat_type_SessionInfo.ts";
 
 /** Get or set custom session title */
 export async function chat_sessionGetTitle(filename: string): Promise<string | null> {

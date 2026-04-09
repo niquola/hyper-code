@@ -1,13 +1,8 @@
+import type { SettingsData } from "./chat_type_SettingsData.ts";
 import { ai_getProviders, ai_getModels } from "./ai_models.ts";
 import type { Model } from "./ai_type_Model.ts";
 
-export type SettingsData = {
-  provider: string;
-  modelId: string;
-  apiKey: string;
-  accountId?: string;
-  tokenExpires?: number;
-};
+export type { SettingsData } from "./chat_type_SettingsData.ts";
 
 function maskKey(key: string): string {
   if (!key || key.length < 8) return key ? "****" : "";

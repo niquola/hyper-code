@@ -1,7 +1,5 @@
-export type TruncateResult = {
-  text: string;
-  truncated: boolean;
-};
+import type { TruncateResult } from "./tool_type_TruncateResult.ts";
+export type { TruncateResult } from "./tool_type_TruncateResult.ts";
 
 export function tool_truncateOutput(
   text: string,

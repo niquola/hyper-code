@@ -1,12 +1,8 @@
+import type { HyperUIRequest } from "./hyper_ui_type_Request.ts";
 import { readdirSync } from "node:fs";
 import { resolve } from "node:path";
 
-export type HyperUIRequest = {
-  method: string;
-  path: string;
-  query: string;
-  body: string;
-};
+export type { HyperUIRequest } from "./hyper_ui_type_Request.ts";
 
 const RUNNERS: Record<string, string[]> = {
   ts: ["bun"],

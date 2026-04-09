@@ -1,3 +1,5 @@
+import type { FormField } from "./cdp_type_FormField.ts";
+import type { PageState } from "./cdp_type_PageState.ts";
 // Page state helper — works in CDP and in bun tests.
 //
 // CDP (injected via layout <script>):
@@ -9,19 +11,9 @@
 
 // --- types ---
 
-export type FormField = {
-  name: string;
-  type: string;
-  options?: { value: string; label: string; selected: boolean }[];
-};
+export type { FormField } from "./cdp_type_FormField.ts";
 
-export type PageState = {
-  page: string | null;
-  entities: { type: string; id: string | null; status: string | null; fields: Record<string, string>; href: string | null }[];
-  actions: { action: string; text: string; selector: string }[];
-  forms: { name: string; fields: FormField[] }[];
-  nav: string[];
-};
+export type { PageState } from "./cdp_type_PageState.ts";
 
 // --- HTMLRewriter parser for bun tests ---
 
