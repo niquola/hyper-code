@@ -13,10 +13,11 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
   }
 
   const rendered: string[] = [];
-  for (const msg of messages) {
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i]!;
     if (msg.role === "user") {
       const content = typeof msg.content === "string" ? msg.content : msg.content.map((c) => c.type === "text" ? c.text : "[image]").join("");
-      rendered.push(chat_view_userMessage(content));
+      rendered.push(chat_view_userMessage(content, i));
     } else if (msg.role === "assistant") {
       const text = msg.content.filter((c): c is TextContent => c.type === "text").map((c) => c.text).join("");
       const thinking = msg.content.filter((c): c is ThinkingContent => c.type === "thinking").map((c) => c.thinking).join("");

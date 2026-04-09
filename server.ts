@@ -99,6 +99,22 @@ const server = Bun.serve({
       });
     }
 
+    // /session/:id/rewind?index=N — rollback to message index
+    const rewindMatch = url.pathname.match(/^\/session\/([^/]+)\/rewind$/);
+    if (rewindMatch && req.method === "GET") {
+      const filename = decodeURIComponent(rewindMatch[1]!);
+      const index = parseInt(url.searchParams.get("index") || "0", 10);
+      const session = await chat_loadSessionByName(filename);
+      if (index >= 0 && index < session.messages.length) {
+        session.messages = session.messages.slice(0, index);
+        chat_sessionRewrite(filename, session.messages);
+      }
+      return new Response(null, {
+        status: 302,
+        headers: { Location: `/session/${encodeURIComponent(filename)}/` },
+      });
+    }
+
     return new Response("Not found", { status: 404 });
   },
 });
