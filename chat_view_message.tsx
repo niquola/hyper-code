@@ -5,7 +5,7 @@ import { ai_renderMarkdown } from "./ai_renderMarkdown.ts";
 export function chat_view_userMessage(content: string): string {
   return (
     <div data-entity="message" data-status="user" className="mb-4 flex justify-end">
-      <div className="bg-gray-400 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%] whitespace-pre-wrap text-sm" data-role="content">{escapeHtml(content)}</div>
+      <div className="bg-gray-500 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%] whitespace-pre-wrap text-[14px]" data-role="content">{escapeHtml(content)}</div>
     </div>
   );
 }
@@ -20,7 +20,7 @@ export async function chat_view_assistantMessage(text: string, thinking?: string
           <div className="text-xs text-gray-400 italic whitespace-pre-wrap mt-1" data-role="thinking">{escapeHtml(thinking!)}</div>
         </details>
       )}
-      <div className="text-gray-900 prose prose-sm max-w-none" data-role="content" dangerouslySetInnerHTML={{ __html: html }}></div>
+      <div className="text-gray-900 prose max-w-none text-[14px]" data-role="content" dangerouslySetInnerHTML={{ __html: html }}></div>
     </div>
   );
 }
