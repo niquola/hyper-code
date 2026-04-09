@@ -1,5 +1,6 @@
 import { chat_sessionListInfo } from "./chat_session.ts";
 import { chat_getSessionFile } from "./chat_ctx.ts";
+import { chat_getUnread } from "./chat_unread.ts";
 import { escapeHtml } from "./jsx.ts";
 
 export default async function (req: Request) {
@@ -9,13 +10,18 @@ export default async function (req: Request) {
   let html = `<div id="session-list" class="flex flex-col gap-0.5">`;
   for (const s of sessions) {
     const active = s.filename === current;
+    const unread = chat_getUnread(s.filename, s.messageCount);
     const cls = active
       ? "bg-gray-700 text-white"
       : "hover:bg-gray-800 text-gray-400";
     const enc = encodeURIComponent(s.filename);
     html += `<div class="group flex items-center rounded ${cls}" data-entity="session" data-id="${escapeHtml(s.filename)}">`;
     html += `<a href="/session/${enc}" class="flex-1 min-w-0 px-3 py-2 block">`;
-    html += `<div class="truncate text-sm" ondblclick="event.preventDefault();this.closest('[data-entity=session]').querySelector('.rename-form').classList.toggle('hidden')">${escapeHtml(s.title)}</div>`;
+    html += `<div class="flex items-center gap-2"><span class="truncate text-sm" ondblclick="event.preventDefault();this.closest('[data-entity=session]').querySelector('.rename-form').classList.toggle('hidden')">${escapeHtml(s.title)}</span>`;
+    if (unread > 0 && !active) {
+      html += `<span class="shrink-0 w-2 h-2 rounded-full bg-blue-400"></span>`;
+    }
+    html += `</div>`;
     html += `<div class="text-xs text-gray-500">${s.messageCount} msgs</div>`;
     html += `</a>`;
     html += `<form method="POST" action="/session/delete" class="m-0 pr-2 opacity-0 group-hover:opacity-100">`;
