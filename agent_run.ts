@@ -9,7 +9,11 @@ export async function agent_run(
   prompt: string,
   onEvent: (event: AgentEvent) => void,
 ): Promise<void> {
-  if (ctx.isStreaming) throw new Error("Agent is already running");
+  if (ctx.isStreaming) {
+    // Already running — queue as follow-up
+    ctx.followUpQueue.push(prompt);
+    return;
+  }
 
   ctx.isStreaming = true;
   ctx.abortController = new AbortController();
@@ -21,6 +25,13 @@ export async function agent_run(
   try {
     // Agent loop: stream → tool calls → repeat
     while (true) {
+      // Inject steer messages before each turn
+      while (ctx.steerQueue.length > 0) {
+        const steerMsg = ctx.steerQueue.shift()!;
+        ctx.messages.push({ role: "user", content: `[STEER] ${steerMsg}`, timestamp: Date.now() });
+        onEvent({ type: "steer", message: steerMsg });
+      }
+
       onEvent({ type: "turn_start" });
 
       // Build tools for LLM context
@@ -90,5 +101,11 @@ export async function agent_run(
   } finally {
     ctx.isStreaming = false;
     ctx.abortController = null;
+  }
+
+  // Process follow-up queue
+  if (ctx.followUpQueue.length > 0) {
+    const next = ctx.followUpQueue.shift()!;
+    await agent_run(ctx, next, onEvent);
   }
 }

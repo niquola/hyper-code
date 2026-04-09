@@ -58,16 +58,11 @@ describe("agent_run error handling", () => {
     expect(ctx.abortController).toBeNull();
   });
 
-  test("prevents concurrent runs", async () => {
+  test("queues follow-up when already streaming", async () => {
     const ctx = agent_createCtx({ model: LM_MODEL, apiKey: "lm-studio" });
     ctx.isStreaming = true;
 
-    let threw = false;
-    try {
-      await agent_run(ctx, "hi", () => {});
-    } catch {
-      threw = true;
-    }
-    expect(threw).toBe(true);
+    await agent_run(ctx, "hi", () => {});
+    expect(ctx.followUpQueue).toContain("hi");
   });
 });

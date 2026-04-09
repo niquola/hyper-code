@@ -27,15 +27,11 @@ export async function chat_view_page(messages: Message[]): Promise<string> {
           <textarea
             name="prompt"
             rows="3"
-            required
-            placeholder="Message... (Enter to send)"
+            placeholder="Enter — send · Ctrl+Enter — steer · Esc — stop"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
-            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.form.requestSubmit()}"
+            onkeydown="handleKey(event)"
           ></textarea>
-          <button id="abort-btn" type="button" data-action="abort"
-            className="mt-2 px-4 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition hidden"
-            onclick="fetch('/abort',{method:'POST'}).then(()=>window.location.reload())"
-          >Stop</button>
+          <div id="queue-indicator" className="text-xs text-blue-500 mt-1 hidden"></div>
         </form>
       </div>
       <script dangerouslySetInnerHTML={{ __html: CHAT_SCRIPT }} />
@@ -44,40 +40,83 @@ export async function chat_view_page(messages: Message[]): Promise<string> {
 }
 
 const CHAT_SCRIPT = `
-document.getElementById('chat-form').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  var form = e.target;
-  var textarea = form.querySelector('textarea');
-  var abortBtn = document.getElementById('abort-btn');
-  var prompt = textarea.value.trim();
-  if (!prompt) return;
+var streaming = false;
+var textarea = document.querySelector('#chat-form textarea');
+var messages = document.getElementById('messages');
+var streamDiv = document.getElementById('stream');
+var queueInd = document.getElementById('queue-indicator');
 
-  // Disable input, show abort
-  textarea.disabled = true;
-  abortBtn.classList.remove('hidden');
-  form.setAttribute('data-status', 'streaming');
+function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-  // Add user message to UI
-  var messages = document.getElementById('messages');
-  var esc = function(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; };
-
-  var userDiv = document.createElement('div');
-  userDiv.setAttribute('data-entity', 'message');
-  userDiv.setAttribute('data-status', 'user');
-  userDiv.className = 'mb-4';
-  userDiv.innerHTML = '<div class="text-xs font-medium text-gray-500 mb-1" data-role="label">You</div><div class="bg-gray-100 rounded-lg px-4 py-3 text-gray-900 whitespace-pre-wrap" data-role="content">' + esc(prompt) + '</div>';
-  var streamDiv = document.getElementById('stream');
-  messages.insertBefore(userDiv, streamDiv);
-
-  // Clear and scroll
-  textarea.value = '';
+function addUserBubble(text, label) {
+  var div = document.createElement('div');
+  div.setAttribute('data-entity', 'message');
+  div.setAttribute('data-status', 'user');
+  div.className = 'mb-4';
+  var lbl = label || 'You';
+  var cls = label === 'Steer' ? 'bg-orange-100' : 'bg-gray-100';
+  div.innerHTML = '<div class="text-xs font-medium text-gray-500 mb-1" data-role="label">' + lbl + '</div><div class="' + cls + ' rounded-lg px-4 py-3 text-gray-900 whitespace-pre-wrap" data-role="content">' + esc(text) + '</div>';
+  messages.insertBefore(div, streamDiv);
   messages.scrollTop = messages.scrollHeight;
+}
 
-  // POST and read SSE stream
+function updateStats() {
+  fetch('/stats').then(function(r) { return r.text(); }).then(function(h) {
+    var el = document.getElementById('nav-stats');
+    if (el) el.outerHTML = h;
+  });
+}
+
+function showQueue(text) {
+  if (text) { queueInd.textContent = text; queueInd.classList.remove('hidden'); }
+  else { queueInd.classList.add('hidden'); }
+}
+
+function handleKey(e) {
+  if (e.key === 'Escape') {
+    // Abort
+    if (streaming) fetch('/abort', { method: 'POST' }).then(function() { location.reload(); });
+    return;
+  }
+  if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+    // Normal send / follow-up
+    e.preventDefault();
+    document.getElementById('chat-form').requestSubmit();
+    return;
+  }
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    // Steer — interrupt current run
+    e.preventDefault();
+    var text = textarea.value.trim();
+    if (!text || !streaming) return;
+    textarea.value = '';
+    addUserBubble(text, 'Steer');
+    var body = new FormData();
+    body.set('prompt', text);
+    fetch('/steer', { method: 'POST', body: body });
+    return;
+  }
+}
+
+async function runStream(prompt) {
+  streaming = true;
+  textarea.placeholder = 'Enter — queue follow-up · Ctrl+Enter — steer · Esc — stop';
+  addUserBubble(prompt);
+  textarea.value = '';
+
   try {
     var body = new FormData();
     body.set('prompt', prompt);
     var res = await fetch('/chat', { method: 'POST', body: body });
+
+    // If agent was busy, message was queued
+    var ct = res.headers.get('content-type') || '';
+    if (ct.includes('application/json')) {
+      showQueue('Queued as follow-up...');
+      streaming = false;
+      return;
+    }
+
     var reader = res.body.getReader();
     var decoder = new TextDecoder();
     var buf = '';
@@ -94,7 +133,6 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
         var html = lines.join('\\n');
         if (html) {
           streamDiv.innerHTML = html;
-          // Load stylesheets
           streamDiv.querySelectorAll('link[rel=stylesheet]').forEach(function(old) {
             if (!document.querySelector('link[href="' + old.getAttribute('href') + '"]')) {
               var l = document.createElement('link');
@@ -103,7 +141,6 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
               document.head.appendChild(l);
             }
           });
-          // Execute scripts sequentially
           (function execScripts(el) {
             var scripts = [].slice.call(el.querySelectorAll('script'));
             var idx = 0;
@@ -125,21 +162,32 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
     streamDiv.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">' + err.message + '</div>';
   }
 
-  // Move stream content before stream div as finalized messages
+  // Finalize
   while (streamDiv.firstChild) {
     messages.insertBefore(streamDiv.firstChild, streamDiv);
   }
-
-  // Update stats in navbar
-  fetch('/stats').then(function(r) { return r.text(); }).then(function(h) {
-    var el = document.getElementById('nav-stats');
-    if (el) el.outerHTML = h;
-  });
-
-  // Re-enable input, hide abort
-  textarea.disabled = false;
-  abortBtn.classList.add('hidden');
-  form.removeAttribute('data-status');
+  updateStats();
+  streaming = false;
+  showQueue('');
+  textarea.placeholder = 'Enter — send · Ctrl+Enter — steer · Esc — stop';
   textarea.focus();
+}
+
+document.getElementById('chat-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  var prompt = textarea.value.trim();
+  if (!prompt) return;
+
+  if (streaming) {
+    // Follow-up: queue via POST /chat (returns JSON)
+    var body = new FormData();
+    body.set('prompt', prompt);
+    addUserBubble(prompt, 'Follow-up');
+    textarea.value = '';
+    fetch('/chat', { method: 'POST', body: body });
+    showQueue('Follow-up queued...');
+  } else {
+    runStream(prompt);
+  }
 });
 `;

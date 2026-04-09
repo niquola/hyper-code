@@ -10,6 +10,15 @@ export default async function (req: Request) {
   }
 
   const ctx = await chat_getCtx();
+
+  // If agent is already streaming, queue as follow-up
+  if (ctx.isStreaming) {
+    ctx.followUpQueue.push(prompt.trim());
+    return new Response(JSON.stringify({ queued: "followUp" }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const msgsBefore = ctx.messages.length;
 
   return chat_createSSEStream((onEvent) =>

@@ -10,4 +10,6 @@ export type Ctx = {
   tools: AgentTool[];
   abortController: AbortController | null;
   isStreaming: boolean;
+  steerQueue: string[];
+  followUpQueue: string[];
 };

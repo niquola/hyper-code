@@ -221,6 +221,10 @@ export function chat_createSSEStream(
             tools = [];
             break;
 
+          case "steer":
+            // Steer message injected — no UI action needed, agent will see it next turn
+            break;
+
           case "error":
             send(`<div data-entity="message" data-status="error" class="mb-4"><div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm" data-role="content">${escapeHtml(event.error)}</div></div>`);
             break;

@@ -218,10 +218,11 @@ describe("agent_run", () => {
     expect(ctx.isStreaming).toBe(false);
   });
 
-  test("throws if already streaming", async () => {
+  test("queues follow-up when already streaming", async () => {
     const ctx = agent_createCtx({ model: LM_STUDIO_MODEL, apiKey: "lm-studio" });
     ctx.isStreaming = true;
-    expect(() => agent_run(ctx, "hi", () => {})).toThrow("already running");
+    await agent_run(ctx, "hi", () => {});
+    expect(ctx.followUpQueue).toContain("hi");
   });
 
   test("cleans up state after error", async () => {

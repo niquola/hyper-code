@@ -11,4 +11,5 @@ export type AgentEvent =
   | { type: "thinking_delta"; delta: string }
   | { type: "tool_execution_start"; toolCallId: string; toolName: string; args: any }
   | { type: "tool_execution_end"; toolCallId: string; toolName: string; result: AgentToolResult; isError: boolean }
-  | { type: "error"; error: string };
+  | { type: "error"; error: string }
+  | { type: "steer"; message: string };

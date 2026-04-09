@@ -16,5 +16,7 @@ export function agent_createCtx(opts: {
     tools: opts.tools ?? [],
     abortController: null,
     isStreaming: false,
+    steerQueue: [],
+    followUpQueue: [],
   };
 }
