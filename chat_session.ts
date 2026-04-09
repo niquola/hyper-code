@@ -138,6 +138,7 @@ export function chat_sessionDelete(filename: string): void {
   try { unlinkSync(`${SESSION_DIR}/${filename}`); } catch {}
   try { unlinkSync(`${SESSION_DIR}/${filename}.title`); } catch {}
   try { unlinkSync(`${SESSION_DIR}/${filename}.parent`); } catch {}
+  try { unlinkSync(`${SESSION_DIR}/${filename}.offset`); } catch {}
 }
 
 /** Fork session: copy parent messages to new child, set parent link */
@@ -154,11 +155,24 @@ export async function chat_sessionFork(parentFilename: string, task: string, dir
   const childPath = `${d}/${childFilename}`;
   try { copyFileSync(parentPath, childPath); } catch { await Bun.write(childPath, ""); }
 
-  // Set parent link and title
+  // Count parent messages for render offset
+  const parentLines = await Bun.file(parentPath).text().catch(() => "");
+  const parentMsgCount = parentLines.split("\n").filter((l: string) => l.trim()).length;
+
+  // Set parent link, title, and offset
   await Bun.write(`${childPath}.parent`, parentFilename);
   await Bun.write(`${childPath}.title`, `subagent: ${task.slice(0, 50)}`);
+  await Bun.write(`${childPath}.offset`, String(parentMsgCount));
 
   return childFilename;
+}
+
+/** Get parent message offset (how many messages are from parent) */
+export async function chat_sessionGetOffset(filename: string, dir?: string): Promise<number> {
+  const d = dir || SESSION_DIR;
+  const file = Bun.file(`${d}/${filename}.offset`);
+  if (await file.exists()) return parseInt(await file.text(), 10) || 0;
+  return 0;
 }
 
 /** Get parent session filename */

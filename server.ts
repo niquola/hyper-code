@@ -4,7 +4,7 @@ import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
 import { chat_getCtx, chat_getSession, chat_loadSessionByName } from "./chat_ctx.ts";
 import { chat_createSSEStream } from "./chat_sse.ts";
-import { chat_sessionRewrite, chat_sessionAppend } from "./chat_session.ts";
+import { chat_sessionRewrite, chat_sessionAppend, chat_sessionGetOffset } from "./chat_session.ts";
 import { agent_run } from "./agent_run.ts";
 import { layout_view_page } from "./layout_view_page.tsx";
 import { chat_view_page } from "./chat_view_page.tsx";
@@ -168,7 +168,10 @@ const server = Bun.serve({
       const ctx = await chat_getCtx();
       const session = await chat_loadSessionByName(filename);
       chat_markRead(session.filename, session.messages.length);
-      const body = await chat_view_page(session.messages, session.filename, session.isStreaming);
+      // For child sessions, only show messages after parent offset
+      const offset = await chat_sessionGetOffset(filename);
+      const visibleMessages = offset > 0 ? session.messages.slice(offset) : session.messages;
+      const body = await chat_view_page(visibleMessages, session.filename, session.isStreaming);
       return new Response(layout_view_page("Hyper Code", body, ctx.model.name || ctx.model.id), {
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
