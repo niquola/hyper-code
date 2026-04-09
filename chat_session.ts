@@ -134,6 +134,14 @@ export async function chat_sessionInfo(filename: string): Promise<SessionInfo> {
   return { filename, title, createdAt, messageCount };
 }
 
+/** Get parent message offset (how many parent messages child should include) */
+export async function chat_sessionGetOffset(filename: string, dir?: string): Promise<number | null> {
+  const d = dir || SESSION_DIR;
+  const file = Bun.file(`${d}/${filename}.offset`);
+  if (await file.exists()) return parseInt(await file.text(), 10) || null;
+  return null;
+}
+
 /** Get session model (e.g. "kimi-coding/k2p5") */
 export async function chat_sessionGetModel(filename: string, dir?: string): Promise<string | null> {
   const d = dir || SESSION_DIR;
@@ -160,10 +168,11 @@ export function chat_sessionDelete(filename: string): void {
   try { unlinkSync(`${SESSION_DIR}/${filename}.title`); } catch {}
   try { unlinkSync(`${SESSION_DIR}/${filename}.parent`); } catch {}
   try { unlinkSync(`${SESSION_DIR}/${filename}.model`); } catch {}
+  try { unlinkSync(`${SESSION_DIR}/${filename}.offset`); } catch {}
 }
 
 /** Fork session: create empty child with parent link (no data copy) */
-export async function chat_sessionFork(parentFilename: string, task: string, dir?: string): Promise<string> {
+export async function chat_sessionFork(parentFilename: string, task: string, parentMsgCount?: number, dir?: string): Promise<string> {
   const d = dir || SESSION_DIR;
   const { mkdirSync } = require("node:fs");
   mkdirSync(d, { recursive: true });
@@ -176,6 +185,8 @@ export async function chat_sessionFork(parentFilename: string, task: string, dir
   await Bun.write(childPath, "");
   await Bun.write(`${childPath}.parent`, parentFilename);
   await Bun.write(`${childPath}.title`, `subagent: ${task.slice(0, 50)}`);
+  // Save how many parent messages to include (excludes current turn)
+  if (parentMsgCount != null) await Bun.write(`${childPath}.offset`, String(parentMsgCount));
 
   return childFilename;
 }

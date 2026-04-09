@@ -3,7 +3,7 @@ import { agent_buildSystemPrompt } from "./agent_buildSystemPrompt.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
 import type { Session } from "./chat_type_Session.ts";
 import { chat_loadSettings, chat_resolveModel, chat_resolveApiKey } from "./chat_settings.ts";
-import { chat_sessionLatest, chat_sessionCreate, chat_sessionLoad, chat_sessionLoadRaw, chat_sessionAppend } from "./chat_session.ts";
+import { chat_sessionLatest, chat_sessionCreate, chat_sessionLoad, chat_sessionLoadRaw, chat_sessionAppend, chat_sessionGetOffset } from "./chat_session.ts";
 import { chat_resolveSessionModel } from "./chat_resolveSessionModel.ts";
 import type { Message } from "./ai_type_Message.ts";
 import { tool_read } from "./tool_read.ts";
@@ -67,13 +67,21 @@ async function loadSession(filename: string): Promise<Session> {
   const cached = sessions.get(filename);
   if (cached) return cached;
 
-  // For child sessions: use cached parent messages (in-memory, may have unsaved msgs)
+  // For child sessions: use parent messages up to fork offset + own messages
   const parentFilename = await chat_sessionGetParent(filename);
   let messages: Message[];
-  if (parentFilename && sessions.has(parentFilename)) {
-    const parentSession = sessions.get(parentFilename)!;
+  if (parentFilename) {
+    const offset = await chat_sessionGetOffset(filename);
+    let parentMessages: Message[];
+    if (sessions.has(parentFilename)) {
+      parentMessages = sessions.get(parentFilename)!.messages;
+    } else {
+      parentMessages = await chat_sessionLoad(parentFilename);
+    }
+    // If offset set, only include parent messages up to that point
+    if (offset != null) parentMessages = parentMessages.slice(0, offset);
     const ownMessages = await chat_sessionLoadRaw(filename);
-    messages = [...parentSession.messages, ...ownMessages];
+    messages = [...parentMessages, ...ownMessages];
   } else {
     messages = await chat_sessionLoad(filename);
   }

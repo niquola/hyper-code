@@ -1,7 +1,7 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
 import type { Session } from "./chat_type_Session.ts";
-import { chat_sessionFork, chat_sessionAppend } from "./chat_session.ts";
+import { chat_sessionFork, chat_sessionAppend, chat_sessionLoadRaw } from "./chat_session.ts";
 import { agent_run } from "./agent_run.ts";
 
 export function tool_subagent(
@@ -18,8 +18,9 @@ export function tool_subagent(
       required: ["task"],
     },
     execute: async (ctx: Ctx, session: Session, params: { task: string }) => {
-      // Fork session
-      const childFilename = await chat_sessionFork(session.filename, params.task);
+      // Fork session — offset = saved parent messages (exclude current unsaved turn)
+      const savedMessages = await chat_sessionLoadRaw(session.filename);
+      const childFilename = await chat_sessionFork(session.filename, params.task, savedMessages.length);
 
       // Block parent until subagent_report
       const { promise, resolve } = Promise.withResolvers<string>();
