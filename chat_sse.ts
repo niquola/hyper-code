@@ -82,7 +82,8 @@ export function chat_createSSEStream(
     for (const t of tools) html += renderToolBlock(t, undefined, session.filename);
 
     if (text) {
-      html += `<div class="text-gray-900 text-[14px] whitespace-pre-wrap" data-role="content">${escapeHtml(text)}</div>`;
+      const md = (Bun as any).markdown.html(text);
+      html += `<div class="text-gray-900 prose max-w-none text-[14px]" data-role="content">${md}</div>`;
     } else if (tools.length === 0 && finishedTools.length === 0) {
       html += `<div class="flex items-center gap-2 text-gray-400 text-sm"><svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Thinking...</div>`;
     }
