@@ -67,7 +67,7 @@ ls cdp*.ts                     # CDP browser testing
   - Global getters (`chat_getCtx()`, `chat_getSession()`) exist ONLY in `server.ts` HTTP handlers as entry points.
 - **Don't do extra.** Don't add features, abstractions, or "improvements" beyond what was asked. Don't guess requirements — ask.
 - **Interview before building.** When a new feature is requested, first gather minimal requirements and use cases. Ask: what exactly should it do? Who uses it? What's the simplest version? Don't jump into coding — clarify scope first.
-- **Strict TDD.** Always write tests BEFORE implementing the function. Red → Green → Refactor. No exceptions.
+- **Strict TDD.** Always write tests BEFORE implementing the function. Red → Green → Refactor. No exceptions. **Bug found? Write failing test FIRST, then fix.**
   - Module tests: `<module>.test.ts` — tests for the whole module
   - Unit tests: `<module>_<function>.test.ts` — tests for a single function
   - View tests: `<module>_view.test.tsx` or `<module>_view_<name>.test.tsx`

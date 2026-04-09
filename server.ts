@@ -2,7 +2,7 @@ import type { HtmlContent } from "./ai_type_Message.ts";
 import { router_buildRoutes } from "./router_buildRoutes.ts";
 import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
-import { chat_getCtx, chat_getSession, chat_loadSessionByName } from "./chat_ctx.ts";
+import { chat_getCtx, chat_loadSessionByName } from "./chat_ctx.ts";
 import { chat_createSSEStream } from "./chat_sse.ts";
 import { chat_sessionRewrite, chat_sessionAppend, chat_sessionLoadRaw } from "./chat_session.ts";
 import { agent_run } from "./agent_run.ts";

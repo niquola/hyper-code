@@ -1,5 +1,4 @@
 import { chat_sessionListInfo, chat_sessionGetParent } from "./chat_session.ts";
-import { chat_getSessionFile } from "./chat_ctx.ts";
 import { chat_getUnread } from "./chat_unread.ts";
 import { escapeHtml } from "./jsx.ts";
 import type { SessionInfo } from "./chat_type_SessionInfo.ts";
@@ -72,7 +71,7 @@ function renderSession(s: TreeNode, current: string | null): string {
 export default async function (req: Request) {
   const sessions = await chat_sessionListInfo();
   const url = new URL(req.url, "http://localhost");
-  const current = url.searchParams.get("current") || chat_getSessionFile();
+  const current = url.searchParams.get("current") || null;
   const tree = await buildTree(sessions);
 
   let html = `<div id="session-list" class="flex flex-col gap-0.5">`;
