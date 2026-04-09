@@ -5,7 +5,7 @@ import { ai_renderMarkdown } from "./ai_renderMarkdown.ts";
 export function chat_view_userMessage(content: string): string {
   return (
     <div data-entity="message" data-status="user" className="mb-4 flex justify-end">
-      <div className="bg-gray-600 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%] whitespace-pre-wrap" data-role="content">{escapeHtml(content)}</div>
+      <div className="bg-gray-400 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%] whitespace-pre-wrap text-sm" data-role="content">{escapeHtml(content)}</div>
     </div>
   );
 }
