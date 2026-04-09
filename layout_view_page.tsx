@@ -16,7 +16,7 @@ export function layout_view_page(title: string, body: string, modelName?: string
       </head>
       <body className="bg-gray-50 h-screen flex overflow-hidden">
 
-        <aside id="sidebar" className="w-56 shrink-0 bg-white border-r border-gray-200 text-gray-700 flex flex-col h-full">
+        <aside id="sidebar" className="w-80 shrink-0 bg-white border-r border-gray-200 text-gray-700 flex flex-col h-full">
           <div className="p-3 border-b border-gray-200 flex items-center justify-between">
             <a href="/" className="text-sm font-semibold text-gray-900">Hyper Code</a>
             <a href="/session/new" data-action="new" className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded">+ New</a>
