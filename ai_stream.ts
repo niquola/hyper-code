@@ -11,14 +11,22 @@ import { ai_calculateCost } from "./ai_calculateCost.ts";
 import { ai_parseStreamingJson } from "./ai_parseStreamingJson.ts";
 import { ai_streamResponses } from "./ai_streamResponses.ts";
 import { ai_streamCodex } from "./ai_streamCodex.ts";
+import { ai_streamAnthropic } from "./ai_streamAnthropic.ts";
 
 // Providers that use OpenAI Responses API instead of Completions
 const RESPONSES_API_PROVIDERS = new Set(["openai", "azure-openai-responses", "github-copilot"]);
+// Providers that use Anthropic Messages API
+const ANTHROPIC_API_PROVIDERS = new Set(["anthropic", "kimi-coding"]);
 
 export function ai_stream(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
   // Route Codex to dedicated codex stream (raw fetch, custom headers)
   if (model.provider === "openai-codex") {
     return ai_streamCodex(model, context, options);
+  }
+
+  // Route Anthropic Messages API providers (Anthropic, Kimi)
+  if (ANTHROPIC_API_PROVIDERS.has(model.provider)) {
+    return ai_streamAnthropic(model, context, options);
   }
 
   // Route to Responses API for providers that use it

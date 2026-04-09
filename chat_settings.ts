@@ -30,6 +30,8 @@ function resolveBaseUrl(provider: string): string {
   if (provider === "lmstudio") return "http://localhost:1234/v1";
   if (provider === "openai-codex") return "https://chatgpt.com/backend-api";
   if (provider === "openai") return "https://api.openai.com/v1";
+  if (provider === "anthropic") return "https://api.anthropic.com";
+  if (provider === "kimi-coding") return "https://api.kimi.com/coding";
   return `https://api.${provider}.com/v1`;
 }
 
