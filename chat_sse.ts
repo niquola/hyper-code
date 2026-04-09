@@ -5,16 +5,21 @@ import { ai_renderMarkdown, ai_highlightCode } from "./ai_renderMarkdown.ts";
 type ToolBlock = { id: string; name: string; args: string; result?: string; resultHtml?: string; isError?: boolean };
 
 function renderToolBlock(t: ToolBlock, highlighted?: string): string {
+  // render_html: just show the HTML, no tool chrome
+  if (t.name === "render_html" && t.resultHtml) {
+    return `<div data-entity="widget" data-status="done" class="mb-3"><div class="hyper-ui">${t.resultHtml}</div></div>`;
+  }
+
   const status = t.isError ? "error" : t.result != null ? "done" : "running";
   const border = t.isError ? "border-red-200 bg-red-50" : t.result != null ? "border-green-200 bg-green-50" : "border-yellow-200 bg-yellow-50";
   const resultBorder = t.isError ? "border-red-200 text-red-700" : "border-green-200 text-gray-600";
 
-  // Parse args for display — hide large values like file content
+  // Parse args for display — hide large values like file content, html
   let argsDisplay = t.args;
   try {
     const parsed = JSON.parse(t.args);
     argsDisplay = Object.entries(parsed)
-      .filter(([k]) => k !== "content" && k !== "edits")
+      .filter(([k]) => k !== "content" && k !== "edits" && k !== "html")
       .map(([k, v]) => `${k}: ${v}`)
       .join(", ");
   } catch {}
@@ -23,7 +28,6 @@ function renderToolBlock(t: ToolBlock, highlighted?: string): string {
   html += `<div class="px-3 py-2 font-mono text-xs flex items-center gap-2"><span class="font-semibold text-gray-700" data-role="tool-name">${escapeHtml(t.name)}</span><span class="text-gray-400" data-role="tool-args">${escapeHtml(argsDisplay)}</span></div>`;
 
   if (t.resultHtml) {
-    // HTML widget — render inline with hyper-ui default styles
     html += `<div class="hyper-ui border-t ${resultBorder} p-3" data-role="tool-result">${t.resultHtml}</div>`;
   } else if (t.result != null) {
     // For write/edit: show the written code in the collapsible, not the status message

@@ -23,7 +23,14 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
         const tr = toolResults.get(tc.id);
         const textResult = tr ? tr.content.filter((c) => c.type === "text").map((c) => (c as any).text).join("\n") : undefined;
         const htmlResult = tr ? tr.content.filter((c) => c.type === "html").map((c) => (c as any).html).join("") : undefined;
-        const args = Object.entries(tc.arguments).filter(([k]) => k !== "content" && k !== "edits").map(([k, v]) => `${k}: ${v}`).join(", ");
+
+        // render_html: just show HTML, no tool chrome
+        if (tc.name === "render_html" && htmlResult) {
+          rendered.push(`<div data-entity="widget" class="mb-3"><div class="hyper-ui">${htmlResult}</div></div>`);
+          continue;
+        }
+
+        const args = Object.entries(tc.arguments).filter(([k]) => k !== "content" && k !== "edits" && k !== "html").map(([k, v]) => `${k}: ${v}`).join(", ");
         rendered.push(chat_view_toolCall(tc.name, args, textResult || undefined, tr?.isError, htmlResult || undefined));
       }
 
