@@ -8,22 +8,22 @@ describe("router_buildRoutes", () => {
     expect(routes["/"]!["GET"]).toBeDefined();
   });
 
-  test("discovers form_chat_POST.tsx as POST /chat", async () => {
+  test("discovers page_session_new as GET /session/new", async () => {
     const routes = await router_buildRoutes(".");
-    expect(routes["/chat"]).toBeDefined();
-    expect(routes["/chat"]!["POST"]).toBeDefined();
+    expect(routes["/session/new"]).toBeDefined();
+    expect(routes["/session/new"]!["GET"]).toBeDefined();
   });
 
-  test("discovers form_reset_POST.tsx as POST /reset", async () => {
+  test("discovers form_session_create as POST /session/create", async () => {
     const routes = await router_buildRoutes(".");
-    expect(routes["/reset"]).toBeDefined();
-    expect(routes["/reset"]!["POST"]).toBeDefined();
+    expect(routes["/session/create"]).toBeDefined();
+    expect(routes["/session/create"]!["POST"]).toBeDefined();
   });
 
-  test("discovers form_abort_POST.tsx as POST /abort", async () => {
+  test("discovers frag_sessions as GET /sessions", async () => {
     const routes = await router_buildRoutes(".");
-    expect(routes["/abort"]).toBeDefined();
-    expect(routes["/abort"]!["POST"]).toBeDefined();
+    expect(routes["/sessions"]).toBeDefined();
+    expect(routes["/sessions"]!["GET"]).toBeDefined();
   });
 
   test("GET / redirects to session", async () => {

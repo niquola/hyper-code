@@ -54,6 +54,9 @@ ls cdp*.ts                     # CDP browser testing
 - Functions take everything they need as parameters — no hidden internal state, no singletons, no closures over mutable variables.
 - Prefer explicit data flow: pass dependencies in, return results out.
 - **All agent/chat procedures must accept `ctx: Ctx` and `session: Session` as explicit parameters.** No reading global state. `Ctx` is immutable config (model, tools). `Session` is mutable state (messages, queues, streaming status).
+  - Global getters (`chat_getCtx()`, `chat_getSession()`) exist only for bootstrap (page_index redirect, page_session_new).
+  - All per-session endpoints in `server.ts` use `chat_loadSessionByName(filename)` — session from URL, not global state.
+  - Tools receive session via closure from `chat_ctx.ts` tool registration.
 - **Don't do extra.** Don't add features, abstractions, or "improvements" beyond what was asked. Don't guess requirements — ask.
 - **Interview before building.** When a new feature is requested, first gather minimal requirements and use cases. Ask: what exactly should it do? Who uses it? What's the simplest version? Don't jump into coding — clarify scope first.
 - **Strict TDD.** Always write tests BEFORE implementing the function. Red → Green → Refactor. No exceptions.
@@ -166,18 +169,24 @@ Both can coexist on the same page. htmx uses `hx-*` attributes, Datastar uses `d
 - Textarea always active during streaming
 
 **Routes**
-- `GET /` → redirect to `/session/:latest`
+
+Global:
+- `GET /` → redirect to `/session/:latest/`
 - `GET /session/new` → new session form
-- `GET /session/:filename` → chat page for session
-- `POST /chat` → send message (or queue follow-up if streaming)
-- `POST /steer` → inject steer message
-- `POST /abort` → abort current run
-- `POST /session/create` → create session with optional title
-- `POST /session/delete` → delete session
-- `POST /session/rename` → set custom title
+- `POST /session/create` → create session
+- `POST /session/delete`, `POST /session/rename` — session management
 - `GET /sessions` → htmx fragment: session list for sidebar
-- `GET /stats` → htmx fragment: token count + cost
 - `GET /settings`, `POST /settings` — provider/model/API key config
+
+Per-session (all under `/session/:id/`):
+- `GET /session/:id/` → chat page
+- `POST /session/:id/chat` → send message (SSE stream response)
+- `POST /session/:id/steer` → inject steer message into current run
+- `POST /session/:id/abort` → abort agent
+- `POST /session/:id/dispatch` → dialog/widget user response
+- `GET /session/:id/stream` → SSE reconnect for running session
+- `GET /session/:id/stats` → token count + cost
+- `GET /session/:id/rewind?index=N` → rollback to message
 
 ## Calling Functions with `bun -e`
 
