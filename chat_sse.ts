@@ -4,10 +4,15 @@ import { ai_renderMarkdown, ai_highlightCode } from "./ai_renderMarkdown.ts";
 
 type ToolBlock = { id: string; name: string; args: string; result?: string; resultHtml?: string; isError?: boolean };
 
-function renderToolBlock(t: ToolBlock, highlighted?: string): string {
-  // render_html / html_dialog: just show the HTML, no tool chrome
+function renderToolBlock(t: ToolBlock, highlighted?: string, sessionFilename?: string): string {
+  // html_message / html_dialog: just show the HTML, no tool chrome
   if ((t.name === "html_message" || t.name === "html_dialog") && t.resultHtml) {
-    return `<div data-entity="widget" data-status="done" class="mb-3"><div class="hyper-ui">${t.resultHtml}</div></div>`;
+    // Resolve dispatch URL to absolute for dialogs moved to body
+    let html = t.resultHtml;
+    if (sessionFilename) {
+      html = html.replace(/hx-post="dispatch"/g, `hx-post="/session/${encodeURIComponent(sessionFilename)}/dispatch"`);
+    }
+    return `<div data-entity="widget" data-status="done" class="mb-3"><div class="hyper-ui">${html}</div></div>`;
   }
 
   const status = t.isError ? "error" : t.result != null ? "done" : "running";
@@ -144,9 +149,9 @@ export function chat_createSSEStream(
     }
 
     // Show completed tools from previous turns
-    for (const t of finishedTools) html += renderToolBlock(t);
+    for (const t of finishedTools) html += renderToolBlock(t, undefined, session.filename);
     // Show current turn tools
-    for (const t of tools) html += renderToolBlock(t);
+    for (const t of tools) html += renderToolBlock(t, undefined, session.filename);
 
     if (text) {
       html += `<div class="text-gray-900 text-sm whitespace-pre-wrap" data-role="content">${escapeHtml(text)}</div>`;
@@ -173,7 +178,7 @@ export function chat_createSSEStream(
           const code = getToolCode(t);
           if (code) highlighted = await ai_highlightCode(code, lang);
         }
-        html += renderToolBlock(t, highlighted);
+        html += renderToolBlock(t, highlighted, session.filename);
       }
 
       if (finalText) {
