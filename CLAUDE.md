@@ -133,11 +133,45 @@ Both can coexist on the same page. htmx uses `hx-*` attributes, Datastar uses `d
 - `hyper_ui_route.ts` — HTTP handler for `/ui/*`
 
 **chat** — Web UI with SSE streaming
-- `chat_getCtx()` — shared agent ctx with model + tools (async, loads settings)
+- `Ctx` — agent config (model, apiKey, systemPrompt, tools). Immutable per server lifetime.
+- `Session` — conversation state (filename, messages, queues, abortController, isStreaming). One per chat session.
+- `agent_run(ctx, session, prompt, onEvent)` — main agent loop with explicit config + state
+- `chat_getCtx()` — lazy-init shared agent config
+- `chat_getSession()` — lazy-init current session (loads latest non-empty from `.hyper/`)
+- `chat_switchSession(filename)` — switch to a different session
 - `chat_createSSEStream(runAgent)` — agent events → SSE HTML fragments
 - `chat_settings.ts` — persistent provider/model/API key config (.settings.json)
-- Views: `chat_view_page`, `chat_view_message`, `chat_view_settings`, `chat_view_stats`
-- Routes: `POST /chat`, `POST /reset`, `POST /abort`, `GET /settings`, `POST /settings`
+- `chat_session.ts` — session persistence (`.hyper/<timestamp>-<id>.jsonl`), title management
+- `chat_type_Session.ts` — Session type definition
+- Views: `chat_view_page`, `chat_view_message`, `chat_view_settings`
+
+**Session management**
+- Sessions stored in `.hyper/` as JSONL files (one JSON message per line, append-only)
+- Custom titles in `.hyper/<filename>.title` (optional, falls back to first user message)
+- URL-based navigation: `/session/:filename`
+- `/` redirects to latest non-empty session
+- `/session/new` — form to create session (title, provider, model)
+- Sidebar: dark panel with session list, delete (×), rename (dblclick)
+
+**Steering & follow-up**
+- Enter during streaming → follow-up (queued, runs after current turn)
+- Ctrl+Enter during streaming → steer (injected into current context as `[STEER]`)
+- Escape → abort
+- Textarea always active during streaming
+
+**Routes**
+- `GET /` → redirect to `/session/:latest`
+- `GET /session/new` → new session form
+- `GET /session/:filename` → chat page for session
+- `POST /chat` → send message (or queue follow-up if streaming)
+- `POST /steer` → inject steer message
+- `POST /abort` → abort current run
+- `POST /session/create` → create session with optional title
+- `POST /session/delete` → delete session
+- `POST /session/rename` → set custom title
+- `GET /sessions` → htmx fragment: session list for sidebar
+- `GET /stats` → htmx fragment: token count + cost
+- `GET /settings`, `POST /settings` — provider/model/API key config
 
 ## Calling Functions with `bun -e`
 
@@ -149,10 +183,11 @@ bun -e "import { ai_stream } from './ai.ts'; import { AI_MODELS } from './ai_mod
 const s = ai_stream(AI_MODELS['gpt-4o-mini']!, { messages: [{ role: 'user', content: 'Hi', timestamp: Date.now() }] }, { apiKey: process.env.OPENAI_API_KEY });
 for await (const e of s) { if (e.type === 'text_delta') process.stdout.write(e.delta); }"
 
-# run agent with tools
+# run agent with tools (ctx = config, session = state)
 bun -e "import { agent_createCtx, agent_run } from './agent.ts'; import { tool_read } from './tool_read.ts';
 const ctx = agent_createCtx({ model: { id: 'qwen3-coder-next', name: 'Q', provider: 'lmstudio', baseUrl: 'http://localhost:1234/v1', reasoning: true, input: ['text'], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 32000 }, apiKey: 'lm-studio', tools: [tool_read('.')] });
-await agent_run(ctx, 'Read server.ts', (e) => { if (e.type === 'text_delta') process.stdout.write(e.delta); });"
+const session = { filename: 'test.jsonl', messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false };
+await agent_run(ctx, session, 'Read server.ts', (e) => { if (e.type === 'text_delta') process.stdout.write(e.delta); });"
 ```
 
 Prefer `bun -e` for quick validation during development. Use `bun run test` for persistent regression tests.
