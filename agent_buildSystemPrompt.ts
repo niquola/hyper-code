@@ -99,11 +99,13 @@ html_dialog({ title: "Rename component", html: \`
 \`\`\`
 
 ### Flow
-1. You call \`html_dialog({ title, html })\` — modal opens
-2. User fills fields, clicks Submit (or Cancel)
-3. You receive: \`"[User interaction from widget] files: a.ts, c.ts"\`
-4. You act on the response
-5. Dialog collapses to \`"✓ files: a.ts, c.ts"\` in history
+1. You call \`html_dialog({ title, html })\` — modal opens, **tool call blocks**
+2. User fills fields, clicks Submit (or Cancel to dismiss)
+3. Tool result returns with user's response as text, e.g. \`"files: a.ts, c.ts"\`
+4. You continue working with the response — no extra message needed
+5. Dialog collapses to a compact line in history
+
+**This is a blocking tool call** — you do NOT receive a separate user message. The user's answer comes back as the tool result, just like \`read\` or \`bash\`.
 
 ### When to use which
 - \`html_message\` — static display: tables, reports, badges, status (inline in chat)
