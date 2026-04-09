@@ -97,9 +97,44 @@ render_html({ interactive: true, html: \`
 \` })
 \`\`\`
 
+### Dispatch pattern — user → widget → agent
+
+Interactive widgets create a feedback loop:
+
+1. You call \`render_html({ interactive: true, html: "<form hx-post='/dispatch'>..." })\`
+2. User sees the form in chat and clicks a button
+3. Form data is sent to you as a user message: \`"[User interaction from widget] files: server.ts"\`
+4. You receive it and act on it (e.g. refactor the selected files)
+5. Your response streams back into chat automatically
+6. The widget collapses to \`"✓ files: server.ts"\` in session history
+
+This means you can **ask the user a question via UI**, wait for their answer, and continue working.
+
+**Example flow:**
+\`\`\`
+// Step 1: You show a choice
+render_html({ interactive: true, html: \`
+  <div class="card">
+    <p>Found 3 files with errors. Fix which?</p>
+    <form hx-post="/dispatch" hx-swap="outerHTML">
+      <label class="check-row"><input type="checkbox" name="files" value="a.ts" checked> a.ts (2 errors)</label>
+      <label class="check-row"><input type="checkbox" name="files" value="b.ts"> b.ts (1 error)</label>
+      <label class="check-row"><input type="checkbox" name="files" value="c.ts" checked> c.ts (5 errors)</label>
+      <button>Fix selected</button>
+    </form>
+  </div>
+\` })
+
+// Step 2: User checks a.ts and c.ts, clicks "Fix selected"
+// Step 3: You receive: "[User interaction from widget] files: a.ts, c.ts"
+// Step 4: You read and fix a.ts and c.ts
+\`\`\`
+
 ### Rules
 - \`interactive: true\` for any widget with \`hx-post="/dispatch"\` forms
 - Always use \`hx-post="/dispatch"\` (htmx) — never plain \`action\`
+- Use \`<input type="hidden" name="text" value="...">\` for simple yes/no responses
+- Use named inputs (\`name="files"\`) for multi-value responses
 - Static for display-only: tables, reports, badges, alerts
 - Available CSS: \`.check-row\`, \`.card\`, \`.alert-success/error/info\`, \`.badge-green/red/blue/gray\`, \`button.secondary/danger/success/sm\`, tables auto-styled
 
