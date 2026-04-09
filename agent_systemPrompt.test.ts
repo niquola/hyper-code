@@ -45,10 +45,10 @@ describe("agent_buildSystemPrompt", () => {
     expect(prompt).toContain("submit_label");
   });
 
-  test("explains dispatch flow", () => {
+  test("explains blocking dialog flow", () => {
     const prompt = agent_buildSystemPrompt("/tmp", []);
-    expect(prompt).toContain("User interaction from widget");
-    expect(prompt).toContain("modal");
+    expect(prompt).toContain("blocking tool call");
+    expect(prompt).toContain("tool result");
   });
 
   test("lists use cases for widgets", () => {

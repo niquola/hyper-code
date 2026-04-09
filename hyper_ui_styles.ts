@@ -102,6 +102,10 @@ export const HYPER_UI_STYLES = `
 .hyper-ui .badge-blue { background: #dbeafe; color: #1e40af; }
 .hyper-ui .badge-gray { background: #f3f4f6; color: #374151; }
 
+/* Tool call chevron rotation */
+details[open] > summary svg:last-child { transform: rotate(180deg); }
+details > summary::-webkit-details-marker { display: none; }
+
 /* Code highlighting in tool results */
 [data-entity="tool"] pre.shiki { margin: 0; padding: 0.75rem 1rem; border-radius: 0; font-size: 12px; line-height: 1.5; }
 [data-entity="tool"] pre.shiki code { font-size: inherit; }
