@@ -13,6 +13,8 @@ export default async function (req: Request) {
     provider,
     modelId: settings.modelId,
     apiKey: settings.apiKey,
+    accountId: settings.accountId,
+    tokenExpires: settings.tokenExpires,
   });
   return layout_view_page("Settings — Hyper Code", body);
 }

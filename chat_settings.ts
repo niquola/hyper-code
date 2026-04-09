@@ -6,9 +6,12 @@ export type ChatSettings = {
   provider: string;
   modelId: string;
   apiKey: string;
+  // OAuth fields (for Codex etc.)
+  refreshToken?: string;
+  tokenExpires?: number;
+  accountId?: string;
 };
 
-// Persist settings to .settings.json
 const SETTINGS_PATH = ".settings.json";
 
 export async function chat_loadSettings(): Promise<ChatSettings> {
@@ -31,11 +34,9 @@ export async function chat_saveSettings(settings: ChatSettings): Promise<void> {
 }
 
 export function chat_resolveModel(settings: ChatSettings): Model {
-  // Try to find in registry
   const model = ai_getModel(settings.provider, settings.modelId);
   if (model) return model;
 
-  // Custom model (e.g. LM Studio local)
   return {
     id: settings.modelId,
     name: settings.modelId,

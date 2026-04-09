@@ -5,6 +5,8 @@ export type SettingsData = {
   provider: string;
   modelId: string;
   apiKey: string;
+  accountId?: string;
+  tokenExpires?: number;
 };
 
 function maskKey(key: string): string {
@@ -67,9 +69,21 @@ export function chat_view_settings(data: SettingsData): string {
         </div>
       </form>
 
+      <div className="mt-6 pt-4 border-t border-gray-200">
+        <h3 className="text-sm font-semibold text-gray-700 mb-2">OAuth Login</h3>
+        <form method="POST" action="/login/codex" className="inline">
+          <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm">
+            Login with ChatGPT (Codex)
+          </button>
+        </form>
+        <p className="text-xs text-gray-400 mt-2">Use your ChatGPT Plus/Pro subscription. Opens OpenAI login in browser.</p>
+      </div>
+
       {data.apiKey && (
         <div className="mt-4 text-xs text-gray-400">
           Current key: {maskKey(data.apiKey)}
+          {data.accountId && ` | Account: ${data.accountId.slice(0, 8)}...`}
+          {data.tokenExpires && ` | Expires: ${new Date(data.tokenExpires).toLocaleString()}`}
         </div>
       )}
     </div>

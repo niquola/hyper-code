@@ -30,7 +30,6 @@ const server = Bun.serve({
       if (!text.trim()) return new Response("empty", { status: 400 });
 
       const ctx = await chat_getCtx();
-      // Run agent in background with the dispatch message
       agent_run(ctx, `[User interaction from widget] ${text}`, () => {});
       return new Response(
         `<div class="text-xs text-green-600 py-1">✓ Sent to agent</div>`,
