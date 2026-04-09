@@ -1,7 +1,13 @@
-import type { Message } from "./ai_type_Message.ts";
+import type { Message, ToolCall, AssistantMessage, ToolResultMessage } from "./ai_type_Message.ts";
 import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall } from "./chat_view_message.tsx";
 
 export async function chat_view_page(messages: Message[]): Promise<string> {
+  // Index toolResults by toolCallId for lookup
+  const toolResults = new Map<string, ToolResultMessage>();
+  for (const msg of messages) {
+    if (msg.role === "toolResult") toolResults.set(msg.toolCallId, msg);
+  }
+
   const rendered: string[] = [];
   for (const msg of messages) {
     if (msg.role === "user") {
@@ -10,11 +16,22 @@ export async function chat_view_page(messages: Message[]): Promise<string> {
     } else if (msg.role === "assistant") {
       const text = msg.content.filter((c) => c.type === "text").map((c) => (c as any).text).join("");
       const thinking = msg.content.filter((c) => c.type === "thinking").map((c) => (c as any).thinking).join("");
-      rendered.push(await chat_view_assistantMessage(text, thinking || undefined));
-    } else if (msg.role === "toolResult") {
-      const result = msg.content.map((c) => c.type === "text" ? (c as any).text : "[image]").join("\n");
-      rendered.push(chat_view_toolCall(msg.toolName, "", result, msg.isError));
+      const toolCalls = msg.content.filter((c) => c.type === "toolCall") as ToolCall[];
+
+      // Render tool calls with their results
+      for (const tc of toolCalls) {
+        const tr = toolResults.get(tc.id);
+        const result = tr ? tr.content.map((c) => c.type === "text" ? (c as any).text : "[image]").join("\n") : undefined;
+        const args = Object.entries(tc.arguments).filter(([k]) => k !== "content" && k !== "edits").map(([k, v]) => `${k}: ${v}`).join(", ");
+        rendered.push(chat_view_toolCall(tc.name, args, result, tr?.isError));
+      }
+
+      // Render text if present
+      if (text) {
+        rendered.push(await chat_view_assistantMessage(text, thinking || undefined));
+      }
     }
+    // toolResult already rendered above with its toolCall — skip standalone
   }
   return (
     <div data-page="chat" className="flex flex-col" style="height: calc(100dvh - 45px)">
