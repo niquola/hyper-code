@@ -6,7 +6,7 @@ import type { Message } from "./ai_type_Message.ts";
 import type { SessionInfo } from "./chat_type_SessionInfo.ts";
 import { mkdirSync, appendFileSync } from "node:fs";
 
-const SESSION_DIR = ".hyper";
+const SESSION_DIR = process.env.HYPER_SESSION_DIR || ".hyper";
 
 function ensureDir() {
   mkdirSync(SESSION_DIR, { recursive: true });
