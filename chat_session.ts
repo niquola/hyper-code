@@ -58,3 +58,53 @@ export function chat_sessionAppend(filename: string, ...msgs: Message[]): void {
   const data = msgs.map((m) => JSON.stringify(m)).join("\n") + "\n";
   appendFileSync(path, data);
 }
+
+export type SessionInfo = {
+  filename: string;
+  title: string;
+  createdAt: string; // from filename timestamp
+  messageCount: number;
+};
+
+/** Get session title from first user message (first line of jsonl) */
+export async function chat_sessionInfo(filename: string): Promise<SessionInfo> {
+  const path = `${SESSION_DIR}/${filename}`;
+  const file = Bun.file(path);
+  let title = "New Chat";
+  let messageCount = 0;
+
+  if (await file.exists()) {
+    const text = await file.text();
+    const lines = text.split("\n").filter((l) => l.trim());
+    messageCount = lines.length;
+    for (const line of lines) {
+      try {
+        const msg = JSON.parse(line);
+        if (msg.role === "user") {
+          const content = typeof msg.content === "string" ? msg.content : msg.content?.[0]?.text || "";
+          title = content.slice(0, 60) || "New Chat";
+          if (content.length > 60) title += "...";
+          break;
+        }
+      } catch {}
+    }
+  }
+
+  // Extract timestamp from filename: 2026-04-09T09-28-48-xxx.jsonl
+  const createdAt = filename.slice(0, 19).replace(/T/, " ").replace(/-/g, (m, i) => i > 9 ? ":" : "-");
+
+  return { filename, title, createdAt, messageCount };
+}
+
+export async function chat_sessionListInfo(): Promise<SessionInfo[]> {
+  const files = chat_sessionList();
+  const infos = await Promise.all(files.map(chat_sessionInfo));
+  return infos.reverse(); // newest first
+}
+
+export function chat_sessionDelete(filename: string): void {
+  try {
+    const { unlinkSync } = require("node:fs");
+    unlinkSync(`${SESSION_DIR}/${filename}`);
+  } catch {}
+}

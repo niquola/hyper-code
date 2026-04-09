@@ -34,8 +34,8 @@ export async function chat_getCtx(): Promise<Ctx> {
       tool_hyper_ui(cwd),
     ];
 
-    // Load latest session or create new
-    sessionFile = chat_sessionLatest() || chat_sessionCreate();
+    // Load specified session, latest, or create new
+    if (!sessionFile) sessionFile = chat_sessionLatest() || chat_sessionCreate();
     const messages = await chat_sessionLoad(sessionFile);
 
     ctx = agent_createCtx({
@@ -58,6 +58,13 @@ export function chat_saveMessages(...msgs: Message[]): void {
 
 export function chat_getSessionFile(): string | null {
   return sessionFile;
+}
+
+/** Switch to a specific session file */
+export async function chat_switchSession(filename: string): Promise<void> {
+  ctx = null;
+  sessionFile = filename;
+  await chat_getCtx();
 }
 
 export function chat_resetCtx(): void {
