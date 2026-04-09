@@ -50,12 +50,15 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
     // toolResult already rendered above with its toolCall — skip standalone
   }
   return (
-    <div data-page="chat" data-session={sessionFilename || ""} data-streaming={isStreaming ? "true" : "false"} className="flex flex-col" style="height: calc(100dvh - 45px)">
+    <div data-page="chat" data-session={sessionFilename || ""} data-streaming={isStreaming ? "true" : "false"} className="flex flex-col h-full">
       <div id="messages" className="flex-1 overflow-y-auto py-4" style="min-height: 0">
-        {rendered.join("")}
-        <div id="stream"></div>
+        <div className="max-w-3xl mx-auto px-4">
+          {rendered.join("")}
+          <div id="stream"></div>
+        </div>
       </div>
       <div id="input-area" className="shrink-0 border-t border-gray-200 py-3">
+        <div className="max-w-3xl mx-auto px-4">
         <form id="chat-form" data-form="prompt" method="POST" action="/chat">
           <textarea
             name="prompt"
@@ -66,6 +69,7 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
           ></textarea>
           <div id="queue-indicator" className="text-xs text-blue-500 mt-1 hidden"></div>
         </form>
+        </div>
       </div>
       <script dangerouslySetInnerHTML={{ __html: CHAT_SCRIPT }} />
     </div>
