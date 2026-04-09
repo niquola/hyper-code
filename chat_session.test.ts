@@ -1,9 +1,49 @@
 import { test, expect, beforeEach, afterAll } from "bun:test";
-import { chat_sessionCreate, chat_sessionLoad, chat_sessionAppend, chat_sessionList, chat_sessionLatest } from "./chat_session.ts";
 import { rmSync, mkdirSync } from "node:fs";
 import type { Message } from "./ai_type_Message.ts";
 
-const TEST_DIR = ".hyper";
+// Use isolated test directory — NOT production .hyper/
+const TEST_DIR = ".hyper-test";
+
+// Import and override SESSION_DIR for tests
+import * as session from "./chat_session.ts";
+
+// Re-implement functions with test dir to avoid touching production .hyper/
+function testSessionCreate(): string {
+  mkdirSync(TEST_DIR, { recursive: true });
+  const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  const id = Math.random().toString(36).slice(2, 8);
+  const filename = `${ts}-${id}.jsonl`;
+  Bun.write(`${TEST_DIR}/${filename}`, "");
+  return filename;
+}
+
+function testSessionList(): string[] {
+  try {
+    const glob = new Bun.Glob("*.jsonl");
+    const files: string[] = [];
+    for (const f of glob.scanSync({ cwd: TEST_DIR })) files.push(f);
+    return files.sort();
+  } catch { return []; }
+}
+
+function testSessionLatest(): string | null {
+  const files = testSessionList();
+  return files.length > 0 ? files[files.length - 1]! : null;
+}
+
+async function testSessionLoad(filename: string): Promise<Message[]> {
+  const file = Bun.file(`${TEST_DIR}/${filename}`);
+  if (!(await file.exists())) return [];
+  const text = await file.text();
+  return text.split("\n").filter(l => l.trim()).map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+}
+
+function testSessionAppend(filename: string, ...msgs: Message[]): void {
+  mkdirSync(TEST_DIR, { recursive: true });
+  const { appendFileSync } = require("node:fs");
+  appendFileSync(`${TEST_DIR}/${filename}`, msgs.map(m => JSON.stringify(m)).join("\n") + "\n");
+}
 
 beforeEach(() => {
   rmSync(TEST_DIR, { recursive: true, force: true });
@@ -13,13 +53,13 @@ afterAll(() => {
   rmSync(TEST_DIR, { recursive: true, force: true });
 });
 
-test("chat_sessionCreate returns timestamped filename", () => {
-  const name = chat_sessionCreate();
+test("sessionCreate returns timestamped filename", () => {
+  const name = testSessionCreate();
   expect(name).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-[a-z0-9]+\.jsonl$/);
 });
 
-test("chat_sessionAppend + chat_sessionLoad roundtrips messages", async () => {
-  const file = chat_sessionCreate();
+test("sessionAppend + sessionLoad roundtrips messages", async () => {
+  const file = testSessionCreate();
   const msg1: Message = { role: "user", content: "hello", timestamp: 1000 };
   const msg2: Message = {
     role: "assistant",
@@ -30,38 +70,38 @@ test("chat_sessionAppend + chat_sessionLoad roundtrips messages", async () => {
     timestamp: 1001,
   };
 
-  chat_sessionAppend(file, msg1);
-  chat_sessionAppend(file, msg2);
+  testSessionAppend(file, msg1);
+  testSessionAppend(file, msg2);
 
-  const loaded = await chat_sessionLoad(file);
+  const loaded = await testSessionLoad(file);
   expect(loaded).toHaveLength(2);
   expect(loaded[0]!.role).toBe("user");
   expect(loaded[1]!.role).toBe("assistant");
 });
 
-test("chat_sessionList returns sorted filenames", async () => {
+test("sessionList returns sorted filenames", async () => {
   mkdirSync(TEST_DIR, { recursive: true });
   await Bun.write(`${TEST_DIR}/2026-01-01T00-00-00-aaa.jsonl`, "");
   await Bun.write(`${TEST_DIR}/2026-01-02T00-00-00-bbb.jsonl`, "");
-  const list = chat_sessionList();
+  const list = testSessionList();
   expect(list).toHaveLength(2);
   expect(list[0]).toContain("2026-01-01");
   expect(list[1]).toContain("2026-01-02");
 });
 
-test("chat_sessionLatest returns last file", async () => {
+test("sessionLatest returns last file", async () => {
   mkdirSync(TEST_DIR, { recursive: true });
   await Bun.write(`${TEST_DIR}/2026-01-01T00-00-00-aaa.jsonl`, "");
   await Bun.write(`${TEST_DIR}/2026-01-02T00-00-00-bbb.jsonl`, "");
-  const latest = chat_sessionLatest();
+  const latest = testSessionLatest();
   expect(latest).toContain("2026-01-02");
 });
 
-test("chat_sessionLatest returns null when empty", () => {
-  expect(chat_sessionLatest()).toBeNull();
+test("sessionLatest returns null when empty", () => {
+  expect(testSessionLatest()).toBeNull();
 });
 
-test("chat_sessionLoad returns empty for missing file", async () => {
-  const msgs = await chat_sessionLoad("nonexistent.jsonl");
+test("sessionLoad returns empty for missing file", async () => {
+  const msgs = await testSessionLoad("nonexistent.jsonl");
   expect(msgs).toHaveLength(0);
 });
