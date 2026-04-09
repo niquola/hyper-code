@@ -1,8 +1,10 @@
-import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 
-export function agent_reset(ctx: Ctx): void {
-  ctx.abortController?.abort();
-  ctx.messages = [];
-  ctx.isStreaming = false;
-  ctx.abortController = null;
+export function agent_reset(session: Session): void {
+  session.abortController?.abort();
+  session.messages = [];
+  session.isStreaming = false;
+  session.abortController = null;
+  session.steerQueue = [];
+  session.followUpQueue = [];
 }

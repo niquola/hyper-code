@@ -4,6 +4,7 @@ import { agent_run } from "./agent_run.ts";
 import { agent_abort } from "./agent_abort.ts";
 import { agent_executeTools } from "./agent_executeTools.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 import type { AgentEvent } from "./agent_type_Event.ts";
 import type { AgentTool } from "./agent_type_Tool.ts";
 import type { ToolCall } from "./ai_type_Message.ts";
@@ -21,6 +22,10 @@ const LM_STUDIO_MODEL: Model = {
   maxTokens: 32000,
 };
 
+function createSession(): Session {
+  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false };
+}
+
 // -- agent_createCtx --
 
 describe("agent_createCtx", () => {
@@ -29,10 +34,7 @@ describe("agent_createCtx", () => {
     expect(ctx.model).toBe(LM_STUDIO_MODEL);
     expect(ctx.apiKey).toBe("lm-studio");
     expect(ctx.systemPrompt).toBe("");
-    expect(ctx.messages).toEqual([]);
     expect(ctx.tools).toEqual([]);
-    expect(ctx.abortController).toBeNull();
-    expect(ctx.isStreaming).toBe(false);
   });
 
   test("creates ctx with custom values", () => {
@@ -58,16 +60,16 @@ describe("agent_createCtx", () => {
 
 describe("agent_abort", () => {
   test("does nothing if no active run", () => {
-    const ctx = agent_createCtx({ model: LM_STUDIO_MODEL, apiKey: "lm-studio" });
-    agent_abort(ctx); // should not throw
+    const session = createSession();
+    agent_abort(session); // should not throw
   });
 
   test("aborts active controller", () => {
-    const ctx = agent_createCtx({ model: LM_STUDIO_MODEL, apiKey: "lm-studio" });
-    ctx.abortController = new AbortController();
-    expect(ctx.abortController.signal.aborted).toBe(false);
-    agent_abort(ctx);
-    expect(ctx.abortController.signal.aborted).toBe(true);
+    const session = createSession();
+    session.abortController = new AbortController();
+    expect(session.abortController.signal.aborted).toBe(false);
+    agent_abort(session);
+    expect(session.abortController.signal.aborted).toBe(true);
   });
 });
 
@@ -174,10 +176,11 @@ describe("agent_run", () => {
       apiKey: "lm-studio",
       systemPrompt: "Reply with exactly one word: OK",
     });
+    const session = createSession();
 
     const events: AgentEvent[] = [];
     let text = "";
-    await agent_run(ctx, "Say OK", (e) => {
+    await agent_run(ctx, session, "Say OK", (e) => {
       events.push(e);
       if (e.type === "text_delta") text += e.delta;
     });
@@ -187,8 +190,8 @@ describe("agent_run", () => {
     expect(events.some((e) => e.type === "turn_end")).toBe(true);
     expect(events[events.length - 1]!.type).toBe("agent_end");
     expect(text.length).toBeGreaterThan(0);
-    expect(ctx.messages).toHaveLength(2); // user + assistant
-    expect(ctx.isStreaming).toBe(false);
+    expect(session.messages).toHaveLength(2); // user + assistant
+    expect(session.isStreaming).toBe(false);
   });
 
   test("prompt with tool call", async () => {
@@ -203,26 +206,27 @@ describe("agent_run", () => {
         execute: async (p) => ({ content: [{ type: "text", text: `Contents of ${p.path}:\nexport default { port: 3000 };` }] }),
       }],
     });
+    const session = createSession();
 
     const events: AgentEvent[] = [];
-    await agent_run(ctx, "Read the file config.ts", (e) => events.push(e));
+    await agent_run(ctx, session, "Read the file config.ts", (e) => events.push(e));
 
     const toolStarts = events.filter((e) => e.type === "tool_execution_start");
     const toolEnds = events.filter((e) => e.type === "tool_execution_end");
     expect(toolStarts.length).toBeGreaterThanOrEqual(1);
     expect(toolEnds.length).toBeGreaterThanOrEqual(1);
 
-    // Should have at least: user, assistant (tool call), tool result, assistant (summary)
-    expect(ctx.messages.length).toBeGreaterThanOrEqual(4);
+    expect(session.messages.length).toBeGreaterThanOrEqual(4);
     expect(events[events.length - 1]!.type).toBe("agent_end");
-    expect(ctx.isStreaming).toBe(false);
+    expect(session.isStreaming).toBe(false);
   });
 
   test("queues follow-up when already streaming", async () => {
     const ctx = agent_createCtx({ model: LM_STUDIO_MODEL, apiKey: "lm-studio" });
-    ctx.isStreaming = true;
-    await agent_run(ctx, "hi", () => {});
-    expect(ctx.followUpQueue).toContain("hi");
+    const session = createSession();
+    session.isStreaming = true;
+    await agent_run(ctx, session, "hi", () => {});
+    expect(session.followUpQueue).toContain("hi");
   });
 
   test("cleans up state after error", async () => {
@@ -231,12 +235,13 @@ describe("agent_run", () => {
       baseUrl: "http://localhost:99999/v1",
     };
     const ctx = agent_createCtx({ model: badModel, apiKey: "lm-studio" });
+    const session = createSession();
 
     const events: AgentEvent[] = [];
-    await agent_run(ctx, "hi", (e) => events.push(e));
+    await agent_run(ctx, session, "hi", (e) => events.push(e));
 
-    expect(ctx.isStreaming).toBe(false);
-    expect(ctx.abortController).toBeNull();
+    expect(session.isStreaming).toBe(false);
+    expect(session.abortController).toBeNull();
     expect(events.some((e) => e.type === "error")).toBe(true);
   });
 });

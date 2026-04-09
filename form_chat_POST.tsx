@@ -1,6 +1,6 @@
 import { agent_run } from "./agent_run.ts";
 import { chat_createSSEStream } from "./chat_sse.ts";
-import { chat_getCtx, chat_saveMessages } from "./chat_ctx.ts";
+import { chat_getCtx, chat_getSession, chat_saveMessages } from "./chat_ctx.ts";
 
 export default async function (req: Request) {
   const form = await req.formData();
@@ -10,22 +10,23 @@ export default async function (req: Request) {
   }
 
   const ctx = await chat_getCtx();
+  const session = await chat_getSession();
 
   // If agent is already streaming, queue as follow-up
-  if (ctx.isStreaming) {
-    ctx.followUpQueue.push(prompt.trim());
+  if (session.isStreaming) {
+    session.followUpQueue.push(prompt.trim());
     return new Response(JSON.stringify({ queued: "followUp" }), {
       headers: { "Content-Type": "application/json" },
     });
   }
 
-  const msgsBefore = ctx.messages.length;
+  const msgsBefore = session.messages.length;
 
   return chat_createSSEStream((onEvent) =>
-    agent_run(ctx, prompt, (event) => {
+    agent_run(ctx, session, prompt, (event) => {
       onEvent(event);
       if (event.type === "agent_end") {
-        const newMsgs = ctx.messages.slice(msgsBefore);
+        const newMsgs = session.messages.slice(msgsBefore);
         chat_saveMessages(...newMsgs);
       }
     }),

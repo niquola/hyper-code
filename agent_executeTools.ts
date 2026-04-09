@@ -6,6 +6,7 @@ export async function agent_executeTools(
   ctx: Ctx,
   toolCalls: ToolCall[],
   onEvent: (event: AgentEvent) => void,
+  signal?: AbortSignal,
 ): Promise<ToolResultMessage[]> {
   const results: ToolResultMessage[] = [];
 
@@ -29,7 +30,7 @@ export async function agent_executeTools(
     }
 
     try {
-      const toolResult = await tool.execute(tc.arguments, ctx.abortController?.signal ?? undefined);
+      const toolResult = await tool.execute(tc.arguments, signal);
       const result: ToolResultMessage = {
         role: "toolResult",
         toolCallId: tc.id,

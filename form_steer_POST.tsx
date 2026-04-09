@@ -1,4 +1,4 @@
-import { chat_getCtx } from "./chat_ctx.ts";
+import { chat_getSession } from "./chat_ctx.ts";
 
 export default async function (req: Request) {
   const form = await req.formData();
@@ -7,7 +7,7 @@ export default async function (req: Request) {
     return new Response("empty", { status: 400 });
   }
 
-  const ctx = await chat_getCtx();
-  ctx.steerQueue.push(prompt.trim());
+  const session = await chat_getSession();
+  session.steerQueue.push(prompt.trim());
   return new Response("ok");
 }

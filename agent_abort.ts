@@ -1,5 +1,5 @@
-import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 
-export function agent_abort(ctx: Ctx): void {
-  ctx.abortController?.abort();
+export function agent_abort(session: Session): void {
+  session.abortController?.abort();
 }

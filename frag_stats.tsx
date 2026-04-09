@@ -1,9 +1,9 @@
-import { chat_getCtx } from "./chat_ctx.ts";
+import { chat_getSession } from "./chat_ctx.ts";
 import type { AssistantMessage } from "./ai_type_Message.ts";
 
 export default async function (req: Request) {
-  const ctx = await chat_getCtx();
-  const assistantMessages = ctx.messages.filter((m) => m.role === "assistant") as AssistantMessage[];
+  const session = await chat_getSession();
+  const assistantMessages = session.messages.filter((m) => m.role === "assistant") as AssistantMessage[];
 
   let totalTokens = 0;
   let totalCost = 0;

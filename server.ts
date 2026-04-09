@@ -1,7 +1,7 @@
 import { router_buildRoutes } from "./router_buildRoutes.ts";
 import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
-import { chat_getCtx } from "./chat_ctx.ts";
+import { chat_getCtx, chat_getSession } from "./chat_ctx.ts";
 import { agent_run } from "./agent_run.ts";
 
 const routes = await router_buildRoutes(".");
@@ -34,7 +34,8 @@ const server = Bun.serve({
       if (!text.trim()) return new Response("empty", { status: 400 });
 
       const ctx = await chat_getCtx();
-      agent_run(ctx, `[User interaction from widget] ${text}`, () => {});
+      const session = await chat_getSession();
+      agent_run(ctx, session, `[User interaction from widget] ${text}`, () => {});
       return new Response(
         `<div class="text-xs text-green-600 py-1">✓ Sent to agent</div>`,
         { headers: { "Content-Type": "text/html" } },

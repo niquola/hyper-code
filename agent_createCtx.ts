@@ -12,11 +12,6 @@ export function agent_createCtx(opts: {
     model: opts.model,
     apiKey: opts.apiKey,
     systemPrompt: opts.systemPrompt ?? "",
-    messages: [],
     tools: opts.tools ?? [],
-    abortController: null,
-    isStreaming: false,
-    steerQueue: [],
-    followUpQueue: [],
   };
 }

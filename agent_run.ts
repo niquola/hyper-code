@@ -1,34 +1,36 @@
 import type { AssistantMessage, ToolCall, Tool } from "./ai_type_Message.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 import type { AgentEvent } from "./agent_type_Event.ts";
 import { ai_stream } from "./ai_stream.ts";
 import { agent_executeTools } from "./agent_executeTools.ts";
 
 export async function agent_run(
   ctx: Ctx,
+  session: Session,
   prompt: string,
   onEvent: (event: AgentEvent) => void,
 ): Promise<void> {
-  if (ctx.isStreaming) {
+  if (session.isStreaming) {
     // Already running — queue as follow-up
-    ctx.followUpQueue.push(prompt);
+    session.followUpQueue.push(prompt);
     return;
   }
 
-  ctx.isStreaming = true;
-  ctx.abortController = new AbortController();
+  session.isStreaming = true;
+  session.abortController = new AbortController();
 
   // Add user message
-  ctx.messages.push({ role: "user", content: prompt, timestamp: Date.now() });
+  session.messages.push({ role: "user", content: prompt, timestamp: Date.now() });
   onEvent({ type: "agent_start" });
 
   try {
     // Agent loop: stream → tool calls → repeat
     while (true) {
       // Inject steer messages before each turn
-      while (ctx.steerQueue.length > 0) {
-        const steerMsg = ctx.steerQueue.shift()!;
-        ctx.messages.push({ role: "user", content: `[STEER] ${steerMsg}`, timestamp: Date.now() });
+      while (session.steerQueue.length > 0) {
+        const steerMsg = session.steerQueue.shift()!;
+        session.messages.push({ role: "user", content: `[STEER] ${steerMsg}`, timestamp: Date.now() });
         onEvent({ type: "steer", message: steerMsg });
       }
 
@@ -45,12 +47,12 @@ export async function agent_run(
         ctx.model,
         {
           systemPrompt: ctx.systemPrompt,
-          messages: ctx.messages,
+          messages: session.messages,
           tools: llmTools.length > 0 ? llmTools : undefined,
         },
         {
           apiKey: ctx.apiKey,
-          signal: ctx.abortController.signal,
+          signal: session.abortController.signal,
         },
       );
 
@@ -74,7 +76,7 @@ export async function agent_run(
       }
 
       // Add assistant message to context
-      ctx.messages.push(assistantMessage);
+      session.messages.push(assistantMessage);
 
       if (assistantMessage.stopReason === "error" || assistantMessage.stopReason === "aborted") {
         onEvent({ type: "error", error: assistantMessage.errorMessage || "Unknown error" });
@@ -88,24 +90,24 @@ export async function agent_run(
       if (toolCalls.length === 0) break;
 
       // Execute tools and add results to messages
-      const toolResults = await agent_executeTools(ctx, toolCalls, onEvent);
-      ctx.messages.push(...toolResults);
+      const toolResults = await agent_executeTools(ctx, toolCalls, onEvent, session.abortController?.signal);
+      session.messages.push(...toolResults);
 
       // Loop back for next LLM turn
     }
 
-    onEvent({ type: "agent_end", messages: ctx.messages });
+    onEvent({ type: "agent_end", messages: session.messages });
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
     onEvent({ type: "error", error: errorMsg });
   } finally {
-    ctx.isStreaming = false;
-    ctx.abortController = null;
+    session.isStreaming = false;
+    session.abortController = null;
   }
 
   // Process follow-up queue
-  if (ctx.followUpQueue.length > 0) {
-    const next = ctx.followUpQueue.shift()!;
-    await agent_run(ctx, next, onEvent);
+  if (session.followUpQueue.length > 0) {
+    const next = session.followUpQueue.shift()!;
+    await agent_run(ctx, session, next, onEvent);
   }
 }

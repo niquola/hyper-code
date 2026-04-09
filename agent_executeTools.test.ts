@@ -58,13 +58,14 @@ describe("agent_executeTools edge cases", () => {
       }],
     });
 
-    ctx.abortController = new AbortController();
-    setTimeout(() => ctx.abortController?.abort(), 20);
+    const ac = new AbortController();
+    setTimeout(() => ac.abort(), 20);
 
     const results = await agent_executeTools(
       ctx,
       [{ type: "toolCall", id: "tc1", name: "slow", arguments: {} }],
       () => {},
+      ac.signal,
     );
     expect(results[0]!.isError).toBe(true);
     expect((results[0]!.content[0] as any).text).toContain("aborted");

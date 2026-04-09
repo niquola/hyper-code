@@ -3,6 +3,7 @@ import { agent_createCtx } from "./agent_createCtx.ts";
 import { agent_run } from "./agent_run.ts";
 import type { AgentEvent } from "./agent_type_Event.ts";
 import type { Model } from "./ai_type_Model.ts";
+import type { Session } from "./chat_type_Session.ts";
 
 const LM_MODEL: Model = {
   id: "qwen3-coder-next",
@@ -15,6 +16,10 @@ const LM_MODEL: Model = {
   contextWindow: 128000,
   maxTokens: 32000,
 };
+
+function createSession(): Session {
+  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false };
+}
 
 describe("agent_run error handling", () => {
   test("handles tool that throws and continues", async () => {
@@ -30,18 +35,17 @@ describe("agent_run error handling", () => {
         execute: async () => { toolCallCount++; throw new Error("intentional failure"); },
       }],
     });
+    const session = createSession();
 
     const events: AgentEvent[] = [];
-    await agent_run(ctx, "Call the fail tool", (e) => events.push(e));
+    await agent_run(ctx, session, "Call the fail tool", (e) => events.push(e));
 
-    // Should have tool_execution_end with isError=true
     const toolEnd = events.filter((e) => e.type === "tool_execution_end");
     if (toolEnd.length > 0) {
       expect((toolEnd[0] as any).isError).toBe(true);
     }
-    // Agent should still complete (not crash)
     expect(events[events.length - 1]!.type).toBe("agent_end");
-    expect(ctx.isStreaming).toBe(false);
+    expect(session.isStreaming).toBe(false);
   });
 
   test("handles connection error gracefully", async () => {
@@ -49,20 +53,22 @@ describe("agent_run error handling", () => {
       model: { ...LM_MODEL, baseUrl: "http://localhost:99999/v1" },
       apiKey: "lm-studio",
     });
+    const session = createSession();
 
     const events: AgentEvent[] = [];
-    await agent_run(ctx, "hi", (e) => events.push(e));
+    await agent_run(ctx, session, "hi", (e) => events.push(e));
 
     expect(events.some((e) => e.type === "error")).toBe(true);
-    expect(ctx.isStreaming).toBe(false);
-    expect(ctx.abortController).toBeNull();
+    expect(session.isStreaming).toBe(false);
+    expect(session.abortController).toBeNull();
   });
 
   test("queues follow-up when already streaming", async () => {
     const ctx = agent_createCtx({ model: LM_MODEL, apiKey: "lm-studio" });
-    ctx.isStreaming = true;
+    const session = createSession();
+    session.isStreaming = true;
 
-    await agent_run(ctx, "hi", () => {});
-    expect(ctx.followUpQueue).toContain("hi");
+    await agent_run(ctx, session, "hi", () => {});
+    expect(session.followUpQueue).toContain("hi");
   });
 });
