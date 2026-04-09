@@ -104,7 +104,8 @@ Both can coexist on the same page. htmx uses `hx-*` attributes, Datastar uses `d
 - `ai_stream(model, context, opts)` → `AssistantMessageEventStream` (async iterable)
 - Auto-routes: Codex → `ai_streamCodex` (raw fetch), OpenAI/GitHub → `ai_streamResponses`, others → Completions API
 - Types: `Message`, `AssistantMessage`, `ToolCall`, `Usage`, `Model`, `StreamOptions`
-- `ai_renderMarkdown(text)` → HTML with shiki syntax highlighting
+- `ai_renderMarkdown(text)` → HTML with shiki syntax highlighting (github-light theme)
+- **Light theme everywhere** — UI is light, code blocks use `github-light` shiki theme. No dark backgrounds.
 - `ai_models_generated.ts` — 856 models across 23 providers
 
 **agent** — Agent loop: prompt → LLM → tool execution → repeat

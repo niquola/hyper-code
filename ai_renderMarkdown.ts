@@ -16,7 +16,7 @@ const LANG_ALIASES: Record<string, string> = {
 async function getHighlighter(): Promise<Highlighter> {
   if (!_highlighter) {
     _highlighter = await createHighlighter({
-      themes: ["github-dark"],
+      themes: ["github-light"],
       langs: [...LANGS],
     });
   }
@@ -33,7 +33,7 @@ export async function ai_highlightCode(code: string, lang: string): Promise<stri
   const loadedLangs = new Set(hl.getLoadedLanguages());
   const normalized = normalizeLang(lang);
   if (loadedLangs.has(normalized)) {
-    try { return hl.codeToHtml(code, { lang: normalized, theme: "github-dark" }); } catch {}
+    try { return hl.codeToHtml(code, { lang: normalized, theme: "github-light" }); } catch {}
   }
   return `<pre style="background:#0d1117;color:#e6edf3;padding:1rem;border-radius:0.5rem;overflow-x:auto;font-size:12px"><code>${code.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}</code></pre>`;
 }
@@ -57,7 +57,7 @@ export async function ai_renderMarkdown(text: string): Promise<string> {
 
       if (loadedLangs.has(normalized)) {
         try {
-          return hl.codeToHtml(raw, { lang: normalized, theme: "github-dark" });
+          return hl.codeToHtml(raw, { lang: normalized, theme: "github-light" });
         } catch {}
       }
       return `<pre style="background:#0d1117;color:#e6edf3;padding:1rem;border-radius:0.5rem;overflow-x:auto"><code>${escaped}</code></pre>`;
