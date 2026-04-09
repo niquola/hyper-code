@@ -67,6 +67,14 @@ export function chat_sessionAppend(filename: string, ...msgs: Message[]): void {
   appendFileSync(path, data);
 }
 
+/** Overwrite entire session file (for mutations like dispatch replacement) */
+export function chat_sessionRewrite(filename: string, messages: Message[]): void {
+  ensureDir();
+  const path = `${SESSION_DIR}/${filename}`;
+  const data = messages.map((m) => JSON.stringify(m)).join("\n") + (messages.length > 0 ? "\n" : "");
+  Bun.write(path, data);
+}
+
 export type SessionInfo = {
   filename: string;
   title: string;

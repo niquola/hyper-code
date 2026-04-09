@@ -2,6 +2,7 @@ import { router_buildRoutes } from "./router_buildRoutes.ts";
 import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
 import { chat_getCtx, chat_getSession } from "./chat_ctx.ts";
+import { chat_sessionRewrite } from "./chat_session.ts";
 import { agent_run } from "./agent_run.ts";
 
 const routes = await router_buildRoutes(".");
@@ -35,11 +36,28 @@ const server = Bun.serve({
 
       const ctx = await chat_getCtx();
       const session = await chat_getSession();
+
+      // Replace last interactive widget HTML with completed state
+      const completedHtml = `<div class="text-xs text-gray-500 border border-gray-200 rounded px-3 py-2 bg-gray-50">✓ ${Bun.escapeHTML(text)}</div>`;
+      for (let i = session.messages.length - 1; i >= 0; i--) {
+        const msg = session.messages[i]!;
+        if (msg.role !== "toolResult") continue;
+        let replaced = false;
+        for (const c of msg.content) {
+          if (c.type === "html" && (c as any).html.includes("data-widget-id")) {
+            (c as any).html = completedHtml;
+            replaced = true;
+            break;
+          }
+        }
+        if (replaced) {
+          chat_sessionRewrite(session.filename, session.messages);
+          break;
+        }
+      }
+
       agent_run(ctx, session, `[User interaction from widget] ${text}`, () => {});
-      return new Response(
-        `<div class="text-xs text-green-600 py-1">✓ Sent to agent</div>`,
-        { headers: { "Content-Type": "text/html" } },
-      );
+      return new Response(completedHtml, { headers: { "Content-Type": "text/html" } });
     }
 
     return new Response("Not found", { status: 404 });

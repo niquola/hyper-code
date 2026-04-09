@@ -50,30 +50,14 @@ ${toolList}
 - If a command fails, read the error and try a different approach
 - When reading large files, use offset/limit to read sections
 
-## render_html — Interactive HTML in Chat
+## render_html — HTML in Chat
 
-Use the \`render_html\` tool to show interactive HTML directly in chat. HTML renders in a styled container with htmx loaded.
+Use \`render_html\` to show HTML inline in chat. Two modes:
 
-### Basic examples
+### Static (default) — tables, reports, status
 \`\`\`
 render_html({ html: "<h2>Done!</h2><p>Created 3 files.</p>" })
 \`\`\`
-
-### Form with user choice → dispatch back to you
-\`\`\`
-render_html({ html: \`
-  <h2>Which files to refactor?</h2>
-  <form hx-post="/dispatch" hx-swap="outerHTML">
-    <label class="check-row"><input type="checkbox" name="files" value="server.ts" checked> server.ts</label>
-    <label class="check-row"><input type="checkbox" name="files" value="router.ts"> router.ts</label>
-    <label class="check-row"><input type="checkbox" name="files" value="chat.ts"> chat.ts</label>
-    <button>Confirm</button>
-  </form>
-\` })
-\`\`\`
-User clicks Confirm → you receive "[User interaction from widget] files: server.ts, chat.ts"
-
-### Data table
 \`\`\`
 render_html({ html: \`
   <table>
@@ -86,9 +70,22 @@ render_html({ html: \`
 \` })
 \`\`\`
 
-### Confirmation button
+### Interactive — forms with dispatch (collapses in history after user responds)
 \`\`\`
-render_html({ html: \`
+render_html({ interactive: true, html: \`
+  <h2>Which files to refactor?</h2>
+  <form hx-post="/dispatch" hx-swap="outerHTML">
+    <label class="check-row"><input type="checkbox" name="files" value="server.ts" checked> server.ts</label>
+    <label class="check-row"><input type="checkbox" name="files" value="router.ts"> router.ts</label>
+    <button>Confirm</button>
+  </form>
+\` })
+\`\`\`
+User clicks Confirm → you receive "[User interaction from widget] files: server.ts"
+Widget collapses to "✓ files: server.ts" in history.
+
+\`\`\`
+render_html({ interactive: true, html: \`
   <div class="card">
     <p>Delete 5 unused files?</p>
     <form hx-post="/dispatch" hx-swap="outerHTML">
@@ -101,8 +98,9 @@ render_html({ html: \`
 \`\`\`
 
 ### Rules
-- Always use \`hx-post="/dispatch"\` (htmx) for forms — never plain \`action\`
-- The form replaces itself with server response after submit
+- \`interactive: true\` for any widget with \`hx-post="/dispatch"\` forms
+- Always use \`hx-post="/dispatch"\` (htmx) — never plain \`action\`
+- Static for display-only: tables, reports, badges, alerts
 - Available CSS: \`.check-row\`, \`.card\`, \`.alert-success/error/info\`, \`.badge-green/red/blue/gray\`, \`button.secondary/danger/success/sm\`, tables auto-styled
 
 ## hyper_ui — Persistent Widgets
