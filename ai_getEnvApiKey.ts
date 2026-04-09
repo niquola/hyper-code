@@ -30,6 +30,17 @@ export function ai_getEnvApiKey(provider: string): string | undefined {
     return process.env.COPILOT_GITHUB_TOKEN || process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
   }
 
+  // Kimi: read from CLI credentials file
+  if (provider === "kimi-coding") {
+    if (process.env.KIMI_API_KEY) return process.env.KIMI_API_KEY;
+    try {
+      const home = process.env.HOME || process.env.USERPROFILE || "";
+      const creds = JSON.parse(require("node:fs").readFileSync(`${home}/.kimi/credentials/kimi-code.json`, "utf-8"));
+      if (creds.access_token && creds.expires_at > Date.now() / 1000) return creds.access_token;
+    } catch {}
+    return undefined;
+  }
+
   const envVar = ENV_MAP[provider];
   return envVar ? process.env[envVar] : undefined;
 }
