@@ -31,10 +31,9 @@ export default async function (req: Request) {
               name="provider"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               hx-get="/models"
-              hx-target="#model-select"
-              hx-swap="outerHTML"
+              hx-target="#model-list"
+              hx-swap="innerHTML"
               hx-trigger="change"
-              hx-include="[name=provider]"
             >
               {allProviders.map((p) => (
                 <option value={p} selected={p === settings.provider}>{p}</option>
@@ -44,7 +43,7 @@ export default async function (req: Request) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
-            <div id="model-select" dangerouslySetInnerHTML={{ __html: renderModelSelect(settings.provider, settings.modelId) }} />
+            <select id="model-list" name="modelId" className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" dangerouslySetInnerHTML={{ __html: renderModelOptions(settings.provider, settings.modelId) }} />
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -59,14 +58,13 @@ export default async function (req: Request) {
   return layout_view_page("New Session", body, ctx.model.name || ctx.model.id);
 }
 
-function renderModelSelect(provider: string, selectedId?: string): string {
+function renderModelOptions(provider: string, selectedId?: string): string {
   const models = ai_getModels(provider);
-  let html = `<select id="model-select" name="modelId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">`;
+  let html = "";
   for (const m of models) {
     const sel = m.id === selectedId ? " selected" : "";
     html += `<option value="${m.id}"${sel}>${m.name || m.id}</option>`;
   }
   if (models.length === 0) html += `<option value="">No models</option>`;
-  html += `</select>`;
   return html;
 }
