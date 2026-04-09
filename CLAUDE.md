@@ -53,7 +53,13 @@ ls cdp*.ts                     # CDP browser testing
 - `ls <module>.ts` = module boundaries (barrels)
 - Functions take everything they need as parameters — no hidden internal state, no singletons, no closures over mutable variables.
 - Prefer explicit data flow: pass dependencies in, return results out.
-- **URL determines everything.** Classic web: the URL fully defines the screen. No hidden state. Session ID in URL, sidebar reads current from URL, all actions scoped to URL session.
+- **URL determines everything.** Classic web: the URL fully defines the screen. No hidden server state. Refresh the page — same result. Copy URL — same screen in another tab.
+  - ✅ `GET /session/abc.jsonl/` — session from URL, render from file
+  - ✅ `POST /session/abc.jsonl/chat` — action scoped to URL session
+  - ✅ sidebar reads `?current=` from URL to highlight active session
+  - ❌ `POST /chat` with global `currentSession` — hidden state, breaks multi-tab
+  - ❌ sidebar highlights based on server-side `let currentFilename` — stale after tab switch
+  - ❌ `chat_getSession()` in request handler — which session? depends on last click, not URL
 - **STRICT: All procedures accept `ctx: Ctx` and `session: Session` as explicit parameters.**
   - **FORBIDDEN: closures over mutable global state.** Every function receives what it needs via arguments.
   - `Ctx` = immutable config (model, tools, apiKey). `Session` = mutable state (messages, queues, streaming).
