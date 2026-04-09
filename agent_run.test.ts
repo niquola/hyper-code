@@ -18,7 +18,7 @@ const LM_MODEL: Model = {
 };
 
 function createSession(): Session {
-  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set() };
+  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
 }
 
 describe("agent_run error handling", () => {

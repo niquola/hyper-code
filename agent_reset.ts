@@ -8,4 +8,5 @@ export function agent_reset(session: Session): void {
   session.steerQueue = [];
   session.followUpQueue = [];
   session.sseListeners.clear();
+  session.pendingDialogs.clear();
 }

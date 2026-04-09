@@ -4,7 +4,7 @@ import type { AgentEvent } from "./agent_type_Event.ts";
 import type { Session } from "./chat_type_Session.ts";
 
 function mockSession(): Session {
-  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set() };
+  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
 }
 
 async function collectSSE(response: Response): Promise<string[]> {

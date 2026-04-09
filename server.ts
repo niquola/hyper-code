@@ -62,12 +62,21 @@ const server = Bun.serve({
         }
       }
 
-      // If agent is streaming — inject as steer (will be seen next turn)
-      // If not — queue as follow-up (will run when next message sent)
-      if (session.isStreaming) {
-        session.steerQueue.push(`[User interaction from widget] ${text}`);
-      } else {
-        session.followUpQueue.push(`[User interaction from widget] ${text}`);
+      // Resolve pending dialog if any (blocking tool awaits this)
+      let resolved = false;
+      for (const [dialogId, resolve] of session.pendingDialogs) {
+        resolve(text);
+        resolved = true;
+        break; // resolve first pending dialog
+      }
+
+      // If no pending dialog, inject as steer/follow-up
+      if (!resolved) {
+        if (session.isStreaming) {
+          session.steerQueue.push(`[User interaction from widget] ${text}`);
+        } else {
+          session.followUpQueue.push(`[User interaction from widget] ${text}`);
+        }
       }
 
       return new Response(completedHtml, {

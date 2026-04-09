@@ -53,6 +53,7 @@ ls cdp*.ts                     # CDP browser testing
 - `ls <module>.ts` = module boundaries (barrels)
 - Functions take everything they need as parameters — no hidden internal state, no singletons, no closures over mutable variables.
 - Prefer explicit data flow: pass dependencies in, return results out.
+- **All agent/chat procedures must accept `ctx: Ctx` and `session: Session` as explicit parameters.** No reading global state. `Ctx` is immutable config (model, tools). `Session` is mutable state (messages, queues, streaming status).
 - **Don't do extra.** Don't add features, abstractions, or "improvements" beyond what was asked. Don't guess requirements — ask.
 - **Interview before building.** When a new feature is requested, first gather minimal requirements and use cases. Ask: what exactly should it do? Who uses it? What's the simplest version? Don't jump into coding — clarify scope first.
 - **Strict TDD.** Always write tests BEFORE implementing the function. Red → Green → Refactor. No exceptions.

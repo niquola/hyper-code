@@ -195,6 +195,9 @@ export function chat_createSSEStream(
     start(ctrl) {
       controller = ctrl;
 
+      // Allow tools to push HTML directly (for blocking dialogs)
+      session.emitHtml = (html: string) => send(html);
+
       runAgent((event) => {
         switch (event.type) {
           case "agent_start":

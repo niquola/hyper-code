@@ -33,7 +33,10 @@ export async function chat_getCtx(): Promise<Ctx> {
       tool_read(cwd), tool_write(cwd), tool_edit(cwd), tool_bash(cwd),
       tool_grep(cwd), tool_find(cwd), tool_ls(cwd), tool_hyper_ui(cwd),
       tool_html_message(),
-      tool_html_dialog(),
+      tool_html_dialog(() => {
+        const fn = currentFilename;
+        return fn ? sessions.get(fn)! : null!;
+      }),
     ];
 
     ctx = agent_createCtx({
@@ -63,6 +66,7 @@ async function loadSession(filename: string): Promise<Session> {
     abortController: null,
     isStreaming: false,
     sseListeners: new Set(),
+    pendingDialogs: new Map(),
   };
   sessions.set(filename, session);
   return session;

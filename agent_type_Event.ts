@@ -12,4 +12,5 @@ export type AgentEvent =
   | { type: "tool_execution_start"; toolCallId: string; toolName: string; args: any }
   | { type: "tool_execution_end"; toolCallId: string; toolName: string; result: AgentToolResult; isError: boolean }
   | { type: "error"; error: string }
-  | { type: "steer"; message: string };
+  | { type: "steer"; message: string }
+  | { type: "tool_dialog"; html: string };

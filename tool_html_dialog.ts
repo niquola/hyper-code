@@ -1,24 +1,27 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Session } from "./chat_type_Session.ts";
 
 let dialogCounter = 0;
 
-export function tool_html_dialog(): AgentTool {
+export function tool_html_dialog(getSession: () => Session): AgentTool {
   return {
     name: "html_dialog",
-    description: "Open a modal dialog for user input. Put form fields inside (inputs, checkboxes, selects). Dialog auto-wraps in <form> with dispatch and Submit/Cancel buttons. Closes after submit, result sent back to you.",
+    description: "Open a blocking modal dialog for user input. Provide title + form fields. Blocks until user responds — their answer returned as tool result. Agent pauses while waiting.",
     parameters: {
       type: "object",
       properties: {
         title: { type: "string", description: "Dialog title" },
-        html: { type: "string", description: "Form content HTML: inputs, checkboxes, selects, labels. No <form> tag needed." },
+        html: { type: "string", description: "Form fields HTML: inputs, checkboxes, selects, labels. No <form> needed." },
         submit_label: { type: "string", description: "Submit button text. Default: 'Submit'" },
       },
       required: ["title", "html"],
     },
     execute: async (params: { title: string; html: string; submit_label?: string }) => {
+      const session = getSession();
       const id = `dlg-${Date.now()}-${++dialogCounter}`;
       const submitLabel = params.submit_label || "Submit";
-      const html = `<dialog id="${id}" data-widget-id="${id}" class="rounded-lg shadow-xl border border-gray-200 p-0 max-w-md w-full backdrop:bg-black/30">
+
+      const dialogHtml = `<dialog id="${id}" data-widget-id="${id}" class="rounded-lg shadow-xl border border-gray-200 p-0 max-w-md w-full backdrop:bg-black/30">
   <form class="p-5" onsubmit="return submitDialog(event, this)">
     <h3 class="text-lg font-semibold text-gray-900 mb-4">${params.title}</h3>
     <div class="space-y-3 mb-5">${params.html}</div>
@@ -29,7 +32,20 @@ export function tool_html_dialog(): AgentTool {
   </form>
 </dialog>
 <script>var d=document.getElementById('${id}');if(d&&!d.open)d.showModal()</script>`;
-      return { content: [{ type: "html", html }] };
+
+      // Push dialog HTML to client immediately via SSE
+      session.emitHtml?.(dialogHtml);
+
+      // Block: wait for user to submit
+      const { promise, resolve } = Promise.withResolvers<string>();
+      session.pendingDialogs.set(id, resolve);
+      const userResponse = await promise;
+      session.pendingDialogs.delete(id);
+
+      // Return user response as tool result — agent continues with this
+      return {
+        content: [{ type: "text", text: userResponse }],
+      };
     },
   };
 }

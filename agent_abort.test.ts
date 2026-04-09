@@ -3,7 +3,7 @@ import { agent_abort } from "./agent_abort.ts";
 import type { Session } from "./chat_type_Session.ts";
 
 function s(): Session {
-  return { filename: "t.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set() };
+  return { filename: "t.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
 }
 
 test("does nothing without controller", () => {
