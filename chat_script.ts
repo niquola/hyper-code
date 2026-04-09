@@ -192,10 +192,11 @@ function connectStream() {
     .catch(function() { streaming = false; });
 }
 
-// On load: scroll to bottom, focus input, reconnect if streaming
+// On load: scroll to bottom, focus input, load stats, reconnect if streaming
 (function() {
   messages.scrollTop = messages.scrollHeight;
   textarea.focus();
+  updateStats();
   var page = document.querySelector('[data-page=chat]');
   if (page && page.dataset.streaming === 'true') connectStream();
 })();

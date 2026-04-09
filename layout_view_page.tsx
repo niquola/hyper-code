@@ -35,7 +35,7 @@ export function layout_view_page(title: string, body: string, modelName?: string
                 {modelName && (
                   <a href="/settings" className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded hover:bg-gray-200" data-role="model-name">{modelName}</a>
                 )}
-                <span id="nav-stats" className="text-xs text-gray-400" hx-get="/stats" hx-trigger="load" hx-swap="outerHTML"></span>
+                <span id="nav-stats" className="text-xs text-gray-400"></span>
               </div>
             </div>
           </header>
