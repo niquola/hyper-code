@@ -2,6 +2,7 @@ import { router_buildRoutes } from "./router_buildRoutes.ts";
 import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
 import { chat_getCtx, chat_getSession } from "./chat_ctx.ts";
+import { chat_createSSEStream } from "./chat_sse.ts";
 import { chat_sessionRewrite, chat_sessionAppend } from "./chat_session.ts";
 import { agent_run } from "./agent_run.ts";
 
@@ -58,14 +59,22 @@ const server = Bun.serve({
 
       const filename = session.filename;
       const msgsBefore = session.messages.length;
-      agent_run(ctx, session, `[User interaction from widget] ${text}`, (event) => {
-        if (event.type === "agent_end") {
-          const newMsgs = session.messages.slice(msgsBefore);
-          if (newMsgs.length > 0) {
-            chat_sessionAppend(filename, ...newMsgs);
+
+      // Start agent with SSE broadcasting (for reconnected clients)
+      // We consume the SSE Response body to keep the stream alive
+      const sseResponse = chat_createSSEStream(session, (onEvent) =>
+        agent_run(ctx, session, `[User interaction from widget] ${text}`, (event) => {
+          onEvent(event);
+          if (event.type === "agent_end") {
+            const newMsgs = session.messages.slice(msgsBefore);
+            if (newMsgs.length > 0) {
+              chat_sessionAppend(filename, ...newMsgs);
+            }
           }
-        }
-      });
+        }),
+      );
+      // Drain the SSE response in background (keeps broadcast alive)
+      sseResponse.body?.pipeTo(new WritableStream()).catch(() => {});
 
       // Return completed HTML + HX-Trigger to tell page to reconnect to stream
       return new Response(completedHtml, {
