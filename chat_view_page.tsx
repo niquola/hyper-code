@@ -1,6 +1,8 @@
 import type { Message, ToolCall, AssistantMessage, ToolResultMessage } from "./ai_type_Message.ts";
 import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall } from "./chat_view_message.tsx";
 import { escapeHtml } from "./jsx.ts";
+import { detectToolLang, getToolCode } from "./chat_toolCode.ts";
+import { ai_highlightCode } from "./ai_renderMarkdown.ts";
 
 export async function chat_view_page(messages: Message[], sessionFilename?: string, isStreaming?: boolean): Promise<string> {
   // Index toolResults by toolCallId for lookup
@@ -39,7 +41,20 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
         }
 
         const args = Object.entries(tc.arguments).filter(([k]) => k !== "content" && k !== "edits" && k !== "html").map(([k, v]) => `${k}: ${v}`).join(", ");
-        rendered.push(chat_view_toolCall(tc.name, args, textResult || undefined, tr?.isError, htmlResult || undefined));
+        const argsJson = JSON.stringify(tc.arguments);
+
+        // Syntax highlight code for read/write/edit
+        let highlightedHtml = htmlResult;
+        const lang = detectToolLang(tc.name, argsJson);
+        if (lang && textResult && !htmlResult) {
+          const code = getToolCode(tc.name, argsJson, textResult);
+          if (code) {
+            const hl = await ai_highlightCode(code, lang);
+            if (hl) highlightedHtml = hl;
+          }
+        }
+
+        rendered.push(chat_view_toolCall(tc.name, args, highlightedHtml ? undefined : textResult, tr?.isError, highlightedHtml || undefined));
       }
 
       // Render text if present

@@ -2,6 +2,7 @@ import type { AgentEvent } from "./agent_type_Event.ts";
 import { escapeHtml } from "./jsx.ts";
 import { ai_renderMarkdown, ai_highlightCode } from "./ai_renderMarkdown.ts";
 import { chat_view_toolCall } from "./chat_view_toolCall.tsx";
+import { detectToolLang, getToolCode } from "./chat_toolCode.ts";
 
 type ToolBlock = { id: string; name: string; args: string; result?: string; resultHtml?: string; isError?: boolean };
 
@@ -30,57 +31,6 @@ function renderToolBlock(t: ToolBlock, highlighted?: string, sessionFilename?: s
   return chat_view_toolCall(t.name, argsDisplay, result ?? undefined, t.isError, t.resultHtml);
 }
 
-const TOOLS_WITH_PATH = new Set(["read", "write", "edit"]);
-
-const EXT_TO_LANG: Record<string, string> = {
-  ts: "typescript", tsx: "tsx", js: "javascript", jsx: "jsx",
-  json: "json", css: "css", html: "html", sql: "sql",
-  py: "python", rb: "ruby", go: "go", rs: "rust",
-  java: "java", yaml: "yaml", yml: "yaml", toml: "toml",
-  sh: "bash", bash: "bash", md: "markdown", xml: "xml",
-  dockerfile: "dockerfile", diff: "diff",
-};
-
-function detectLang(t: ToolBlock): string | null {
-  if (!TOOLS_WITH_PATH.has(t.name)) return null;
-  try {
-    const parsed = JSON.parse(t.args);
-    const path = parsed.path as string;
-    const ext = path.split(".").pop()?.toLowerCase();
-    return ext ? EXT_TO_LANG[ext] ?? null : null;
-  } catch { return null; }
-}
-
-// Strip line numbers (1\t...) from read tool output for highlighting
-function stripLineNumbers(text: string): string {
-  return text.split("\n").map(l => {
-    const m = l.match(/^\d+\t(.*)/);
-    return m ? m[1]! : l;
-  }).join("\n");
-}
-
-// Extract code to highlight from a tool block
-function getToolCode(t: ToolBlock): string | null {
-  if (t.name === "read" && t.result) {
-    return stripLineNumbers(t.result);
-  }
-  if (t.name === "write") {
-    try { return JSON.parse(t.args).content; } catch { return null; }
-  }
-  if (t.name === "edit") {
-    // Show edits as diff-like: oldText → newText
-    try {
-      const parsed = JSON.parse(t.args);
-      if (parsed.edits) {
-        return parsed.edits.map((e: any) =>
-          `// --- old ---\n${e.oldText}\n// --- new ---\n${e.newText}`
-        ).join("\n\n");
-      }
-    } catch {}
-    return null;
-  }
-  return null;
-}
 
 import type { Session } from "./chat_type_Session.ts";
 
@@ -149,10 +99,10 @@ export function chat_createSSEStream(
       }
 
       for (const t of allTools) {
-        const lang = detectLang(t);
+        const lang = detectToolLang(t.name, t.args);
         let highlighted: string | undefined;
         if (lang) {
-          const code = getToolCode(t);
+          const code = getToolCode(t.name, t.args, t.result);
           if (code) highlighted = await ai_highlightCode(code, lang);
         }
         html += renderToolBlock(t, highlighted, session.filename);
