@@ -1,4 +1,4 @@
-import { chat_sessionListInfo, chat_sessionGetParent } from "./chat_session.ts";
+import { chat_sessionListInfo, chat_sessionGetParent, chat_sessionGetModel } from "./chat_session.ts";
 import { chat_getUnread } from "./chat_unread.ts";
 import { escapeHtml } from "./jsx.ts";
 import type { SessionInfo } from "./chat_type_SessionInfo.ts";
@@ -46,7 +46,8 @@ async function buildTree(sessions: SessionInfo[]): Promise<TreeNode[]> {
   return flatten(roots);
 }
 
-function renderSession(s: TreeNode, current: string | null): string {
+async function renderSession(s: TreeNode, current: string | null): Promise<string> {
+  const modelStr = await chat_sessionGetModel(s.filename);
   const active = s.filename === current;
   const unread = chat_getUnread(s.filename, s.messageCount);
   const cls = active ? "bg-gray-100 text-gray-900" : "hover:bg-gray-50 text-gray-600";
@@ -58,7 +59,7 @@ function renderSession(s: TreeNode, current: string | null): string {
   html += `<a href="/session/${enc}/" class="flex-1 min-w-0 px-3 py-2 block">`;
   if (isChild) html += `<span class="text-gray-300 text-xs mr-1">↳</span>`;
   html += `<div class="truncate text-sm">${escapeHtml(s.title)}</div>`;
-  html += `<div class="text-xs text-gray-400">${s.messageCount} msgs</div>`;
+  html += `<div class="text-xs text-gray-400">${s.messageCount} msgs${modelStr ? ` · ${escapeHtml(modelStr)}` : ""}</div>`;
   html += `</a>`;
   if (unread > 0 && !active) html += `<span class="shrink-0 w-2 h-2 rounded-full bg-blue-400 mr-1"></span>`;
   html += `<form method="POST" action="/session/delete" class="m-0 pr-2 opacity-0 group-hover:opacity-100">`;
@@ -75,7 +76,7 @@ export default async function (req: Request) {
   const tree = await buildTree(sessions);
 
   let html = `<div id="session-list" class="flex flex-col gap-0.5">`;
-  for (const s of tree) html += renderSession(s, current);
+  for (const s of tree) html += await renderSession(s, current);
   if (tree.length === 0) html += `<div class="px-3 py-2 text-xs text-gray-500">No sessions yet</div>`;
   html += `</div>`;
   return html;

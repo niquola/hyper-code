@@ -134,6 +134,20 @@ export async function chat_sessionInfo(filename: string): Promise<SessionInfo> {
   return { filename, title, createdAt, messageCount };
 }
 
+/** Get session model (e.g. "kimi-coding/k2p5") */
+export async function chat_sessionGetModel(filename: string, dir?: string): Promise<string | null> {
+  const d = dir || SESSION_DIR;
+  const file = Bun.file(`${d}/${filename}.model`);
+  if (await file.exists()) return (await file.text()).trim() || null;
+  return null;
+}
+
+/** Set session model */
+export async function chat_sessionSetModel(filename: string, model: string, dir?: string): Promise<void> {
+  const d = dir || SESSION_DIR;
+  await Bun.write(`${d}/${filename}.model`, model);
+}
+
 export async function chat_sessionListInfo(): Promise<SessionInfo[]> {
   const files = chat_sessionList();
   const infos = await Promise.all(files.map(chat_sessionInfo));
@@ -145,6 +159,7 @@ export function chat_sessionDelete(filename: string): void {
   try { unlinkSync(`${SESSION_DIR}/${filename}`); } catch {}
   try { unlinkSync(`${SESSION_DIR}/${filename}.title`); } catch {}
   try { unlinkSync(`${SESSION_DIR}/${filename}.parent`); } catch {}
+  try { unlinkSync(`${SESSION_DIR}/${filename}.model`); } catch {}
 }
 
 /** Fork session: create empty child with parent link (no data copy) */
