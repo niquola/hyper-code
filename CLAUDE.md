@@ -60,11 +60,17 @@ ls cdp*.ts                     # CDP browser testing
   - ❌ `POST /chat` with global `currentSession` — hidden state, breaks multi-tab
   - ❌ sidebar highlights based on server-side `let currentFilename` — stale after tab switch
   - ❌ `chat_getSession()` in request handler — which session? depends on last click, not URL
-- **STRICT: All procedures accept `ctx: Ctx` and `session: Session` as explicit parameters.**
-  - **FORBIDDEN: closures over mutable global state.** Every function receives what it needs via arguments.
-  - `Ctx` = immutable config (model, tools, apiKey). `Session` = mutable state (messages, queues, streaming).
-  - **Tool execute signature: `(ctx: Ctx, session: Session, params, signal?) => Promise<Result>`** — ctx and session first, always.
-  - Global getters (`chat_getCtx()`, `chat_getSession()`) exist ONLY in `server.ts` HTTP handlers as entry points.
+- **STRICT: ALL shared state in `Ctx`. ALL procedures take `(ctx, session, ...params)`.**
+  - `Ctx` holds EVERYTHING shared: `{ db, cwd, model, apiKey, systemPrompt, tools }`
+  - `Session` = per-conversation mutable state (messages, queues, streaming)
+  - **FORBIDDEN**: singletons (`getDb()`), `process.cwd()` inside functions, `process.env` reads inside functions, module-level `let`. All env/config read ONCE at startup into Ctx.
+  - **Tool execute: `(ctx, session, params, signal?)`** — ctx first, always.
+  - Tests create own Ctx with `:memory:` DB — zero side effects on production.
+  - ✅ `ctx.db.getSession(id)` — db from ctx
+  - ✅ `resolve(ctx.cwd, path)` — cwd from ctx
+  - ❌ `getDb()` singleton — hidden dependency
+  - ❌ `process.cwd()` inside tool — implicit env read
+  - ❌ `process.env.X` inside function — hidden config
 - **Don't do extra.** Don't add features, abstractions, or "improvements" beyond what was asked. Don't guess requirements — ask.
 - **Interview before building.** When a new feature is requested, first gather minimal requirements and use cases. Ask: what exactly should it do? Who uses it? What's the simplest version? Don't jump into coding — clarify scope first.
 - **Strict TDD.** Always write tests BEFORE implementing the function. Red → Green → Refactor. No exceptions. **Bug found? Write failing test FIRST, then fix.**

@@ -55,6 +55,8 @@ export async function chat_getCtx(): Promise<Ctx> {
       model, apiKey,
       systemPrompt: agent_buildSystemPrompt(cwd, tools),
       tools,
+      db: getDb(),
+      cwd,
     });
   }
   return ctx;

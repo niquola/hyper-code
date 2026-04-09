@@ -1,7 +1,11 @@
-import { test, expect, describe } from "bun:test";
+import { test, expect, describe, beforeAll } from "bun:test";
 
-const PORT = await Bun.file(".port").text().then(Number);
+// Integration tests — require running server (bun server.ts)
+// These hit the live server, not isolated. Run separately.
+const PORT = await Bun.file(".port").text().catch(() => "0").then(Number);
 const BASE = `http://localhost:${PORT}`;
+const SKIP = PORT === 0;
+if (SKIP) console.log("⚠ server.test.ts: server not running, skipping");
 
 function getSessionId(): Promise<string> {
   return fetch(`${BASE}/`, { redirect: "manual" })
