@@ -79,7 +79,7 @@ describe("subagent session creation", () => {
 describe("tool_subagent", () => {
   test("subagent tool has correct metadata", async () => {
     const { tool_subagent } = await import("./tool_subagent.ts");
-    const mockSession: Session = { filename: "t.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
+    const mockSession: Session = { filename: "t.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, model: { id: "test", name: "Test", provider: "test", baseUrl: "", reasoning: false, input: ["text"], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 32000 }, apiKey: "test", systemPrompt: "", isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
     const t = tool_subagent(async (fn: string) => mockSession);
     expect(t.name).toBe("subagent");
     expect(t.description).toContain("sub-agent");
@@ -90,7 +90,7 @@ describe("tool_subagent", () => {
 describe("tool_subagent_report", () => {
   test("subagent_report tool has correct metadata", async () => {
     const { tool_subagent_report } = await import("./tool_subagent_report.ts");
-    const mockSession: Session = { filename: "t.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
+    const mockSession: Session = { filename: "t.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, model: { id: "test", name: "Test", provider: "test", baseUrl: "", reasoning: false, input: ["text"], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 32000 }, apiKey: "test", systemPrompt: "", isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
     const t = tool_subagent_report(() => null);
     expect(t.name).toBe("subagent_report");
     expect(t.description).toContain("Report");
@@ -98,8 +98,8 @@ describe("tool_subagent_report", () => {
 
   test("subagent_report resolves parent pending subagent", async () => {
     const { tool_subagent_report } = await import("./tool_subagent_report.ts");
-    const parentSession: Session = { filename: "parent.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
-    const childSession: Session = { filename: "child.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
+    const parentSession: Session = { filename: "parent.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, model: { id: "test", name: "Test", provider: "test", baseUrl: "", reasoning: false, input: ["text"], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 32000 }, apiKey: "test", systemPrompt: "", isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
+    const childSession: Session = { filename: "child.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, model: { id: "test", name: "Test", provider: "test", baseUrl: "", reasoning: false, input: ["text"], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 32000 }, apiKey: "test", systemPrompt: "", isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
 
     // Simulate pending subagent in parent
     const { promise, resolve } = Promise.withResolvers<string>();

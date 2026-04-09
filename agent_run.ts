@@ -44,14 +44,14 @@ export async function agent_run(
       }));
 
       const stream = ai_stream(
-        ctx.model,
+        session.model,
         {
-          systemPrompt: ctx.systemPrompt,
+          systemPrompt: session.systemPrompt,
           messages: session.messages,
           tools: llmTools.length > 0 ? llmTools : undefined,
         },
         {
-          apiKey: ctx.apiKey,
+          apiKey: session.apiKey,
           signal: session.abortController.signal,
         },
       );

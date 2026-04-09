@@ -171,7 +171,7 @@ const server = Bun.serve({
       // Render only own messages (not parent chain) for UI
       const visibleMessages = await chat_sessionLoadRaw(filename);
       const body = await chat_view_page(visibleMessages, session.filename, session.isStreaming);
-      return new Response(layout_view_page("Hyper Code", body, ctx.model.name || ctx.model.id), {
+      return new Response(layout_view_page("Hyper Code", body, session.model.name || session.model.id), {
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
     }

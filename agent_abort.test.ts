@@ -3,7 +3,7 @@ import { agent_abort } from "./agent_abort.ts";
 import type { Session } from "./chat_type_Session.ts";
 
 function s(): Session {
-  return { filename: "t.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
+  return { filename: "t.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, model: { id: "t", name: "T", provider: "test", baseUrl: "", reasoning: false, input: ["text"], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 32000 } as any, apiKey: "test", systemPrompt: "", isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
 }
 
 test("does nothing without controller", () => {

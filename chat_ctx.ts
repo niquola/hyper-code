@@ -4,6 +4,7 @@ import type { Ctx } from "./agent_type_Ctx.ts";
 import type { Session } from "./chat_type_Session.ts";
 import { chat_loadSettings, chat_resolveModel, chat_resolveApiKey } from "./chat_settings.ts";
 import { chat_sessionLatest, chat_sessionCreate, chat_sessionLoad, chat_sessionLoadRaw, chat_sessionAppend } from "./chat_session.ts";
+import { chat_resolveSessionModel } from "./chat_resolveSessionModel.ts";
 import type { Message } from "./ai_type_Message.ts";
 import { tool_read } from "./tool_read.ts";
 import { tool_write } from "./tool_write.ts";
@@ -76,9 +77,17 @@ async function loadSession(filename: string): Promise<Session> {
   } else {
     messages = await chat_sessionLoad(filename);
   }
+  // Resolve model per session
+  const { model: sessionModel, apiKey: sessionApiKey } = await chat_resolveSessionModel(filename);
+  const sessionCtx = await chat_getCtx();
+  const systemPrompt = agent_buildSystemPrompt(process.cwd(), sessionCtx.tools, filename, sessionModel.name || sessionModel.id);
+
   const session: Session = {
     filename,
     messages,
+    model: sessionModel,
+    apiKey: sessionApiKey,
+    systemPrompt,
     steerQueue: [],
     followUpQueue: [],
     abortController: null,
