@@ -141,6 +141,14 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
     streamDiv.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">' + err.message + '</div>';
   }
 
+  // Update stats if present in stream
+  var newStats = streamDiv.querySelector('#stats');
+  if (newStats) {
+    var oldStats = document.getElementById('stats');
+    if (oldStats) oldStats.replaceWith(newStats);
+    else streamDiv.removeChild(newStats);
+  }
+
   // Move stream content before stream div as finalized messages
   while (streamDiv.firstChild) {
     messages.insertBefore(streamDiv.firstChild, streamDiv);

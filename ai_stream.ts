@@ -10,11 +10,17 @@ import { ai_getEnvApiKey } from "./ai_getEnvApiKey.ts";
 import { ai_calculateCost } from "./ai_calculateCost.ts";
 import { ai_parseStreamingJson } from "./ai_parseStreamingJson.ts";
 import { ai_streamResponses } from "./ai_streamResponses.ts";
+import { ai_streamCodex } from "./ai_streamCodex.ts";
 
 // Providers that use OpenAI Responses API instead of Completions
-const RESPONSES_API_PROVIDERS = new Set(["openai", "openai-codex", "azure-openai-responses", "github-copilot"]);
+const RESPONSES_API_PROVIDERS = new Set(["openai", "azure-openai-responses", "github-copilot"]);
 
 export function ai_stream(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
+  // Route Codex to dedicated codex stream (raw fetch, custom headers)
+  if (model.provider === "openai-codex") {
+    return ai_streamCodex(model, context, options);
+  }
+
   // Route to Responses API for providers that use it
   if (RESPONSES_API_PROVIDERS.has(model.provider)) {
     return ai_streamResponses(model, context, options);

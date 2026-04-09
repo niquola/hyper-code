@@ -1,7 +1,6 @@
-import { chat_getCtx } from "./chat_ctx.ts";
-import { agent_reset } from "./agent_reset.ts";
+import { chat_resetCtx } from "./chat_ctx.ts";
 
 export default async function (req: Request) {
-  agent_reset(await chat_getCtx());
+  chat_resetCtx();
   return new Response(null, { status: 302, headers: { Location: "/" } });
 }

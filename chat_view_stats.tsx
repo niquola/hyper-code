@@ -15,7 +15,7 @@ export function chat_view_stats(messages: Message[]): string {
   const costStr = totalCost > 0 ? ` | $${totalCost.toFixed(4)}` : "";
 
   return (
-    <div data-role="stats" className="text-xs text-gray-400 text-center py-1">
+    <div id="stats" data-role="stats" className="text-xs text-gray-400 text-center py-1">
       {turns} turn{turns > 1 ? "s" : ""} | {totalTokens} tokens{costStr}
     </div>
   );

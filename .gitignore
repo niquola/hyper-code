@@ -17,4 +17,5 @@ logs
 .chrome-profile
 .port
 .settings.json
+.hyper
 pi-mono

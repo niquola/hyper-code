@@ -1,7 +1,39 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
+import { readFileSync, existsSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+
+const CONTEXT_FILES = ["AGENTS.md", "CLAUDE.md"];
+
+function loadContextFiles(cwd: string): string[] {
+  const seen = new Set<string>();
+  const results: string[] = [];
+  let dir = resolve(cwd);
+
+  while (true) {
+    for (const name of CONTEXT_FILES) {
+      const path = resolve(dir, name);
+      if (seen.has(path)) continue;
+      seen.add(path);
+      if (existsSync(path)) {
+        try {
+          results.unshift(readFileSync(path, "utf-8"));
+        } catch {}
+      }
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+
+  return results;
+}
 
 export function agent_buildSystemPrompt(cwd: string, tools: AgentTool[]): string {
   const toolList = tools.map((t) => `- **${t.name}**: ${t.description}`).join("\n");
+  const contextFiles = loadContextFiles(cwd);
+  const contextSection = contextFiles.length > 0
+    ? `\n\n## Project Instructions\n\n${contextFiles.join("\n\n---\n\n")}`
+    : "";
 
   return `You are a coding assistant with access to the local filesystem.
 
@@ -92,5 +124,5 @@ Use widgets when the user needs to:
 - Approve/reject changes (buttons)
 - Configure parameters (forms)
 - View data (tables, charts)
-`;
+${contextSection}`;
 }

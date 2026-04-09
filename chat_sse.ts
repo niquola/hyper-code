@@ -1,6 +1,7 @@
 import type { AgentEvent } from "./agent_type_Event.ts";
 import { escapeHtml } from "./jsx.ts";
 import { ai_renderMarkdown, ai_highlightCode } from "./ai_renderMarkdown.ts";
+import { chat_view_stats } from "./chat_view_stats.tsx";
 
 type ToolBlock = { id: string; name: string; args: string; result?: string; resultHtml?: string; isError?: boolean };
 
@@ -107,9 +108,16 @@ export function chat_createSSEStream(
 
   const encoder = new TextEncoder();
 
+  let closed = false;
+
   function send(html: string) {
-    const lines = html.split("\n").map((l) => `data: ${l}`).join("\n");
-    controller.enqueue(encoder.encode(`${lines}\n\n`));
+    if (closed) return;
+    try {
+      const lines = html.split("\n").map((l) => `data: ${l}`).join("\n");
+      controller.enqueue(encoder.encode(`${lines}\n\n`));
+    } catch {
+      closed = true;
+    }
   }
 
   function renderStreaming() {
@@ -219,13 +227,19 @@ export function chat_createSSEStream(
 
           case "agent_end":
             renderQueue.then(() => {
+              // Send updated stats — JS client will extract and update #stats
+              if (event.messages) {
+                send(chat_view_stats(event.messages));
+              }
               send(``);
-              controller.close();
+              closed = true;
+              try { controller.close(); } catch {}
             });
             break;
         }
       }).catch((err) => {
         send(`<div data-entity="message" data-status="error" class="mb-4"><div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm" data-role="content">${escapeHtml(String(err))}</div></div>`);
+        closed = true;
         try { controller.close(); } catch {}
       });
     },

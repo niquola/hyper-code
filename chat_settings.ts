@@ -33,6 +33,13 @@ export async function chat_saveSettings(settings: ChatSettings): Promise<void> {
   await Bun.write(SETTINGS_PATH, JSON.stringify(settings, null, 2));
 }
 
+function resolveBaseUrl(provider: string): string {
+  if (provider === "lmstudio") return "http://localhost:1234/v1";
+  if (provider === "openai-codex") return "https://chatgpt.com/backend-api";
+  if (provider === "openai") return "https://api.openai.com/v1";
+  return `https://api.${provider}.com/v1`;
+}
+
 export function chat_resolveModel(settings: ChatSettings): Model {
   const model = ai_getModel(settings.provider, settings.modelId);
   if (model) return model;
@@ -41,7 +48,7 @@ export function chat_resolveModel(settings: ChatSettings): Model {
     id: settings.modelId,
     name: settings.modelId,
     provider: settings.provider,
-    baseUrl: settings.provider === "lmstudio" ? "http://localhost:1234/v1" : `https://api.${settings.provider}.com/v1`,
+    baseUrl: resolveBaseUrl(settings.provider),
     reasoning: false,
     input: ["text"],
     cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },

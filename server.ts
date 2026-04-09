@@ -9,6 +9,7 @@ const cwd = process.cwd();
 
 const server = Bun.serve({
   port: 0,
+  idleTimeout: 255,
   routes,
   async fetch(req) {
     const url = new URL(req.url);

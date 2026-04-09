@@ -1,7 +1,7 @@
 import { PAGE_STATE_SCRIPT } from "./pageState_script.ts";
 import { HYPER_UI_STYLES } from "./hyper_ui_styles.ts";
 
-export function layout_view_page(title: string, body: string): string {
+export function layout_view_page(title: string, body: string, modelName?: string): string {
   return (
     <html>
       <head>
@@ -17,8 +17,11 @@ export function layout_view_page(title: string, body: string): string {
       <body className="bg-gray-50 min-h-screen">
         <nav className="bg-white border-b border-gray-200 px-4 py-3">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
-            <div className="flex gap-4 text-sm font-medium">
+            <div className="flex items-center gap-3 text-sm font-medium">
               <a href="/" className="text-gray-700 hover:text-gray-900">Hyper Code</a>
+              {modelName && (
+                <a href="/settings" className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded hover:bg-gray-200" data-role="model-name">{modelName}</a>
+              )}
             </div>
             <div className="flex items-center gap-3">
               <a href="/settings" data-action="settings" className="text-xs text-gray-400 hover:text-gray-600">Settings</a>
