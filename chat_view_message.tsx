@@ -27,15 +27,19 @@ export async function chat_view_assistantMessage(text: string, thinking?: string
   );
 }
 
-export function chat_view_toolCall(toolName: string, args: string, result?: string, isError?: boolean): string {
+export function chat_view_toolCall(toolName: string, args: string, result?: string, isError?: boolean, htmlContent?: string): string {
+  const hasContent = result != null || htmlContent;
   return (
-    <div data-entity="tool" data-status={isError ? "error" : result != null ? "done" : "running"} className="mb-3 ml-4">
+    <div data-entity="tool" data-status={isError ? "error" : hasContent ? "done" : "running"} className="mb-3 ml-4">
       <div className={`rounded border text-sm ${isError ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}>
         <div className="px-3 py-1.5 font-mono text-xs">
           <span className="font-semibold text-gray-700" data-role="tool-name">{escapeHtml(toolName)}</span>
           <span className="text-gray-400 ml-2" data-role="tool-args">{escapeHtml(args)}</span>
         </div>
-        {result != null && (
+        {htmlContent && (
+          <div className={`hyper-ui border-t ${isError ? "border-red-200" : "border-green-200"} p-3`} data-role="tool-result" dangerouslySetInnerHTML={{ __html: htmlContent }}></div>
+        )}
+        {result != null && !htmlContent && (
           <details className={`border-t ${isError ? "border-red-200 text-red-700" : "border-green-200 text-gray-600"}`}>
             <summary className="px-3 py-1.5 text-xs cursor-pointer hover:bg-black/5">Output ({result.split("\n").length} lines)</summary>
             <div className="px-3 py-2 text-xs font-mono whitespace-pre-wrap max-h-60 overflow-y-auto" data-role="tool-result">{escapeHtml(result)}</div>

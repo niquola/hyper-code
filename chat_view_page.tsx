@@ -21,9 +21,10 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
       // Render tool calls with their results
       for (const tc of toolCalls) {
         const tr = toolResults.get(tc.id);
-        const result = tr ? tr.content.map((c) => c.type === "text" ? (c as any).text : "[image]").join("\n") : undefined;
+        const textResult = tr ? tr.content.filter((c) => c.type === "text").map((c) => (c as any).text).join("\n") : undefined;
+        const htmlResult = tr ? tr.content.filter((c) => c.type === "html").map((c) => (c as any).html).join("") : undefined;
         const args = Object.entries(tc.arguments).filter(([k]) => k !== "content" && k !== "edits").map(([k, v]) => `${k}: ${v}`).join(", ");
-        rendered.push(chat_view_toolCall(tc.name, args, result, tr?.isError));
+        rendered.push(chat_view_toolCall(tc.name, args, textResult || undefined, tr?.isError, htmlResult || undefined));
       }
 
       // Render text if present
