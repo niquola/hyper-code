@@ -53,6 +53,7 @@ ls cdp*.ts                     # CDP browser testing
 - `ls <module>.ts` = module boundaries (barrels)
 - Functions take everything they need as parameters — no hidden internal state, no singletons, no closures over mutable variables.
 - Prefer explicit data flow: pass dependencies in, return results out.
+- **URL determines everything.** Classic web: the URL fully defines the screen. No hidden state. Session ID in URL, sidebar reads current from URL, all actions scoped to URL session.
 - **STRICT: All procedures accept `ctx: Ctx` and `session: Session` as explicit parameters.**
   - **FORBIDDEN: closures over mutable global state.** Every function receives what it needs via arguments.
   - `Ctx` = immutable config (model, tools, apiKey). `Session` = mutable state (messages, queues, streaming).
