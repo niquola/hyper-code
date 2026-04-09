@@ -19,9 +19,7 @@ export function layout_view_page(title: string, body: string, modelName?: string
         <aside id="sidebar" className="w-56 shrink-0 bg-gray-900 text-gray-300 flex flex-col h-full">
           <div className="p-3 border-b border-gray-700 flex items-center justify-between">
             <a href="/" className="text-sm font-semibold text-white">Hyper Code</a>
-            <form method="POST" action="/reset" className="m-0">
-              <button type="submit" data-action="reset" className="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded">+ New</button>
-            </form>
+            <a href="/session/new" data-action="new" className="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded">+ New</a>
           </div>
           <div className="flex-1 overflow-y-auto p-2" hx-get="/sessions" hx-trigger="load" hx-swap="innerHTML">
           </div>
