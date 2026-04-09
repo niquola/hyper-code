@@ -181,9 +181,10 @@ async function readSSE(res) {
           }
         });
         streamDiv.innerHTML = tmp.innerHTML;
-        // Move new dialogs out of stream to body
+        // Move new dialogs out of stream to body + process htmx
         streamDiv.querySelectorAll('dialog').forEach(function(dlg) {
           document.body.appendChild(dlg);
+          if (typeof htmx !== 'undefined') htmx.process(dlg);
         });
         streamDiv.querySelectorAll('link[rel=stylesheet]').forEach(function(old) {
           if (!document.querySelector('link[href="' + old.getAttribute('href') + '"]')) {
