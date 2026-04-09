@@ -28,7 +28,7 @@ export function tool_html_dialog(): AgentTool {
     </div>
   </form>
 </dialog>
-<script>document.getElementById('${id}')?.showModal?.()</script>`;
+<script>var d=document.getElementById('${id}');if(d&&!d.open)d.showModal()</script>`;
       return { content: [{ type: "html", html }] };
     },
   };

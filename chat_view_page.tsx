@@ -172,10 +172,18 @@ async function readSSE(res) {
       var lines = parts[i].split('\\n').filter(function(l) { return l.startsWith('data: '); }).map(function(l) { return l.slice(6); });
       var html = lines.join('\\n');
       if (html) {
-        streamDiv.innerHTML = html;
-        // Move dialogs out of stream so they survive re-renders
+        // Strip dialogs that are already open in body (prevent duplicates/re-open)
+        var tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        tmp.querySelectorAll('dialog').forEach(function(dlg) {
+          if (document.body.querySelector('dialog#' + CSS.escape(dlg.id))) {
+            dlg.remove(); // already open in body, skip
+          }
+        });
+        streamDiv.innerHTML = tmp.innerHTML;
+        // Move new dialogs out of stream to body
         streamDiv.querySelectorAll('dialog').forEach(function(dlg) {
-          if (!document.getElementById(dlg.id)) document.body.appendChild(dlg);
+          document.body.appendChild(dlg);
         });
         streamDiv.querySelectorAll('link[rel=stylesheet]').forEach(function(old) {
           if (!document.querySelector('link[href="' + old.getAttribute('href') + '"]')) {
