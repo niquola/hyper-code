@@ -70,7 +70,7 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
       </div>
       <div id="input-area" className="shrink-0 border-t border-gray-200 py-3">
         <div className="max-w-3xl mx-auto px-4">
-        <form id="chat-form" data-form="prompt" method="POST" action="/chat">
+        <form id="chat-form" data-form="prompt" method="POST" action="chat">
           <textarea
             name="prompt"
             rows="3"

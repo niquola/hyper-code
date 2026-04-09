@@ -33,16 +33,92 @@ const server = Bun.serve({
       return hyper_ui_handleRequest(cwd, req);
     }
 
-    // /session/:id/dispatch — widget → agent feedback
-    const dispatchMatch = url.pathname.match(/^\/session\/([^/]+)\/dispatch\/?$/);
-    if (dispatchMatch && req.method === "POST") {
-      const sessionFilename = decodeURIComponent(dispatchMatch[1]!);
-      const form = await req.formData();
-      const text = form.get("text") as string || [...form.entries()].map(([k, v]) => `${k}: ${v}`).join("\n");
-      if (!text.trim()) return new Response("empty", { status: 400 });
-
-      const ctx = await chat_getCtx();
+    // /session/:id/:action — per-session endpoints
+    const actionMatch = url.pathname.match(/^\/session\/([^/]+)\/(chat|steer|abort|dispatch|stream|stats|rewind)\/?$/);
+    if (actionMatch) {
+      const sessionFilename = decodeURIComponent(actionMatch[1]!);
+      const action = actionMatch[2]!;
       const session = await chat_loadSessionByName(sessionFilename);
+
+      // GET /session/:id/stream — SSE reconnect
+      if (action === "stream" && req.method === "GET") {
+        if (!session.isStreaming) return new Response("not streaming", { status: 204 });
+        const encoder = new TextEncoder();
+        let closed = false;
+        const stream = new ReadableStream({
+          start(ctrl) {
+            const listener = (html: string) => {
+              if (closed) return;
+              try { const lines = html.split("\n").map((l: string) => `data: ${l}`).join("\n"); ctrl.enqueue(encoder.encode(`${lines}\n\n`)); } catch { closed = true; session.sseListeners.delete(listener); }
+            };
+            session.sseListeners.add(listener);
+            req.signal.addEventListener("abort", () => { closed = true; session.sseListeners.delete(listener); try { ctrl.close(); } catch {} });
+          },
+        });
+        return new Response(stream, { headers: { "Content-Type": "text/event-stream", "Cache-Control": "no-cache", "Connection": "keep-alive" } });
+      }
+
+      // GET /session/:id/stats
+      if (action === "stats" && req.method === "GET") {
+        const assistantMessages = session.messages.filter((m) => m.role === "assistant") as any[];
+        let totalTokens = 0, totalCost = 0;
+        for (const msg of assistantMessages) { totalTokens += msg.usage.totalTokens; totalCost += msg.usage.cost.total; }
+        if (assistantMessages.length === 0) return new Response(`<span id="nav-stats" data-entity="stats" class="text-xs text-gray-400"></span>`, { headers: { "Content-Type": "text/html" } });
+        const costStr = totalCost > 0 ? ` · $${totalCost.toFixed(4)}` : "";
+        return new Response(`<span id="nav-stats" data-entity="stats" class="text-xs text-gray-400">${totalTokens} tok${costStr}</span>`, { headers: { "Content-Type": "text/html" } });
+      }
+
+      // GET /session/:id/rewind?index=N
+      if (action === "rewind" && req.method === "GET") {
+        const index = parseInt(url.searchParams.get("index") || "0", 10);
+        if (index >= 0 && index < session.messages.length) {
+          session.messages = session.messages.slice(0, index);
+          chat_sessionRewrite(sessionFilename, session.messages);
+        }
+        return new Response(null, { status: 302, headers: { Location: `/session/${encodeURIComponent(sessionFilename)}/` } });
+      }
+
+      // POST /session/:id/chat
+      if (action === "chat" && req.method === "POST") {
+        const form = await req.formData();
+        const prompt = form.get("prompt") as string;
+        if (!prompt?.trim()) return new Response(null, { status: 302, headers: { Location: `/session/${encodeURIComponent(sessionFilename)}/` } });
+        if (session.isStreaming) {
+          session.followUpQueue.push(prompt.trim());
+          return new Response(JSON.stringify({ queued: "followUp" }), { headers: { "Content-Type": "application/json" } });
+        }
+        const ctx = await chat_getCtx();
+        const msgsBefore = session.messages.length;
+        return chat_createSSEStream(session, (onEvent) =>
+          agent_run(ctx, session, prompt, (event) => {
+            onEvent(event);
+            if (event.type === "agent_end") {
+              const newMsgs = session.messages.slice(msgsBefore);
+              if (newMsgs.length > 0) chat_sessionAppend(sessionFilename, ...newMsgs);
+            }
+          }),
+        );
+      }
+
+      // POST /session/:id/steer
+      if (action === "steer" && req.method === "POST") {
+        const form = await req.formData();
+        const prompt = form.get("prompt") as string;
+        if (prompt?.trim()) session.steerQueue.push(prompt.trim());
+        return new Response("ok");
+      }
+
+      // POST /session/:id/abort
+      if (action === "abort" && req.method === "POST") {
+        session.abortController?.abort();
+        return new Response(null, { status: 302, headers: { Location: `/session/${encodeURIComponent(sessionFilename)}/` } });
+      }
+
+      // POST /session/:id/dispatch
+      if (action !== "dispatch" || req.method !== "POST") return new Response("Not found", { status: 404 });
+      const dForm = await req.formData();
+      const text = dForm.get("text") as string || [...dForm.entries()].map(([k, v]) => `${k}: ${v}`).join("\n");
+      if (!text.trim()) return new Response("empty", { status: 400 });
 
       // Replace last interactive widget HTML with completed state
       const completedHtml = `<div class="text-xs text-gray-500 border border-gray-200 rounded px-3 py-2 bg-gray-50">✓ ${Bun.escapeHTML(text)}</div>`;
@@ -99,21 +175,6 @@ const server = Bun.serve({
       });
     }
 
-    // /session/:id/rewind?index=N — rollback to message index
-    const rewindMatch = url.pathname.match(/^\/session\/([^/]+)\/rewind$/);
-    if (rewindMatch && req.method === "GET") {
-      const filename = decodeURIComponent(rewindMatch[1]!);
-      const index = parseInt(url.searchParams.get("index") || "0", 10);
-      const session = await chat_loadSessionByName(filename);
-      if (index >= 0 && index < session.messages.length) {
-        session.messages = session.messages.slice(0, index);
-        chat_sessionRewrite(filename, session.messages);
-      }
-      return new Response(null, {
-        status: 302,
-        headers: { Location: `/session/${encodeURIComponent(filename)}/` },
-      });
-    }
 
     return new Response("Not found", { status: 404 });
   },

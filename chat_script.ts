@@ -8,6 +8,13 @@ var messages = document.getElementById('messages');
 var streamDiv = document.getElementById('stream');
 var queueInd = document.getElementById('queue-indicator');
 
+// Session-scoped URL helper
+function sessionUrl(path) {
+  var page = document.querySelector('[data-page=chat]');
+  var s = page?.dataset.session;
+  return s ? '/session/' + encodeURIComponent(s) + '/' + path : '/' + path;
+}
+
 function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 function submitDialog(e, form) {
@@ -15,10 +22,7 @@ function submitDialog(e, form) {
   var dlg = form.closest('dialog');
   var body = new FormData(form);
   dlg.remove();
-  var page = document.querySelector('[data-page=chat]');
-  var sessionFile = page?.dataset.session;
-  if (!sessionFile) return false;
-  fetch('/session/' + encodeURIComponent(sessionFile) + '/dispatch', { method: 'POST', body: body });
+  fetch(sessionUrl('dispatch'), { method: 'POST', body: body });
   return false;
 }
 
@@ -34,7 +38,7 @@ function addUserBubble(text, label) {
 }
 
 function updateStats() {
-  fetch('/stats').then(function(r) { return r.text(); }).then(function(h) {
+  fetch(sessionUrl('stats')).then(function(r) { return r.text(); }).then(function(h) {
     var el = document.getElementById('nav-stats');
     if (el) el.outerHTML = h;
   });
@@ -47,7 +51,7 @@ function showQueue(text) {
 
 function handleKey(e) {
   if (e.key === 'Escape') {
-    if (streaming) fetch('/abort', { method: 'POST' }).then(function() { location.reload(); });
+    if (streaming) fetch(sessionUrl('abort'), { method: 'POST' }).then(function() { location.reload(); });
     return;
   }
   if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
@@ -63,7 +67,7 @@ function handleKey(e) {
     addUserBubble(text, 'Steer');
     var body = new FormData();
     body.set('prompt', text);
-    fetch('/steer', { method: 'POST', body: body });
+    fetch(sessionUrl('steer'), { method: 'POST', body: body });
     return;
   }
 }
@@ -77,7 +81,7 @@ async function runStream(prompt) {
   try {
     var body = new FormData();
     body.set('prompt', prompt);
-    var res = await fetch('/chat', { method: 'POST', body: body });
+    var res = await fetch(sessionUrl('chat'), { method: 'POST', body: body });
 
     var ct = res.headers.get('content-type') || '';
     if (ct.includes('application/json')) {
@@ -165,7 +169,7 @@ document.getElementById('chat-form').addEventListener('submit', function(e) {
     body.set('prompt', prompt);
     addUserBubble(prompt, 'Follow-up');
     textarea.value = '';
-    fetch('/chat', { method: 'POST', body: body });
+    fetch(sessionUrl('chat'), { method: 'POST', body: body });
     showQueue('Follow-up queued...');
   } else {
     runStream(prompt);
@@ -174,14 +178,12 @@ document.getElementById('chat-form').addEventListener('submit', function(e) {
 
 // Reconnect to running stream
 function connectStream() {
-  var page = document.querySelector('[data-page=chat]');
-  var sessionFile = page?.dataset.session;
-  if (!sessionFile) return;
+  if (!document.querySelector('[data-page=chat]')?.dataset.session) return;
 
   streaming = true;
   textarea.placeholder = 'Enter — queue follow-up · Ctrl+Enter — steer · Esc — stop';
 
-  fetch('/session/' + encodeURIComponent(sessionFile) + '/stream')
+  fetch(sessionUrl('stream'))
     .then(function(res) {
       if (res.status === 204) { streaming = false; return; }
       return readSSE(res);
