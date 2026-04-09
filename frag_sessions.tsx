@@ -71,7 +71,8 @@ function renderSession(s: TreeNode, current: string | null): string {
 
 export default async function (req: Request) {
   const sessions = await chat_sessionListInfo();
-  const current = chat_getSessionFile();
+  const url = new URL(req.url, "http://localhost");
+  const current = url.searchParams.get("current") || chat_getSessionFile();
   const tree = await buildTree(sessions);
 
   let html = `<div id="session-list" class="flex flex-col gap-0.5">`;
