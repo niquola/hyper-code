@@ -1,6 +1,7 @@
 import { auth_codexLogin } from "./auth_codex.ts";
 import { chat_loadSettings, chat_saveSettings } from "./chat_settings.ts";
 import { chat_resetCtx, chat_resetConfig } from "./chat_ctx.ts";
+import { chat_saveApiKey } from "./chat_apiKeys.ts";
 
 export default async function (req: Request) {
   try {
@@ -13,11 +14,13 @@ export default async function (req: Request) {
       const settings = await chat_loadSettings();
       settings.provider = "openai-codex";
       settings.modelId = settings.modelId.startsWith("gpt-5") ? settings.modelId : "gpt-5.2-codex";
-      settings.apiKey = creds.access;
-      settings.refreshToken = creds.refresh;
-      settings.tokenExpires = creds.expires;
-      settings.accountId = creds.accountId;
+      settings.apiKey = "";  // Keys stored per-provider now
       await chat_saveSettings(settings);
+      await chat_saveApiKey("openai-codex", creds.access, {
+        refreshToken: creds.refresh,
+        tokenExpires: creds.expires,
+        accountId: creds.accountId,
+      });
       chat_resetCtx();
       chat_resetConfig();
       console.log("[codex] Login successful, account:", creds.accountId);
