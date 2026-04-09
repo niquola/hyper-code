@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test";
-import { tool_render_html } from "./tool_render_html.ts";
+import { tool_html_message } from "./tool_html_message.ts";
 
-const t = tool_render_html();
+const t = tool_html_message();
 
 test("returns html content type", async () => {
   const result = await t.execute({ html: "<h1>Hello</h1>" });
@@ -11,6 +11,6 @@ test("returns html content type", async () => {
 });
 
 test("has correct metadata", () => {
-  expect(t.name).toBe("render_html");
+  expect(t.name).toBe("html_message");
   expect(t.description).toContain("HTML");
 });

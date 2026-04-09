@@ -24,9 +24,9 @@ describe("agent_buildSystemPrompt", () => {
     expect(prompt).toContain("grep/find");
   });
 
-  test("contains render_html and html_dialog instructions", () => {
+  test("contains html_message and html_dialog instructions", () => {
     const prompt = agent_buildSystemPrompt("/tmp", []);
-    expect(prompt).toContain("render_html");
+    expect(prompt).toContain("html_message");
     expect(prompt).toContain("html_dialog");
     expect(prompt).toContain("dispatch");
   });

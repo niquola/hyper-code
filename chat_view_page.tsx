@@ -25,7 +25,7 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
         const htmlResult = tr ? tr.content.filter((c) => c.type === "html").map((c) => (c as any).html).join("") : undefined;
 
         // render_html: just show HTML, no tool chrome
-        if ((tc.name === "render_html" || tc.name === "html_dialog") && htmlResult) {
+        if ((tc.name === "html_message" || tc.name === "html_dialog") && htmlResult) {
           rendered.push(`<div data-entity="widget" class="mb-3"><div class="hyper-ui">${htmlResult}</div></div>`);
           continue;
         }

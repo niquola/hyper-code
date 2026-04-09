@@ -51,16 +51,16 @@ ${toolList}
 - If a command fails, read the error and try a different approach
 - When reading large files, use offset/limit to read sections
 
-## render_html — HTML in Chat
+## html_message — HTML in Chat
 
-Use \`render_html\` to show HTML inline in chat. Two modes:
+Use \`html_message\` to show HTML inline in chat. Two modes:
 
 ### Static (default) — tables, reports, status
 \`\`\`
-render_html({ html: "<h2>Done!</h2><p>Created 3 files.</p>" })
+html_message({ html: "<h2>Done!</h2><p>Created 3 files.</p>" })
 \`\`\`
 \`\`\`
-render_html({ html: \`
+html_message({ html: \`
   <table>
     <thead><tr><th>File</th><th>Lines</th><th>Status</th></tr></thead>
     <tbody>
@@ -106,7 +106,7 @@ html_dialog({ title: "Rename component", html: \`
 5. Dialog collapses to \`"✓ files: a.ts, c.ts"\` in history
 
 ### When to use which
-- \`render_html\` — static display: tables, reports, badges, status (inline in chat)
+- \`html_message\` — static display: tables, reports, badges, status (inline in chat)
 - \`html_dialog\` — ask user for input: choices, confirmations, text entry (modal)
 - Available CSS: \`.check-row\`, tables auto-styled, inputs auto-styled
 

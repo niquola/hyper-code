@@ -6,7 +6,7 @@ type ToolBlock = { id: string; name: string; args: string; result?: string; resu
 
 function renderToolBlock(t: ToolBlock, highlighted?: string): string {
   // render_html / html_dialog: just show the HTML, no tool chrome
-  if ((t.name === "render_html" || t.name === "html_dialog") && t.resultHtml) {
+  if ((t.name === "html_message" || t.name === "html_dialog") && t.resultHtml) {
     return `<div data-entity="widget" data-status="done" class="mb-3"><div class="hyper-ui">${t.resultHtml}</div></div>`;
   }
 
