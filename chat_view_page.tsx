@@ -219,11 +219,10 @@ document.getElementById('chat-form').addEventListener('submit', function(e) {
   }
 });
 
-// Reconnect to running stream if session is streaming
-(function reconnect() {
+// Reconnect to running stream
+function connectStream() {
   var page = document.querySelector('[data-page=chat]');
-  if (!page || page.dataset.streaming !== 'true') return;
-  var sessionFile = page.dataset.session;
+  var sessionFile = page?.dataset.session;
   if (!sessionFile) return;
 
   streaming = true;
@@ -236,5 +235,16 @@ document.getElementById('chat-form').addEventListener('submit', function(e) {
     })
     .then(finishStream)
     .catch(function() { streaming = false; });
+}
+
+// Auto-reconnect on page load if session is streaming
+(function() {
+  var page = document.querySelector('[data-page=chat]');
+  if (page && page.dataset.streaming === 'true') connectStream();
 })();
+
+// Reconnect when dispatch triggers agent
+document.body.addEventListener('dispatch-sent', function() {
+  setTimeout(connectStream, 100);
+});
 `;

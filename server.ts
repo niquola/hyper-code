@@ -2,7 +2,7 @@ import { router_buildRoutes } from "./router_buildRoutes.ts";
 import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
 import { chat_getCtx, chat_getSession } from "./chat_ctx.ts";
-import { chat_sessionRewrite } from "./chat_session.ts";
+import { chat_sessionRewrite, chat_sessionAppend } from "./chat_session.ts";
 import { agent_run } from "./agent_run.ts";
 
 const routes = await router_buildRoutes(".");
@@ -56,8 +56,24 @@ const server = Bun.serve({
         }
       }
 
-      agent_run(ctx, session, `[User interaction from widget] ${text}`, () => {});
-      return new Response(completedHtml, { headers: { "Content-Type": "text/html" } });
+      const filename = session.filename;
+      const msgsBefore = session.messages.length;
+      agent_run(ctx, session, `[User interaction from widget] ${text}`, (event) => {
+        if (event.type === "agent_end") {
+          const newMsgs = session.messages.slice(msgsBefore);
+          if (newMsgs.length > 0) {
+            chat_sessionAppend(filename, ...newMsgs);
+          }
+        }
+      });
+
+      // Return completed HTML + HX-Trigger to tell page to reconnect to stream
+      return new Response(completedHtml, {
+        headers: {
+          "Content-Type": "text/html",
+          "HX-Trigger": "dispatch-sent",
+        },
+      });
     }
 
     return new Response("Not found", { status: 404 });
