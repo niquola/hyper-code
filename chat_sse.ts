@@ -1,13 +1,13 @@
 import type { AgentEvent } from "./agent_type_Event.ts";
 import { escapeHtml } from "./jsx.ts";
 import { ai_renderMarkdown, ai_highlightCode } from "./ai_renderMarkdown.ts";
+import { chat_view_toolCall } from "./chat_view_toolCall.tsx";
 
 type ToolBlock = { id: string; name: string; args: string; result?: string; resultHtml?: string; isError?: boolean };
 
 function renderToolBlock(t: ToolBlock, highlighted?: string, sessionFilename?: string): string {
   // html_message / html_dialog: just show the HTML, no tool chrome
   if ((t.name === "html_message" || t.name === "html_dialog") && t.resultHtml) {
-    // Resolve dispatch URL to absolute for dialogs moved to body
     let html = t.resultHtml;
     if (sessionFilename) {
       html = html.replace(/hx-post="dispatch"/g, `hx-post="/session/${encodeURIComponent(sessionFilename)}/dispatch"`);
@@ -15,11 +15,7 @@ function renderToolBlock(t: ToolBlock, highlighted?: string, sessionFilename?: s
     return `<div data-entity="widget" data-status="done" class="mb-3"><div class="hyper-ui">${html}</div></div>`;
   }
 
-  const status = t.isError ? "error" : t.result != null ? "done" : "running";
-  const border = t.isError ? "border-red-200 bg-red-50" : t.result != null ? "border-green-200 bg-green-50" : "border-yellow-200 bg-yellow-50";
-  const resultBorder = t.isError ? "border-red-200 text-red-700" : "border-green-200 text-gray-600";
-
-  // Parse args for display — hide large values like file content, html
+  // Parse args for display — hide large values
   let argsDisplay = t.args;
   try {
     const parsed = JSON.parse(t.args);
@@ -29,28 +25,9 @@ function renderToolBlock(t: ToolBlock, highlighted?: string, sessionFilename?: s
       .join(", ");
   } catch {}
 
-  let html = `<div data-entity="tool" data-status="${status}" class="mb-3"><div class="rounded-lg border text-sm ${border}">`;
-  html += `<div class="px-3 py-2 font-mono text-xs flex items-center gap-2"><span class="font-semibold text-gray-700" data-role="tool-name">${escapeHtml(t.name)}</span><span class="text-gray-400" data-role="tool-args">${escapeHtml(argsDisplay)}</span></div>`;
-
-  if (t.resultHtml) {
-    html += `<div class="hyper-ui border-t ${resultBorder} p-3" data-role="tool-result">${t.resultHtml}</div>`;
-  } else if (t.result != null) {
-    // For write/edit: show the written code in the collapsible, not the status message
-    const code = getToolCode(t);
-    const displayContent = highlighted || (code ? escapeHtml(code) : escapeHtml(t.result));
-    const lineCount = (code || t.result).split("\n").length;
-    const label = t.name === "write" ? `${escapeHtml(t.result)} — ${lineCount} lines`
-                : t.name === "edit" ? `${escapeHtml(t.result)} — diff`
-                : `Output (${lineCount} lines)`;
-    const hasHighlight = !!(highlighted || code);
-    html += `<details class="border-t ${resultBorder}"><summary class="px-3 py-1.5 text-xs cursor-pointer hover:bg-black/5">${label}</summary>`;
-    html += `<div class="${hasHighlight ? '' : 'px-3 py-2 '}text-xs whitespace-pre-wrap max-h-80 overflow-y-auto" data-role="tool-result">${displayContent}</div>`;
-    html += `</details>`;
-  } else {
-    html += `<div class="px-3 py-1.5 border-t border-yellow-200 text-xs text-gray-400 flex items-center gap-1"><svg class="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Running...</div>`;
-  }
-  html += `</div></div>`;
-  return html;
+  // Use shared component for consistent rendering
+  const result = highlighted || t.result;
+  return chat_view_toolCall(t.name, argsDisplay, result ?? undefined, t.isError, t.resultHtml);
 }
 
 const TOOLS_WITH_PATH = new Set(["read", "write", "edit"]);
