@@ -60,8 +60,20 @@ CREATE TABLE IF NOT EXISTS unread (
 );
 
 CREATE INDEX IF NOT EXISTS idx_messages_session ON messages(session);
-CREATE INDEX IF NOT EXISTS idx_messages_content ON messages(content);
 CREATE INDEX IF NOT EXISTS idx_sessions_parent ON sessions(parent);
+
+CREATE VIRTUAL TABLE IF NOT EXISTS messages_fts USING fts5(
+  content,
+  content='messages',
+  content_rowid='id'
+);
+
+CREATE TRIGGER IF NOT EXISTS messages_ai AFTER INSERT ON messages BEGIN
+  INSERT INTO messages_fts(rowid, content) VALUES (new.id, new.content);
+END;
+CREATE TRIGGER IF NOT EXISTS messages_ad AFTER DELETE ON messages BEGIN
+  INSERT INTO messages_fts(messages_fts, rowid, content) VALUES ('delete', old.id, old.content);
+END;
 `;
 
 export function chat_db(path?: string) {
@@ -215,20 +227,24 @@ export function chat_db(path?: string) {
   // --- Search ---
 
   function searchMessages(query: string, role?: string, limit = 50): SearchResult[] {
-    const pattern = `%${query}%`;
+    // Use FTS5 + BM25 for ranked full-text search
     let sql = `
-      SELECT m.session, s.title as sessionTitle, m.role, m.content, m.timestamp
-      FROM messages m
+      SELECT m.session, s.title as sessionTitle, m.role, m.content, m.timestamp, bm25(messages_fts) as score
+      FROM messages_fts
+      JOIN messages m ON messages_fts.rowid = m.id
       JOIN sessions s ON m.session = s.filename
-      WHERE m.content LIKE ?`;
-    const params: any[] = [pattern];
+      WHERE messages_fts MATCH ?`;
+    const ftsQuery = query.replace(/[^\w\s]/g, " ").trim();
+    if (!ftsQuery) return [];
+    const params: any[] = [ftsQuery];
 
     if (role) {
       sql += " AND m.role = ?";
       params.push(role);
     }
 
-    sql += " ORDER BY m.timestamp DESC LIMIT ?";
+    // Sort by relevance (bm25) with recency boost
+    sql += " ORDER BY (score - (m.timestamp / 1e13)) LIMIT ?";
     params.push(limit);
 
     return db.query(sql).all(...params) as SearchResult[];

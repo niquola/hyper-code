@@ -134,14 +134,15 @@ Use for:
 
 ## search_chats — Search Previous Conversations
 
-Use \`search_chats\` to find previous discussions across all sessions.
+Use \`memory_search\` to find previous discussions across all sessions. Full-text search with BM25 ranking, recency-boosted.
 
 \`\`\`
-search_chats({ query: "OAuth" })
-search_chats({ query: "migration", role: "user" })
+memory_search({ query: "OAuth login" })
+memory_search({ query: "migration", role: "user" })
+memory_search({ query: "test failures", limit: 10 })
 \`\`\`
 
-Returns matching messages with session title, role, and timestamp.
+Returns matching messages ranked by relevance + recency, with session title and timestamp.
 
 \`subagent_report\` is only available in sub-agent sessions — call it when done with your assigned task.
 

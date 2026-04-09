@@ -19,7 +19,7 @@ import { tool_html_dialog } from "./tool_html_dialog.ts";
 import { tool_subagent } from "./tool_subagent.ts";
 import { tool_subagent_report } from "./tool_subagent_report.ts";
 import { tool_websearch } from "./tool_websearch.ts";
-import { tool_search_chats } from "./tool_search_chats.ts";
+import { tool_memory_search } from "./tool_memory_search.ts";
 import { chat_sessionGetParent } from "./chat_session.ts";
 
 let ctx: Ctx | null = null;
@@ -48,7 +48,7 @@ export async function chat_getCtx(): Promise<Ctx> {
         return null;
       }),
       tool_websearch(),
-      tool_search_chats(),
+      tool_memory_search(),
     ];
 
     ctx = agent_createCtx({
