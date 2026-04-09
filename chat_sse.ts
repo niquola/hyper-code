@@ -138,7 +138,6 @@ export function chat_createSSEStream(
 
   function renderStreaming() {
     let html = `<div data-entity="message" data-status="assistant" class="mb-4">`;
-    html += `<div class="text-xs font-medium text-blue-600 mb-1" data-role="label">Assistant</div>`;
 
     if (thinking) {
       html += `<details class="mb-2" open><summary class="text-xs text-gray-400 cursor-pointer">Thinking...</summary><div class="text-xs text-gray-400 italic whitespace-pre-wrap mt-1" data-role="thinking">${escapeHtml(thinking)}</div></details>`;
@@ -150,7 +149,7 @@ export function chat_createSSEStream(
     for (const t of tools) html += renderToolBlock(t);
 
     if (text) {
-      html += `<div class="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 whitespace-pre-wrap" data-role="content">${escapeHtml(text)}</div>`;
+      html += `<div class="text-gray-900 whitespace-pre-wrap" data-role="content">${escapeHtml(text)}</div>`;
     } else if (tools.length === 0 && finishedTools.length === 0) {
       html += `<div class="flex items-center gap-2 text-gray-400 text-sm"><svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>Thinking...</div>`;
     }
@@ -162,7 +161,6 @@ export function chat_createSSEStream(
   function queueFinalRender(finalText: string, finalThinking: string, allTools: ToolBlock[]) {
     renderQueue = renderQueue.then(async () => {
       let html = `<div data-entity="message" data-status="assistant" class="mb-4">`;
-      html += `<div class="text-xs font-medium text-blue-600 mb-1" data-role="label">Assistant</div>`;
 
       if (finalThinking) {
         html += `<details class="mb-2"><summary class="text-xs text-gray-400 cursor-pointer">Thinking</summary><div class="text-xs text-gray-400 italic whitespace-pre-wrap mt-1" data-role="thinking">${escapeHtml(finalThinking)}</div></details>`;
@@ -180,7 +178,7 @@ export function chat_createSSEStream(
 
       if (finalText) {
         const rendered = await ai_renderMarkdown(finalText);
-        html += `<div class="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 prose prose-sm max-w-none" data-role="content">${rendered}</div>`;
+        html += `<div class="text-gray-900 prose prose-sm max-w-none" data-role="content">${rendered}</div>`;
       }
 
       html += `</div>`;

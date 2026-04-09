@@ -39,7 +39,7 @@ describe("chat_createSSEStream", () => {
     expect(chunks.length).toBeGreaterThan(0);
     // Should contain assistant message HTML
     const allHtml = chunks.join("");
-    expect(allHtml).toContain("Assistant");
+    expect(allHtml).toContain('data-status="assistant"');
   });
 
   test("includes tool blocks in output", async () => {

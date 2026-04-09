@@ -4,9 +4,8 @@ import { ai_renderMarkdown } from "./ai_renderMarkdown.ts";
 
 export function chat_view_userMessage(content: string): string {
   return (
-    <div data-entity="message" data-status="user" className="mb-4">
-      <div className="text-xs font-medium text-gray-500 mb-1" data-role="label">You</div>
-      <div className="bg-gray-100 rounded-lg px-4 py-3 text-gray-900 whitespace-pre-wrap" data-role="content">{escapeHtml(content)}</div>
+    <div data-entity="message" data-status="user" className="mb-4 flex justify-end">
+      <div className="bg-gray-900 text-white rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%] whitespace-pre-wrap" data-role="content">{escapeHtml(content)}</div>
     </div>
   );
 }
@@ -15,14 +14,13 @@ export async function chat_view_assistantMessage(text: string, thinking?: string
   const html = await ai_renderMarkdown(text);
   return (
     <div data-entity="message" data-status="assistant" className="mb-4">
-      <div className="text-xs font-medium text-blue-600 mb-1" data-role="label">Assistant</div>
       {thinking && (
         <details className="mb-2">
           <summary className="text-xs text-gray-400 cursor-pointer">Thinking...</summary>
           <div className="text-xs text-gray-400 italic whitespace-pre-wrap mt-1" data-role="thinking">{escapeHtml(thinking!)}</div>
         </details>
       )}
-      <div className="bg-white border border-gray-200 rounded-lg px-4 py-3 text-gray-900 prose prose-sm max-w-none" data-role="content" dangerouslySetInnerHTML={{ __html: html }}></div>
+      <div className="text-gray-900 prose prose-sm max-w-none" data-role="content" dangerouslySetInnerHTML={{ __html: html }}></div>
     </div>
   );
 }
@@ -30,7 +28,7 @@ export async function chat_view_assistantMessage(text: string, thinking?: string
 export function chat_view_toolCall(toolName: string, args: string, result?: string, isError?: boolean, htmlContent?: string): string {
   const hasContent = result != null || htmlContent;
   return (
-    <div data-entity="tool" data-status={isError ? "error" : hasContent ? "done" : "running"} className="mb-3 ml-4">
+    <div data-entity="tool" data-status={isError ? "error" : hasContent ? "done" : "running"} className="mb-3">
       <div className={`rounded border text-sm ${isError ? "border-red-200 bg-red-50" : "border-green-200 bg-green-50"}`}>
         <div className="px-3 py-1.5 font-mono text-xs">
           <span className="font-semibold text-gray-700" data-role="tool-name">{escapeHtml(toolName)}</span>

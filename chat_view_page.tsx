@@ -79,8 +79,9 @@ function addUserBubble(text, label) {
   div.setAttribute('data-status', 'user');
   div.className = 'mb-4';
   var lbl = label || 'You';
-  var cls = label === 'Steer' ? 'bg-orange-100' : 'bg-gray-100';
-  div.innerHTML = '<div class="text-xs font-medium text-gray-500 mb-1" data-role="label">' + lbl + '</div><div class="' + cls + ' rounded-lg px-4 py-3 text-gray-900 whitespace-pre-wrap" data-role="content">' + esc(text) + '</div>';
+  var cls = label === 'Steer' ? 'bg-orange-500 text-white' : 'bg-gray-900 text-white';
+  div.className = 'mb-4 flex justify-end';
+  div.innerHTML = '<div class="' + cls + ' rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%] whitespace-pre-wrap" data-role="content">' + esc(text) + '</div>';
   messages.insertBefore(div, streamDiv);
   messages.scrollTop = messages.scrollHeight;
 }
