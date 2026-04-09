@@ -110,7 +110,7 @@ function addUserBubble(text, label) {
   var cls = label === 'Steer' ? 'bg-orange-500 text-white' : 'bg-gray-500 text-white';
   div.className = 'mb-4 flex justify-end';
   div.innerHTML = '<div class="' + cls + ' rounded-2xl rounded-br-sm px-4 py-2 max-w-[80%] whitespace-pre-wrap" data-role="content">' + esc(text) + '</div>';
-  messages.insertBefore(div, streamDiv);
+  streamDiv.parentNode.insertBefore(div, streamDiv);
   messages.scrollTop = messages.scrollHeight;
 }
 
@@ -235,7 +235,7 @@ async function readSSE(res) {
 
 function finishStream() {
   while (streamDiv.firstChild) {
-    messages.insertBefore(streamDiv.firstChild, streamDiv);
+    streamDiv.parentNode.insertBefore(streamDiv.firstChild, streamDiv);
   }
   updateStats();
   streaming = false;
