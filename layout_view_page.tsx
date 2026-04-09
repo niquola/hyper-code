@@ -21,7 +21,7 @@ export function layout_view_page(title: string, body: string, modelName?: string
             <a href="/" className="text-sm font-semibold text-gray-900">Hyper Code</a>
             <a href="/session/new" data-action="new" className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded">+ New</a>
           </div>
-          <div className="flex-1 overflow-y-auto p-2" hx-get="/sessions" hx-trigger="load" hx-swap="innerHTML">
+          <div className="flex-1 overflow-y-auto p-2" hx-get="/sessions" hx-trigger="load, every 5s" hx-swap="innerHTML">
           </div>
           <div className="p-3 border-t border-gray-200 text-xs">
             <a href="/settings" data-action="settings" className="text-gray-400 hover:text-gray-600">Settings</a>
