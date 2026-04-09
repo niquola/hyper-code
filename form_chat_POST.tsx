@@ -25,7 +25,7 @@ export default async function (req: Request) {
   const filename = session.filename;
   const msgsBefore = session.messages.length;
 
-  return chat_createSSEStream((onEvent) =>
+  return chat_createSSEStream(session, (onEvent) =>
     agent_run(ctx, session, prompt, (event) => {
       onEvent(event);
       if (event.type === "agent_end") {

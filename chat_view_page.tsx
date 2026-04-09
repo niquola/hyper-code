@@ -1,7 +1,7 @@
 import type { Message, ToolCall, AssistantMessage, ToolResultMessage } from "./ai_type_Message.ts";
 import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall } from "./chat_view_message.tsx";
 
-export async function chat_view_page(messages: Message[]): Promise<string> {
+export async function chat_view_page(messages: Message[], sessionFilename?: string, isStreaming?: boolean): Promise<string> {
   // Index toolResults by toolCallId for lookup
   const toolResults = new Map<string, ToolResultMessage>();
   for (const msg of messages) {
@@ -34,7 +34,7 @@ export async function chat_view_page(messages: Message[]): Promise<string> {
     // toolResult already rendered above with its toolCall — skip standalone
   }
   return (
-    <div data-page="chat" className="flex flex-col" style="height: calc(100dvh - 45px)">
+    <div data-page="chat" data-session={sessionFilename || ""} data-streaming={isStreaming ? "true" : "false"} className="flex flex-col" style="height: calc(100dvh - 45px)">
       <div id="messages" className="flex-1 overflow-y-auto py-4" style="min-height: 0">
         {rendered.join("")}
         <div id="stream"></div>
@@ -134,52 +134,56 @@ async function runStream(prompt) {
       return;
     }
 
-    var reader = res.body.getReader();
-    var decoder = new TextDecoder();
-    var buf = '';
-
-    while (true) {
-      var chunk = await reader.read();
-      if (chunk.done) break;
-      buf += decoder.decode(chunk.value, { stream: true });
-
-      var parts = buf.split('\\n\\n');
-      buf = parts.pop() || '';
-      for (var i = 0; i < parts.length; i++) {
-        var lines = parts[i].split('\\n').filter(function(l) { return l.startsWith('data: '); }).map(function(l) { return l.slice(6); });
-        var html = lines.join('\\n');
-        if (html) {
-          streamDiv.innerHTML = html;
-          streamDiv.querySelectorAll('link[rel=stylesheet]').forEach(function(old) {
-            if (!document.querySelector('link[href="' + old.getAttribute('href') + '"]')) {
-              var l = document.createElement('link');
-              l.rel = 'stylesheet';
-              l.href = old.getAttribute('href');
-              document.head.appendChild(l);
-            }
-          });
-          (function execScripts(el) {
-            var scripts = [].slice.call(el.querySelectorAll('script'));
-            var idx = 0;
-            function next() {
-              if (idx >= scripts.length) { if (typeof htmx !== 'undefined') htmx.process(el); return; }
-              var old = scripts[idx++];
-              var s = document.createElement('script');
-              if (old.src) { s.src = old.src; s.onload = next; s.onerror = next; }
-              else { s.textContent = old.textContent; setTimeout(next, 0); }
-              old.replaceWith(s);
-            }
-            next();
-          })(streamDiv);
-          messages.scrollTop = messages.scrollHeight;
-        }
-      }
-    }
+    await readSSE(res);
   } catch (err) {
     streamDiv.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">' + err.message + '</div>';
   }
+  finishStream();
+}
 
-  // Finalize
+async function readSSE(res) {
+  var reader = res.body.getReader();
+  var decoder = new TextDecoder();
+  var buf = '';
+  while (true) {
+    var chunk = await reader.read();
+    if (chunk.done) break;
+    buf += decoder.decode(chunk.value, { stream: true });
+    var parts = buf.split('\\n\\n');
+    buf = parts.pop() || '';
+    for (var i = 0; i < parts.length; i++) {
+      var lines = parts[i].split('\\n').filter(function(l) { return l.startsWith('data: '); }).map(function(l) { return l.slice(6); });
+      var html = lines.join('\\n');
+      if (html) {
+        streamDiv.innerHTML = html;
+        streamDiv.querySelectorAll('link[rel=stylesheet]').forEach(function(old) {
+          if (!document.querySelector('link[href="' + old.getAttribute('href') + '"]')) {
+            var l = document.createElement('link');
+            l.rel = 'stylesheet';
+            l.href = old.getAttribute('href');
+            document.head.appendChild(l);
+          }
+        });
+        (function execScripts(el) {
+          var scripts = [].slice.call(el.querySelectorAll('script'));
+          var idx = 0;
+          function next() {
+            if (idx >= scripts.length) { if (typeof htmx !== 'undefined') htmx.process(el); return; }
+            var old = scripts[idx++];
+            var s = document.createElement('script');
+            if (old.src) { s.src = old.src; s.onload = next; s.onerror = next; }
+            else { s.textContent = old.textContent; setTimeout(next, 0); }
+            old.replaceWith(s);
+          }
+          next();
+        })(streamDiv);
+        messages.scrollTop = messages.scrollHeight;
+      }
+    }
+  }
+}
+
+function finishStream() {
   while (streamDiv.firstChild) {
     messages.insertBefore(streamDiv.firstChild, streamDiv);
   }
@@ -196,7 +200,6 @@ document.getElementById('chat-form').addEventListener('submit', function(e) {
   if (!prompt) return;
 
   if (streaming) {
-    // Follow-up: queue via POST /chat (returns JSON)
     var body = new FormData();
     body.set('prompt', prompt);
     addUserBubble(prompt, 'Follow-up');
@@ -207,4 +210,23 @@ document.getElementById('chat-form').addEventListener('submit', function(e) {
     runStream(prompt);
   }
 });
+
+// Reconnect to running stream if session is streaming
+(function reconnect() {
+  var page = document.querySelector('[data-page=chat]');
+  if (!page || page.dataset.streaming !== 'true') return;
+  var sessionFile = page.dataset.session;
+  if (!sessionFile) return;
+
+  streaming = true;
+  textarea.placeholder = 'Enter — queue follow-up · Ctrl+Enter — steer · Esc — stop';
+
+  fetch('/session/' + encodeURIComponent(sessionFile) + '/stream')
+    .then(function(res) {
+      if (res.status === 204) { streaming = false; return; }
+      return readSSE(res);
+    })
+    .then(finishStream)
+    .catch(function() { streaming = false; });
+})();
 `;

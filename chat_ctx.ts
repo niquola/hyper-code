@@ -54,6 +54,7 @@ async function loadSession(filename: string): Promise<Session> {
     followUpQueue: [],
     abortController: null,
     isStreaming: false,
+    sseListeners: new Set(),
   };
   sessions.set(filename, session);
   return session;

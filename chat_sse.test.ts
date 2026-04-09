@@ -1,6 +1,11 @@
 import { test, expect, describe } from "bun:test";
 import { chat_createSSEStream } from "./chat_sse.ts";
 import type { AgentEvent } from "./agent_type_Event.ts";
+import type { Session } from "./chat_type_Session.ts";
+
+function mockSession(): Session {
+  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set() };
+}
 
 async function collectSSE(response: Response): Promise<string[]> {
   const text = await response.text();
@@ -11,13 +16,13 @@ async function collectSSE(response: Response): Promise<string[]> {
 
 describe("chat_createSSEStream", () => {
   test("returns text/event-stream response", () => {
-    const res = chat_createSSEStream(async () => {});
+    const res = chat_createSSEStream(mockSession(), async () => {});
     expect(res.headers.get("Content-Type")).toBe("text/event-stream");
     expect(res.headers.get("Cache-Control")).toBe("no-cache");
   });
 
   test("streams agent events as SSE", async () => {
-    const res = chat_createSSEStream(async (onEvent) => {
+    const res = chat_createSSEStream(mockSession(), async (onEvent) => {
       onEvent({ type: "agent_start" });
       onEvent({ type: "text_delta", delta: "Hello" });
       onEvent({ type: "text_delta", delta: " world" });
@@ -38,7 +43,7 @@ describe("chat_createSSEStream", () => {
   });
 
   test("includes tool blocks in output", async () => {
-    const res = chat_createSSEStream(async (onEvent) => {
+    const res = chat_createSSEStream(mockSession(), async (onEvent) => {
       onEvent({ type: "agent_start" });
       onEvent({ type: "tool_execution_start", toolCallId: "tc1", toolName: "read", args: { path: "foo.ts" } });
       onEvent({ type: "tool_execution_end", toolCallId: "tc1", toolName: "read", result: { content: [{ type: "text", text: "file data" }] }, isError: false });
@@ -59,7 +64,7 @@ describe("chat_createSSEStream", () => {
   });
 
   test("handles error events", async () => {
-    const res = chat_createSSEStream(async (onEvent) => {
+    const res = chat_createSSEStream(mockSession(), async (onEvent) => {
       onEvent({ type: "agent_start" });
       onEvent({ type: "error", error: "connection failed" });
       onEvent({ type: "agent_end", messages: [] });
@@ -72,7 +77,7 @@ describe("chat_createSSEStream", () => {
   });
 
   test("handles runAgent crash gracefully", async () => {
-    const res = chat_createSSEStream(async () => {
+    const res = chat_createSSEStream(mockSession(), async () => {
       throw new Error("kaboom");
     });
 

@@ -14,6 +14,6 @@ export default async function (req: Request, params: { filename: string }) {
   const ctx = await chat_getCtx();
   const session = await chat_getSession();
   chat_markRead(session.filename, session.messages.length);
-  const body = await chat_view_page(session.messages);
+  const body = await chat_view_page(session.messages, session.filename, session.isStreaming);
   return layout_view_page("Hyper Code", body, ctx.model.name || ctx.model.id);
 }

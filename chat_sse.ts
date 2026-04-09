@@ -96,27 +96,39 @@ function getToolCode(t: ToolBlock): string | null {
   return null;
 }
 
+import type { Session } from "./chat_type_Session.ts";
+
+function sendSSE(controller: ReadableStreamDefaultController<Uint8Array>, encoder: TextEncoder, html: string): boolean {
+  try {
+    const lines = html.split("\n").map((l) => `data: ${l}`).join("\n");
+    controller.enqueue(encoder.encode(`${lines}\n\n`));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function chat_createSSEStream(
+  session: Session,
   runAgent: (onEvent: (event: AgentEvent) => void) => Promise<void>,
 ): Response {
   let text = "";
   let thinking = "";
   let tools: ToolBlock[] = [];
-  let finishedTools: ToolBlock[] = []; // accumulate across turns for final render
+  let finishedTools: ToolBlock[] = [];
   let controller: ReadableStreamDefaultController<Uint8Array>;
   let renderQueue = Promise.resolve();
 
   const encoder = new TextEncoder();
-
   let closed = false;
 
   function send(html: string) {
-    if (closed) return;
-    try {
-      const lines = html.split("\n").map((l) => `data: ${l}`).join("\n");
-      controller.enqueue(encoder.encode(`${lines}\n\n`));
-    } catch {
-      closed = true;
+    if (!closed) {
+      if (!sendSSE(controller, encoder, html)) closed = true;
+    }
+    // Broadcast to all reconnected listeners
+    for (const listener of session.sseListeners) {
+      try { listener(html); } catch {}
     }
   }
 

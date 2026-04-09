@@ -23,7 +23,7 @@ const LM_STUDIO_MODEL: Model = {
 };
 
 function createSession(): Session {
-  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false };
+  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set() };
 }
 
 // -- agent_createCtx --

@@ -3,7 +3,7 @@ import { agent_reset } from "./agent_reset.ts";
 import type { Session } from "./chat_type_Session.ts";
 
 function createSession(): Session {
-  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false };
+  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set() };
 }
 
 describe("agent_reset", () => {

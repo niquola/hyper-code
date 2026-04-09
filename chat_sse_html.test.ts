@@ -1,6 +1,11 @@
 import { test, expect, describe } from "bun:test";
 import { chat_createSSEStream } from "./chat_sse.ts";
 import type { AgentEvent } from "./agent_type_Event.ts";
+import type { Session } from "./chat_type_Session.ts";
+
+function mockSession(): Session {
+  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set() };
+}
 
 async function collectSSE(response: Response): Promise<string> {
   const text = await response.text();
@@ -11,7 +16,7 @@ async function collectSSE(response: Response): Promise<string> {
 
 describe("SSE HTML content rendering", () => {
   test("renders HTML tool results without escaping", async () => {
-    const res = chat_createSSEStream(async (onEvent) => {
+    const res = chat_createSSEStream(mockSession(), async (onEvent) => {
       onEvent({ type: "agent_start" });
       onEvent({
         type: "tool_execution_start",

@@ -7,4 +7,5 @@ export function agent_reset(session: Session): void {
   session.abortController = null;
   session.steerQueue = [];
   session.followUpQueue = [];
+  session.sseListeners.clear();
 }
