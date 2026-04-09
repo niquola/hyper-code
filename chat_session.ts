@@ -26,6 +26,11 @@ export function chat_sessionList(): string[] {
 
 export function chat_sessionLatest(): string | null {
   const files = chat_sessionList();
+  // Prefer latest non-empty session; fall back to latest empty
+  for (let i = files.length - 1; i >= 0; i--) {
+    const size = Bun.file(`${SESSION_DIR}/${files[i]}`).size;
+    if (size > 0) return files[i]!;
+  }
   return files.length > 0 ? files[files.length - 1]! : null;
 }
 
