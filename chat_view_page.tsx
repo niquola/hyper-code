@@ -165,6 +165,10 @@ async function readSSE(res) {
       var html = lines.join('\\n');
       if (html) {
         streamDiv.innerHTML = html;
+        // Move dialogs out of stream so they survive re-renders
+        streamDiv.querySelectorAll('dialog').forEach(function(dlg) {
+          if (!document.getElementById(dlg.id)) document.body.appendChild(dlg);
+        });
         streamDiv.querySelectorAll('link[rel=stylesheet]').forEach(function(old) {
           if (!document.querySelector('link[href="' + old.getAttribute('href') + '"]')) {
             var l = document.createElement('link');
