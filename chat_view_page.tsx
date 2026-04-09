@@ -25,15 +25,16 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
         const textResult = tr ? tr.content.filter((c) => c.type === "text").map((c) => (c as any).text).join("\n") : undefined;
         const htmlResult = tr ? tr.content.filter((c) => c.type === "html").map((c) => (c as any).html).join("") : undefined;
 
-        // html_message/html_dialog: show HTML without tool chrome
-        if ((tc.name === "html_message" || tc.name === "html_dialog") && htmlResult) {
-          // Dialog in history: if still contains <dialog> (not yet dispatched), show as pending
-          if (tc.name === "html_dialog" && htmlResult.includes("<dialog")) {
-            const title = tc.arguments.title || "Dialog";
-            rendered.push(`<div data-entity="widget" class="mb-3 text-xs text-gray-400 border border-dashed border-gray-300 rounded px-3 py-2">⏳ ${escapeHtml(String(title))} (awaiting response)</div>`);
-          } else {
-            rendered.push(`<div data-entity="widget" class="mb-3"><div class="hyper-ui">${htmlResult}</div></div>`);
-          }
+        // html_message: show inline HTML
+        if (tc.name === "html_message" && htmlResult) {
+          rendered.push(`<div data-entity="widget" class="mb-3"><div class="hyper-ui">${htmlResult}</div></div>`);
+          continue;
+        }
+
+        // html_dialog: just show the call as a compact line
+        if (tc.name === "html_dialog") {
+          const title = tc.arguments.title || "Dialog";
+          rendered.push(`<div data-entity="tool" data-status="done" class="mb-2 text-xs text-gray-400">${escapeHtml(String(title))}</div>`);
           continue;
         }
 
