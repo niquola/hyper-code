@@ -33,7 +33,10 @@ export function chat_sessionCreate(): string {
   ensureDir();
   const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
   const id = Math.random().toString(36).slice(2, 8);
-  return `${ts}-${id}.jsonl`;
+  const filename = `${ts}-${id}.jsonl`;
+  // Create empty file so it appears in session list
+  Bun.write(`${SESSION_DIR}/${filename}`, "");
+  return filename;
 }
 
 export async function chat_sessionLoad(filename: string): Promise<Message[]> {

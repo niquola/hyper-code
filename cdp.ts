@@ -29,7 +29,8 @@ export const cdp = {
   async evaluate(expression: string) { return await evaluate(expression); },
 
   async navigate(path: string) {
-    const url = path.startsWith("http") ? path : `http://localhost:3000${path}`;
+    const port = await Bun.file(".port").text().catch(() => "3000");
+    const url = path.startsWith("http") ? path : `http://localhost:${port.trim()}${path}`;
     await send("Page.navigate", { url });
     await Bun.sleep(500);
   },
