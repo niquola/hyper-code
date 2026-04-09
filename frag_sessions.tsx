@@ -55,23 +55,16 @@ function renderSession(s: TreeNode, current: string | null): string {
   const indent = s.depth > 0 ? `padding-left: ${s.depth * 16 + 12}px` : "";
   const isChild = s.depth > 0;
 
-  let html = `<div data-entity="session" data-id="${escapeHtml(s.filename)}" style="${indent}">`;
-  html += `<div class="group flex items-center rounded ${cls}">`;
+  let html = `<div class="group flex items-center rounded ${cls}" data-entity="session" data-id="${escapeHtml(s.filename)}" style="${indent}">`;
   html += `<a href="/session/${enc}/" class="flex-1 min-w-0 px-3 py-2 block">`;
-  html += `<div class="flex items-center gap-2">`;
-  if (isChild) html += `<span class="text-gray-300 text-xs">↳</span>`;
-  html += `<span class="truncate text-sm" ondblclick="event.preventDefault();this.closest('[data-entity=session]').querySelector('.rename-form').classList.toggle('hidden')">${escapeHtml(s.title)}</span>`;
-  if (unread > 0 && !active) html += `<span class="shrink-0 w-2 h-2 rounded-full bg-blue-400"></span>`;
-  html += `</div>`;
-  html += `<div class="text-xs text-gray-500">${s.messageCount} msgs</div>`;
+  if (isChild) html += `<span class="text-gray-300 text-xs mr-1">↳</span>`;
+  html += `<div class="truncate text-sm">${escapeHtml(s.title)}</div>`;
+  html += `<div class="text-xs text-gray-400">${s.messageCount} msgs</div>`;
   html += `</a>`;
+  if (unread > 0 && !active) html += `<span class="shrink-0 w-2 h-2 rounded-full bg-blue-400 mr-1"></span>`;
   html += `<form method="POST" action="/session/delete" class="m-0 pr-2 opacity-0 group-hover:opacity-100">`;
   html += `<input type="hidden" name="filename" value="${escapeHtml(s.filename)}" />`;
   html += `<button type="submit" class="text-gray-500 hover:text-red-400 text-xs" onclick="return confirm('Delete?')">×</button>`;
-  html += `</form></div>`;
-  html += `<form method="POST" action="/session/rename" class="rename-form hidden px-3 pb-2">`;
-  html += `<input type="hidden" name="filename" value="${escapeHtml(s.filename)}" />`;
-  html += `<input type="text" name="title" value="${escapeHtml(s.title)}" class="w-full text-xs bg-white text-gray-900 border border-gray-300 rounded px-2 py-1" onkeydown="if(event.key==='Enter')this.form.submit();if(event.key==='Escape')this.form.classList.add('hidden')" />`;
   html += `</form></div>`;
   return html;
 }
