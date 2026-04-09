@@ -1,7 +1,6 @@
-import type { ButtonProps } from "./UI_type_ButtonProps.ts";
-type ButtonVariant = "primary" | "danger" | "outline" | "ghost" | "success";
+import type { ButtonProps, ButtonVariant } from "./UI_type_ButtonProps.ts";
 
-export type { ButtonProps } from "./UI_type_ButtonProps.ts";
+export type { ButtonProps, ButtonVariant } from "./UI_type_ButtonProps.ts";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary: "px-4 py-2 bg-gray-900 text-white rounded hover:bg-gray-700 transition duration-200",

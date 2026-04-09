@@ -3,6 +3,7 @@
 // On startup, loads the latest session file.
 
 import type { Message } from "./ai_type_Message.ts";
+import type { SessionInfo } from "./chat_type_SessionInfo.ts";
 import { mkdirSync, appendFileSync } from "node:fs";
 
 const SESSION_DIR = ".hyper";

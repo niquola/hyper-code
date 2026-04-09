@@ -7,8 +7,9 @@ test("converts tools to OpenAI format", () => {
   ]);
   expect(result).toHaveLength(1);
   expect(result[0]!.type).toBe("function");
-  expect(result[0]!.function.name).toBe("read");
-  expect(result[0]!.function.strict).toBe(false);
+  const fn = (result[0] as { type: "function"; function: { name: string; strict: boolean } }).function;
+  expect(fn.name).toBe("read");
+  expect(fn.strict).toBe(false);
 });
 
 test("handles empty tools", () => {
