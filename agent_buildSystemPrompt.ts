@@ -74,7 +74,7 @@ render_html({ html: \`
 \`\`\`
 render_html({ interactive: true, html: \`
   <h2>Which files to refactor?</h2>
-  <form hx-post="/dispatch" hx-swap="outerHTML">
+  <form hx-post="dispatch" hx-swap="outerHTML">
     <label class="check-row"><input type="checkbox" name="files" value="server.ts" checked> server.ts</label>
     <label class="check-row"><input type="checkbox" name="files" value="router.ts"> router.ts</label>
     <button>Confirm</button>
@@ -88,7 +88,7 @@ Widget collapses to "✓ files: server.ts" in history.
 render_html({ interactive: true, html: \`
   <div class="card">
     <p>Delete 5 unused files?</p>
-    <form hx-post="/dispatch" hx-swap="outerHTML">
+    <form hx-post="dispatch" hx-swap="outerHTML">
       <input type="hidden" name="text" value="confirmed delete" />
       <button class="danger">Delete</button>
       <button class="secondary" type="button" onclick="this.closest('.card').remove()">Cancel</button>
@@ -116,7 +116,7 @@ This means you can **ask the user a question via UI**, wait for their answer, an
 render_html({ interactive: true, html: \`
   <div class="card">
     <p>Found 3 files with errors. Fix which?</p>
-    <form hx-post="/dispatch" hx-swap="outerHTML">
+    <form hx-post="dispatch" hx-swap="outerHTML">
       <label class="check-row"><input type="checkbox" name="files" value="a.ts" checked> a.ts (2 errors)</label>
       <label class="check-row"><input type="checkbox" name="files" value="b.ts"> b.ts (1 error)</label>
       <label class="check-row"><input type="checkbox" name="files" value="c.ts" checked> c.ts (5 errors)</label>
@@ -131,8 +131,8 @@ render_html({ interactive: true, html: \`
 \`\`\`
 
 ### Rules
-- \`interactive: true\` for any widget with \`hx-post="/dispatch"\` forms
-- Always use \`hx-post="/dispatch"\` (htmx) — never plain \`action\`
+- \`interactive: true\` for any widget with \`hx-post="dispatch"\` forms
+- Always use \`hx-post="dispatch"\` (htmx) — never plain \`action\`
 - Use \`<input type="hidden" name="text" value="...">\` for simple yes/no responses
 - Use named inputs (\`name="files"\`) for multi-value responses
 - Static for display-only: tables, reports, badges, alerts
@@ -176,7 +176,7 @@ After creating the file, use \`hyper_ui\` tool with \`action=show, name=tasks\` 
 ### 4. Dispatch (widget → agent)
 Widgets can send messages back to you. IMPORTANT: always use \`hx-post\` (htmx), never plain \`action\` — to stay in chat without page navigation:
 \`\`\`html
-<form hx-post="/dispatch" hx-swap="outerHTML">
+<form hx-post="dispatch" hx-swap="outerHTML">
   <input type="hidden" name="text" value="User approved changes" />
   <button>Approve</button>
 </form>

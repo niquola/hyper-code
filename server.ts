@@ -1,7 +1,7 @@
 import { router_buildRoutes } from "./router_buildRoutes.ts";
 import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
-import { chat_getCtx, chat_getSession } from "./chat_ctx.ts";
+import { chat_getCtx, chat_getSession, chat_loadSessionByName } from "./chat_ctx.ts";
 import { chat_createSSEStream } from "./chat_sse.ts";
 import { chat_sessionRewrite, chat_sessionAppend } from "./chat_session.ts";
 import { agent_run } from "./agent_run.ts";
@@ -29,14 +29,16 @@ const server = Bun.serve({
       return hyper_ui_handleRequest(cwd, req);
     }
 
-    // /dispatch — widget → agent feedback
-    if (url.pathname === "/dispatch" && req.method === "POST") {
+    // /session/:id/dispatch — widget → agent feedback
+    const dispatchMatch = url.pathname.match(/^\/session\/([^/]+)\/dispatch$/);
+    if (dispatchMatch && req.method === "POST") {
+      const sessionFilename = decodeURIComponent(dispatchMatch[1]!);
       const form = await req.formData();
       const text = form.get("text") as string || [...form.entries()].map(([k, v]) => `${k}: ${v}`).join("\n");
       if (!text.trim()) return new Response("empty", { status: 400 });
 
       const ctx = await chat_getCtx();
-      const session = await chat_getSession();
+      const session = await chat_loadSessionByName(sessionFilename);
 
       // Replace last interactive widget HTML with completed state
       const completedHtml = `<div class="text-xs text-gray-500 border border-gray-200 rounded px-3 py-2 bg-gray-50">✓ ${Bun.escapeHTML(text)}</div>`;

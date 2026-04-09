@@ -43,6 +43,10 @@ export async function chat_getCtx(): Promise<Ctx> {
   return ctx;
 }
 
+export async function chat_loadSessionByName(filename: string): Promise<Session> {
+  return loadSession(filename);
+}
+
 async function loadSession(filename: string): Promise<Session> {
   // Return cached session if exists (preserves in-memory messages from running agent)
   const cached = sessions.get(filename);
