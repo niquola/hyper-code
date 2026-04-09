@@ -1,4 +1,4 @@
-import type { Message, ToolCall, AssistantMessage, ToolResultMessage } from "./ai_type_Message.ts";
+import type { Message, ToolCall, AssistantMessage, ToolResultMessage, TextContent, ThinkingContent, HtmlContent } from "./ai_type_Message.ts";
 import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall } from "./chat_view_message.tsx";
 import { escapeHtml } from "./jsx.ts";
 import { detectToolLang, getToolCode } from "./chat_toolCode.ts";
@@ -17,15 +17,15 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
       const content = typeof msg.content === "string" ? msg.content : msg.content.map((c) => c.type === "text" ? c.text : "[image]").join("");
       rendered.push(chat_view_userMessage(content));
     } else if (msg.role === "assistant") {
-      const text = msg.content.filter((c) => c.type === "text").map((c) => (c as any).text).join("");
-      const thinking = msg.content.filter((c) => c.type === "thinking").map((c) => (c as any).thinking).join("");
+      const text = msg.content.filter((c): c is TextContent => c.type === "text").map((c) => c.text).join("");
+      const thinking = msg.content.filter((c): c is ThinkingContent => c.type === "thinking").map((c) => c.thinking).join("");
       const toolCalls = msg.content.filter((c) => c.type === "toolCall") as ToolCall[];
 
       // Render tool calls with their results
       for (const tc of toolCalls) {
         const tr = toolResults.get(tc.id);
-        const textResult = tr ? tr.content.filter((c) => c.type === "text").map((c) => (c as any).text).join("\n") : undefined;
-        const htmlResult = tr ? tr.content.filter((c) => c.type === "html").map((c) => (c as any).html).join("") : undefined;
+        const textResult = tr ? tr.content.filter((c): c is TextContent => c.type === "text").map((c) => c.text).join("\n") : undefined;
+        const htmlResult = tr ? tr.content.filter((c): c is HtmlContent => c.type === "html").map((c) => c.html).join("") : undefined;
 
         // html_message: show inline HTML
         if (tc.name === "html_message" && htmlResult) {

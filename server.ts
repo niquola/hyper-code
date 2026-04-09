@@ -1,3 +1,4 @@
+import type { HtmlContent } from "./ai_type_Message.ts";
 import { router_buildRoutes } from "./router_buildRoutes.ts";
 import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
@@ -50,8 +51,8 @@ const server = Bun.serve({
         if (msg.role !== "toolResult") continue;
         let replaced = false;
         for (const c of msg.content) {
-          if (c.type === "html" && (c as any).html.includes("data-widget-id")) {
-            (c as any).html = completedHtml;
+          if (c.type === "html" && (c as HtmlContent).html.includes("data-widget-id")) {
+            (c as HtmlContent).html = completedHtml;
             replaced = true;
             break;
           }

@@ -1,4 +1,5 @@
 import type { AgentEvent } from "./agent_type_Event.ts";
+import type { HtmlContent } from "./ai_type_Message.ts";
 import { escapeHtml } from "./jsx.ts";
 import { ai_renderMarkdown, ai_highlightCode } from "./ai_renderMarkdown.ts";
 import { chat_view_toolCall } from "./chat_view_toolCall.tsx";
@@ -152,7 +153,7 @@ export function chat_createSSEStream(
               const textBlocks = event.result.content.filter((c) => c.type !== "html");
               t.result = textBlocks.map((c) => c.type === "text" ? c.text : "[image]").join("\n");
               if (htmlBlocks.length > 0) {
-                t.resultHtml = htmlBlocks.map((c) => (c as any).html).join("");
+                t.resultHtml = htmlBlocks.map((c) => (c as HtmlContent).html).join("");
               }
               t.isError = event.isError;
             }
