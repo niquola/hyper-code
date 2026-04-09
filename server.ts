@@ -30,7 +30,7 @@ const server = Bun.serve({
     }
 
     // /session/:id/dispatch — widget → agent feedback
-    const dispatchMatch = url.pathname.match(/^\/session\/([^/]+)\/dispatch$/);
+    const dispatchMatch = url.pathname.match(/^\/session\/([^/]+)\/dispatch\/?$/);
     if (dispatchMatch && req.method === "POST") {
       const sessionFilename = decodeURIComponent(dispatchMatch[1]!);
       const form = await req.formData();
@@ -85,6 +85,13 @@ const server = Bun.serve({
           "HX-Trigger": "dispatch-sent",
         },
       });
+    }
+
+    // /session/:id/ (trailing slash) — serve session page
+    const sessionMatch = url.pathname.match(/^\/session\/([^/]+)\/$/);
+    if (sessionMatch && req.method === "GET") {
+      const mod = await import("./page_session_$filename.tsx");
+      return mod.default(req, { filename: decodeURIComponent(sessionMatch[1]!) });
     }
 
     return new Response("Not found", { status: 404 });

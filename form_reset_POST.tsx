@@ -6,6 +6,6 @@ export default async function (req: Request) {
   await chat_switchSession(filename);
   return new Response(null, {
     status: 302,
-    headers: { Location: `/session/${encodeURIComponent(filename)}` },
+    headers: { Location: `/session/${encodeURIComponent(filename)}/` },
   });
 }

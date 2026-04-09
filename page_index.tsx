@@ -5,6 +5,6 @@ export default async function (req: Request) {
   const session = await chat_getSession();
   return new Response(null, {
     status: 302,
-    headers: { Location: `/session/${encodeURIComponent(session.filename)}` },
+    headers: { Location: `/session/${encodeURIComponent(session.filename)}/` },
   });
 }

@@ -16,7 +16,7 @@ export default async function (req: Request) {
       : "hover:bg-gray-50 text-gray-600";
     const enc = encodeURIComponent(s.filename);
     html += `<div class="group flex items-center rounded ${cls}" data-entity="session" data-id="${escapeHtml(s.filename)}">`;
-    html += `<a href="/session/${enc}" class="flex-1 min-w-0 px-3 py-2 block">`;
+    html += `<a href="/session/${enc}/" class="flex-1 min-w-0 px-3 py-2 block">`;
     html += `<div class="flex items-center gap-2"><span class="truncate text-sm" ondblclick="event.preventDefault();this.closest('[data-entity=session]').querySelector('.rename-form').classList.toggle('hidden')">${escapeHtml(s.title)}</span>`;
     if (unread > 0 && !active) {
       html += `<span class="shrink-0 w-2 h-2 rounded-full bg-blue-400"></span>`;
