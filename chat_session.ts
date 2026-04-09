@@ -45,20 +45,27 @@ export function chat_sessionCreate(): string {
   return filename;
 }
 
-export async function chat_sessionLoad(filename: string): Promise<Message[]> {
-  const path = `${SESSION_DIR}/${filename}`;
-  const file = Bun.file(path);
+/** Load raw messages from a single file (no parent chain) */
+export async function chat_sessionLoadRaw(filename: string, dir?: string): Promise<Message[]> {
+  const d = dir || SESSION_DIR;
+  const file = Bun.file(`${d}/${filename}`);
   if (!(await file.exists())) return [];
-
   const text = await file.text();
   const messages: Message[] = [];
   for (const line of text.split("\n")) {
     if (!line.trim()) continue;
-    try {
-      messages.push(JSON.parse(line));
-    } catch {}
+    try { messages.push(JSON.parse(line)); } catch {}
   }
   return messages;
+}
+
+/** Load full message chain: parent messages + own messages */
+export async function chat_sessionLoad(filename: string, dir?: string): Promise<Message[]> {
+  const d = dir || SESSION_DIR;
+  const parent = await chat_sessionGetParent(filename, d);
+  const parentMessages = parent ? await chat_sessionLoad(parent, d) : [];
+  const ownMessages = await chat_sessionLoadRaw(filename, d);
+  return [...parentMessages, ...ownMessages];
 }
 
 export function chat_sessionAppend(filename: string, ...msgs: Message[]): void {
@@ -138,41 +145,24 @@ export function chat_sessionDelete(filename: string): void {
   try { unlinkSync(`${SESSION_DIR}/${filename}`); } catch {}
   try { unlinkSync(`${SESSION_DIR}/${filename}.title`); } catch {}
   try { unlinkSync(`${SESSION_DIR}/${filename}.parent`); } catch {}
-  try { unlinkSync(`${SESSION_DIR}/${filename}.offset`); } catch {}
 }
 
-/** Fork session: copy parent messages to new child, set parent link */
+/** Fork session: create empty child with parent link (no data copy) */
 export async function chat_sessionFork(parentFilename: string, task: string, dir?: string): Promise<string> {
   const d = dir || SESSION_DIR;
-  const { mkdirSync, copyFileSync } = require("node:fs");
+  const { mkdirSync } = require("node:fs");
   mkdirSync(d, { recursive: true });
   const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
   const id = Math.random().toString(36).slice(2, 8);
   const childFilename = `${ts}-${id}.jsonl`;
-
-  // Copy parent messages
-  const parentPath = `${d}/${parentFilename}`;
   const childPath = `${d}/${childFilename}`;
-  try { copyFileSync(parentPath, childPath); } catch { await Bun.write(childPath, ""); }
 
-  // Count parent messages for render offset
-  const parentLines = await Bun.file(parentPath).text().catch(() => "");
-  const parentMsgCount = parentLines.split("\n").filter((l: string) => l.trim()).length;
-
-  // Set parent link, title, and offset
+  // Empty child file — only child's own messages go here
+  await Bun.write(childPath, "");
   await Bun.write(`${childPath}.parent`, parentFilename);
   await Bun.write(`${childPath}.title`, `subagent: ${task.slice(0, 50)}`);
-  await Bun.write(`${childPath}.offset`, String(parentMsgCount));
 
   return childFilename;
-}
-
-/** Get parent message offset (how many messages are from parent) */
-export async function chat_sessionGetOffset(filename: string, dir?: string): Promise<number> {
-  const d = dir || SESSION_DIR;
-  const file = Bun.file(`${d}/${filename}.offset`);
-  if (await file.exists()) return parseInt(await file.text(), 10) || 0;
-  return 0;
 }
 
 /** Get parent session filename */

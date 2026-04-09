@@ -25,10 +25,9 @@ describe("subagent session creation", () => {
 
     const childFile = await chat_sessionFork(parentFile, "fix tests", TEST_DIR);
 
-    // Child file exists
+    // Child file exists and is empty (own messages only)
     const childContent = await Bun.file(`${TEST_DIR}/${childFile}`).text();
-    const lines = childContent.trim().split("\n");
-    expect(lines.length).toBe(2); // parent messages copied
+    expect(childContent).toBe("");
 
     // Parent link saved
     const parentLink = await Bun.file(`${TEST_DIR}/${childFile}.parent`).text();
@@ -37,6 +36,13 @@ describe("subagent session creation", () => {
     // Title set
     const title = await Bun.file(`${TEST_DIR}/${childFile}.title`).text();
     expect(title).toContain("fix tests");
+
+    // Full load includes parent messages
+    const { chat_sessionLoad } = await import("./chat_session.ts");
+    // Note: chat_sessionLoad uses global SESSION_DIR, so test with raw
+    const { chat_sessionLoadRaw } = await import("./chat_session.ts");
+    const ownMsgs = await chat_sessionLoadRaw(childFile, TEST_DIR);
+    expect(ownMsgs).toHaveLength(0); // no own messages yet
   });
 
   test("chat_sessionGetParent returns parent filename", async () => {
