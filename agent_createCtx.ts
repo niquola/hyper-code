@@ -17,6 +17,6 @@ export function agent_createCtx(opts: {
     systemPrompt: opts.systemPrompt ?? "",
     tools: opts.tools ?? [],
     db: opts.db ?? null as any,
-    cwd: opts.cwd ?? process.cwd(),
+    cwd: opts.cwd ?? ".",
   };
 }

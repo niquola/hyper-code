@@ -1,9 +1,10 @@
-import { getDb, type SessionRow } from "./chat_db.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
+import type { SessionRow } from "./chat_db.ts";
 import { escapeHtml } from "./jsx.ts";
 
 type TreeNode = SessionRow & { children: TreeNode[]; depth: number; msgCount: number };
 
-function buildTree(sessions: SessionRow[], db: ReturnType<typeof getDb>): TreeNode[] {
+function buildTree(sessions: SessionRow[], db: any): TreeNode[] {
   const nodeMap = new Map<string, TreeNode>();
   for (const s of sessions) {
     nodeMap.set(s.session_id, { ...s, children: [], depth: 0, msgCount: db.getMessageCount(s.session_id) });
@@ -32,7 +33,7 @@ function buildTree(sessions: SessionRow[], db: ReturnType<typeof getDb>): TreeNo
   return flatten(roots);
 }
 
-function renderSession(s: TreeNode, current: string | null, db: ReturnType<typeof getDb>): string {
+function renderSession(s: TreeNode, current: string | null, db: any): string {
   const active = s.session_id === current;
   const unread = db.getUnread(s.session_id, s.msgCount);
   const cls = active ? "bg-gray-100 text-gray-900" : "hover:bg-gray-50 text-gray-600";
@@ -54,8 +55,8 @@ function renderSession(s: TreeNode, current: string | null, db: ReturnType<typeo
   return html;
 }
 
-export default async function (req: Request) {
-  const db = getDb();
+export default async function (ctx: Ctx, req: Request) {
+  const db = ctx.db;
   const sessions = db.listSessions();
   const url = new URL(req.url, "http://localhost");
   const current = url.searchParams.get("current") || null;

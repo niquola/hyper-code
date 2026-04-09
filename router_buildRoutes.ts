@@ -1,4 +1,6 @@
-type Handler = (req: Request, params: Record<string, string>) => Promise<string | Response | null>;
+import type { Ctx } from "./agent_type_Ctx.ts";
+
+type Handler = (ctx: Ctx, req: Request, params: Record<string, string>) => Promise<string | Response | null>;
 
 // page_chat.tsx                    → GET /chat (full page)
 // frag_chat_messages.tsx           → GET /chat/messages (htmx fragment)
@@ -37,7 +39,7 @@ function parseApiFile(filename: string): { method: string; path: string } {
   return { method, path: "/api" + parsePath(pathParts) };
 }
 
-export async function router_buildRoutes(dir: string) {
+export async function router_buildRoutes(dir: string, ctx: Ctx) {
   const globs = [
     { glob: new Bun.Glob("page_*.tsx"), parse: parsePageFile },
     { glob: new Bun.Glob("frag_*.tsx"), parse: parseFragFile },
@@ -56,7 +58,7 @@ export async function router_buildRoutes(dir: string) {
 
       if (!routes[path]) routes[path] = {};
       routes[path]![method] = async (req: Request) => {
-        const result = await handler(req, (req as any).params ?? {});
+        const result = await handler(ctx, req, (req as any).params ?? {});
         if (result === null) return new Response("not found", { status: 404 });
         if (result instanceof Response) return result;
         return new Response(result, {

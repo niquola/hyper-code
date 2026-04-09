@@ -1,7 +1,7 @@
-import { getDb } from "./chat_db.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
 
-export default async function (req: Request) {
-  const db = getDb();
+export default async function (ctx: Ctx, req: Request) {
+  const db = ctx.db;
   const sessions = db.listSessions();
   // Find latest non-empty session or create new
   const latest = sessions.find(s => db.getMessageCount(s.session_id) > 0) || sessions[0];

@@ -3,7 +3,7 @@ import { agent_buildSystemPrompt } from "./agent_buildSystemPrompt.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
 import type { Session } from "./chat_type_Session.ts";
 import type { Message } from "./ai_type_Message.ts";
-import { getDb } from "./chat_db.ts";
+import { chat_db } from "./chat_db.ts";
 import { chat_resolveSessionModel } from "./chat_resolveSessionModel.ts";
 import { tool_read } from "./tool_read.ts";
 import { tool_write } from "./tool_write.ts";
@@ -55,7 +55,7 @@ export async function chat_getCtx(): Promise<Ctx> {
       model, apiKey,
       systemPrompt: agent_buildSystemPrompt(cwd, tools),
       tools,
-      db: getDb(),
+      db: chat_db(),
       cwd,
     });
   }
@@ -70,7 +70,7 @@ async function loadSession(filename: string): Promise<Session> {
   const cached = sessions.get(filename);
   if (cached) return cached;
 
-  const db = getDb();
+  const db = ctx!.db;
 
   // Load messages: for child sessions, chain parent + own with offset
   const sessionRow = db.getSession(filename);
@@ -93,7 +93,7 @@ async function loadSession(filename: string): Promise<Session> {
   // Resolve model per session
   const { model: sessionModel, apiKey: sessionApiKey } = await chat_resolveSessionModel(db, filename);
   const sessionCtx = await chat_getCtx();
-  const systemPrompt = agent_buildSystemPrompt(process.cwd(), sessionCtx.tools, filename, sessionModel.name || sessionModel.id);
+  const systemPrompt = agent_buildSystemPrompt(ctx!.cwd, sessionCtx.tools, filename, sessionModel.name || sessionModel.id);
 
   const session: Session = {
     session_id: filename,
@@ -125,7 +125,7 @@ function rowToMessage(row: { role: string; content: string; timestamp: number })
 }
 
 export async function chat_getSession(): Promise<Session> {
-  const db = getDb();
+  const db = ctx!.db;
   const list = db.listSessions();
   const latest = list.find(s => db.getMessageCount(s.session_id) > 0) || list[0];
   if (latest) return loadSession(latest.session_id);

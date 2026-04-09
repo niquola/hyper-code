@@ -267,10 +267,3 @@ export function chat_db(path?: string) {
   };
 }
 
-// Singleton for the app
-let _db: ReturnType<typeof chat_db> | null = null;
-
-export function getDb(): ReturnType<typeof chat_db> {
-  if (!_db) _db = chat_db();
-  return _db;
-}

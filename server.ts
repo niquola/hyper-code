@@ -4,13 +4,13 @@ import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
 import { chat_getCtx, chat_loadSessionByName } from "./chat_ctx.ts";
 import { chat_createSSEStream } from "./chat_sse.ts";
-import { getDb } from "./chat_db.ts";
 import { agent_run } from "./agent_run.ts";
 import { layout_view_page } from "./layout_view_page.tsx";
 import { chat_view_page } from "./chat_view_page.tsx";
 
-const routes = await router_buildRoutes(".");
-const cwd = process.cwd();
+const appCtx = await chat_getCtx();
+const routes = await router_buildRoutes(".", appCtx);
+const cwd = appCtx.cwd;
 
 const savedPort = await Bun.file(".port").text().catch(() => "");
 const port = savedPort.trim() ? Number(savedPort.trim()) : 0;
@@ -72,7 +72,7 @@ const server = Bun.serve({
         const index = parseInt(url.searchParams.get("index") || "0", 10);
         if (index >= 0 && index < session.messages.length) {
           session.messages = session.messages.slice(0, index);
-          getDb().rewindMessages(sessionFilename, index);
+          appCtx.db.rewindMessages(sessionFilename, index);
         }
         return new Response(null, { status: 302, headers: { Location: `/session/${encodeURIComponent(sessionFilename)}/` } });
       }
@@ -94,7 +94,7 @@ const server = Bun.serve({
             if (event.type === "agent_end") {
               const newMsgs = session.messages.slice(msgsBefore);
               if (newMsgs.length > 0) {
-                const db = getDb();
+                const db = appCtx.db;
                 for (const m of newMsgs) db.addMessage(sessionFilename, { role: m.role, content: m.role === "user" ? (typeof m.content === "string" ? m.content : JSON.stringify(m.content)) : JSON.stringify(m), timestamp: m.timestamp });
               }
             }
@@ -169,10 +169,10 @@ const server = Bun.serve({
       const filename = decodeURIComponent(sessionMatch[1]!);
       const ctx = await chat_getCtx();
       const session = await chat_loadSessionByName(filename);
-      getDb().markRead(session.session_id, session.messages.length);
+      appCtx.db.markRead(session.session_id, session.messages.length);
       // Render only own messages (not parent chain) for UI
       // Show only this session's own messages (not parent chain)
-      const db = getDb();
+      const db = appCtx.db;
       const visibleMessages = db.getMessages(filename).map((r) => {
         if (r.role === "user") return { role: "user" as const, content: r.content, timestamp: r.timestamp };
         try { return JSON.parse(r.content); } catch { return { role: "user" as const, content: r.content, timestamp: r.timestamp }; }
