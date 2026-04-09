@@ -5,8 +5,8 @@ import { ai_renderMarkdown, ai_highlightCode } from "./ai_renderMarkdown.ts";
 type ToolBlock = { id: string; name: string; args: string; result?: string; resultHtml?: string; isError?: boolean };
 
 function renderToolBlock(t: ToolBlock, highlighted?: string): string {
-  // render_html: just show the HTML, no tool chrome
-  if (t.name === "render_html" && t.resultHtml) {
+  // render_html / html_dialog: just show the HTML, no tool chrome
+  if ((t.name === "render_html" || t.name === "html_dialog") && t.resultHtml) {
     return `<div data-entity="widget" data-status="done" class="mb-3"><div class="hyper-ui">${t.resultHtml}</div></div>`;
   }
 

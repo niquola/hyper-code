@@ -71,74 +71,44 @@ render_html({ html: \`
 \` })
 \`\`\`
 
-### Interactive — forms with dispatch (collapses in history after user responds)
+## html_dialog — Ask User via Modal
+
+Use \`html_dialog\` when you need user input. Opens a modal dialog. You provide only title + form fields (inputs, checkboxes, selects). Dialog auto-wraps in \`<form>\` with Submit/Cancel buttons and dispatch. After submit, dialog closes and you receive the response.
+
+### Examples
 \`\`\`
-render_html({ interactive: true, html: \`
-  <h2>Which files to refactor?</h2>
-  <form hx-post="dispatch" hx-swap="outerHTML">
-    <label class="check-row"><input type="checkbox" name="files" value="server.ts" checked> server.ts</label>
-    <label class="check-row"><input type="checkbox" name="files" value="router.ts"> router.ts</label>
-    <button>Confirm</button>
-  </form>
+html_dialog({ title: "Delete 5 files?", html: \`
+  <input type="hidden" name="text" value="confirmed delete" />
+  <p>This will remove: a.ts, b.ts, c.ts, d.ts, e.ts</p>
+\`, submit_label: "Delete" })
+\`\`\`
+
+\`\`\`
+html_dialog({ title: "Which files to fix?", html: \`
+  <label class="check-row"><input type="checkbox" name="files" value="a.ts" checked> a.ts (2 errors)</label>
+  <label class="check-row"><input type="checkbox" name="files" value="b.ts"> b.ts (1 error)</label>
+  <label class="check-row"><input type="checkbox" name="files" value="c.ts" checked> c.ts (5 errors)</label>
+\`, submit_label: "Fix selected" })
+\`\`\`
+
+\`\`\`
+html_dialog({ title: "Rename component", html: \`
+  <label>Current: <strong>UserList</strong></label>
+  <input type="text" name="text" placeholder="New name..." class="w-full" />
 \` })
 \`\`\`
-User clicks Confirm → you receive "[User interaction from widget] files: server.ts"
-Widget collapses to "✓ files: server.ts" in history.
 
-\`\`\`
-render_html({ interactive: true, html: \`
-  <div class="card">
-    <p>Delete 5 unused files?</p>
-    <form hx-post="dispatch" hx-swap="outerHTML">
-      <input type="hidden" name="text" value="confirmed delete" />
-      <button class="danger">Delete</button>
-      <button class="secondary" type="button" onclick="this.closest('.card').remove()">Cancel</button>
-    </form>
-  </div>
-\` })
-\`\`\`
+### Flow
+1. You call \`html_dialog({ title, html })\` — modal opens
+2. User fills fields, clicks Submit (or Cancel)
+3. You receive: \`"[User interaction from widget] files: a.ts, c.ts"\`
+4. You act on the response
+5. Dialog collapses to \`"✓ files: a.ts, c.ts"\` in history
 
-### Dispatch pattern — user → widget → agent
-
-Interactive widgets create a feedback loop:
-
-1. You call \`render_html({ interactive: true, html: "<form hx-post='/dispatch'>..." })\`
-2. User sees the form in chat and clicks a button
-3. Form data is sent to you as a user message: \`"[User interaction from widget] files: server.ts"\`
-4. You receive it and act on it (e.g. refactor the selected files)
-5. Your response streams back into chat automatically
-6. The widget collapses to \`"✓ files: server.ts"\` in session history
-
-This means you can **ask the user a question via UI**, wait for their answer, and continue working.
-
-**Example flow:**
-\`\`\`
-// Step 1: You show a choice
-render_html({ interactive: true, html: \`
-  <div class="card">
-    <p>Found 3 files with errors. Fix which?</p>
-    <form hx-post="dispatch" hx-swap="outerHTML">
-      <label class="check-row"><input type="checkbox" name="files" value="a.ts" checked> a.ts (2 errors)</label>
-      <label class="check-row"><input type="checkbox" name="files" value="b.ts"> b.ts (1 error)</label>
-      <label class="check-row"><input type="checkbox" name="files" value="c.ts" checked> c.ts (5 errors)</label>
-      <button>Fix selected</button>
-    </form>
-  </div>
-\` })
-
-// Step 2: User checks a.ts and c.ts, clicks "Fix selected"
-// Step 3: You receive: "[User interaction from widget] files: a.ts, c.ts"
-// Step 4: You read and fix a.ts and c.ts
-\`\`\`
-
-### Rules
-- \`interactive: true\` for any widget with dispatch forms
-- Use \`hx-post="dispatch"\` (relative URL, htmx) — resolves to \`/session/:id/dispatch\` automatically
-- Never use absolute \`/dispatch\` or plain \`action\` attribute
-- Use \`<input type="hidden" name="text" value="...">\` for simple yes/no responses
-- Use named inputs (\`name="files"\`) for multi-value responses
-- Static for display-only: tables, reports, badges, alerts
-- Available CSS: \`.check-row\`, \`.card\`, \`.alert-success/error/info\`, \`.badge-green/red/blue/gray\`, \`button.secondary/danger/success/sm\`, tables auto-styled
+### When to use which
+- \`render_html\` — static display: tables, reports, badges, status (inline in chat)
+- \`html_dialog\` — ask user for input: choices, confirmations, text entry (modal)
+- Available CSS: \`.check-row\`, tables auto-styled, inputs auto-styled
 
 ## hyper_ui — Persistent Widgets
 

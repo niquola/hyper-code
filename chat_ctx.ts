@@ -14,6 +14,7 @@ import { tool_find } from "./tool_find.ts";
 import { tool_ls } from "./tool_ls.ts";
 import { tool_hyper_ui } from "./tool_hyper_ui.ts";
 import { tool_render_html } from "./tool_render_html.ts";
+import { tool_html_dialog } from "./tool_html_dialog.ts";
 
 let ctx: Ctx | null = null;
 
@@ -32,6 +33,7 @@ export async function chat_getCtx(): Promise<Ctx> {
       tool_read(cwd), tool_write(cwd), tool_edit(cwd), tool_bash(cwd),
       tool_grep(cwd), tool_find(cwd), tool_ls(cwd), tool_hyper_ui(cwd),
       tool_render_html(),
+      tool_html_dialog(),
     ];
 
     ctx = agent_createCtx({

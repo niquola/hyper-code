@@ -24,12 +24,11 @@ describe("agent_buildSystemPrompt", () => {
     expect(prompt).toContain("grep/find");
   });
 
-  test("contains hyper_ui instructions", () => {
+  test("contains render_html and html_dialog instructions", () => {
     const prompt = agent_buildSystemPrompt("/tmp", []);
-    expect(prompt).toContain("hyper_ui");
-    expect(prompt).toContain("hyper_ui_");
-    expect(prompt).toContain("CGI");
-    expect(prompt).toContain("/dispatch");
+    expect(prompt).toContain("render_html");
+    expect(prompt).toContain("html_dialog");
+    expect(prompt).toContain("dispatch");
   });
 
   test("explains CGI env vars", () => {
@@ -39,18 +38,17 @@ describe("agent_buildSystemPrompt", () => {
     expect(prompt).toContain("WORKSPACE_DIR");
   });
 
-  test("includes widget example code", () => {
+  test("includes html_dialog examples", () => {
     const prompt = agent_buildSystemPrompt("/tmp", []);
-    expect(prompt).toContain("hx-post");
-    expect(prompt).toContain("hx-target");
+    expect(prompt).toContain("html_dialog");
+    expect(prompt).toContain("check-row");
+    expect(prompt).toContain("submit_label");
   });
 
-  test("explains dispatch mechanism with htmx", () => {
+  test("explains dispatch flow", () => {
     const prompt = agent_buildSystemPrompt("/tmp", []);
-    expect(prompt).toContain("hx-post");
-    expect(prompt).toContain("/dispatch");
-    expect(prompt).toContain("Approve");
-    expect(prompt).toContain("never plain");
+    expect(prompt).toContain("User interaction from widget");
+    expect(prompt).toContain("modal");
   });
 
   test("lists use cases for widgets", () => {
