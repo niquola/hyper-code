@@ -137,4 +137,51 @@ export function chat_sessionDelete(filename: string): void {
   const { unlinkSync } = require("node:fs");
   try { unlinkSync(`${SESSION_DIR}/${filename}`); } catch {}
   try { unlinkSync(`${SESSION_DIR}/${filename}.title`); } catch {}
+  try { unlinkSync(`${SESSION_DIR}/${filename}.parent`); } catch {}
+}
+
+/** Fork session: copy parent messages to new child, set parent link */
+export async function chat_sessionFork(parentFilename: string, task: string, dir?: string): Promise<string> {
+  const d = dir || SESSION_DIR;
+  const { mkdirSync, copyFileSync } = require("node:fs");
+  mkdirSync(d, { recursive: true });
+  const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  const id = Math.random().toString(36).slice(2, 8);
+  const childFilename = `${ts}-${id}.jsonl`;
+
+  // Copy parent messages
+  const parentPath = `${d}/${parentFilename}`;
+  const childPath = `${d}/${childFilename}`;
+  try { copyFileSync(parentPath, childPath); } catch { await Bun.write(childPath, ""); }
+
+  // Set parent link and title
+  await Bun.write(`${childPath}.parent`, parentFilename);
+  await Bun.write(`${childPath}.title`, `subagent: ${task.slice(0, 50)}`);
+
+  return childFilename;
+}
+
+/** Get parent session filename */
+export async function chat_sessionGetParent(filename: string, dir?: string): Promise<string | null> {
+  const d = dir || SESSION_DIR;
+  const file = Bun.file(`${d}/${filename}.parent`);
+  if (await file.exists()) return (await file.text()).trim() || null;
+  return null;
+}
+
+/** Get child session filenames */
+export async function chat_sessionGetChildren(parentFilename: string, dir?: string): Promise<string[]> {
+  const d = dir || SESSION_DIR;
+  const glob = new Bun.Glob("*.jsonl");
+  const files: string[] = [];
+  try { for (const f of glob.scanSync({ cwd: d })) files.push(f); } catch {}
+  const children: string[] = [];
+  for (const f of files) {
+    const parentFile = Bun.file(`${d}/${f}.parent`);
+    if (await parentFile.exists()) {
+      const parent = (await parentFile.text()).trim();
+      if (parent === parentFilename) children.push(f);
+    }
+  }
+  return children;
 }

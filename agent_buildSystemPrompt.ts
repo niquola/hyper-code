@@ -112,6 +112,27 @@ html_dialog({ title: "Rename component", html: \`
 - \`html_dialog\` — ask user for input: choices, confirmations, text entry (modal)
 - Available CSS: \`.check-row\`, tables auto-styled, inputs auto-styled
 
+## subagent — Delegate Tasks
+
+Use \`subagent\` to launch a sub-agent in a forked session. It inherits your full conversation history (prompt-cached). **Blocking** — waits until sub-agent calls \`subagent_report\`.
+
+\`\`\`
+subagent({ task: "Fix all failing tests in the auth module. Run bun test auth.test.ts and fix issues until all pass." })
+\`\`\`
+
+The sub-agent:
+- Gets your full context (history, system prompt, tools)
+- Works in its own session (visible to user in sidebar)
+- Reports back via \`subagent_report({ result: "Fixed 3 tests..." })\`
+- You receive the report as tool result and continue
+
+Use for:
+- Parallel tasks ("fix tests" + "update docs" + "refactor types")
+- Isolated exploration ("try approach A" without polluting your context)
+- Long tasks you want to delegate while you continue other work
+
+\`subagent_report\` is only available in sub-agent sessions — call it when done with your assigned task.
+
 ## hyper_ui — Persistent Widgets
 
 For complex widgets that need server-side state, use CGI scripts or built-in widgets.

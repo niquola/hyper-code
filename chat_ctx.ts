@@ -15,6 +15,9 @@ import { tool_ls } from "./tool_ls.ts";
 import { tool_hyper_ui } from "./tool_hyper_ui.ts";
 import { tool_html_message } from "./tool_html_message.ts";
 import { tool_html_dialog } from "./tool_html_dialog.ts";
+import { tool_subagent } from "./tool_subagent.ts";
+import { tool_subagent_report } from "./tool_subagent_report.ts";
+import { chat_sessionGetParent } from "./chat_session.ts";
 
 let ctx: Ctx | null = null;
 
@@ -37,6 +40,25 @@ export async function chat_getCtx(): Promise<Ctx> {
         const fn = currentFilename;
         return fn ? sessions.get(fn)! : null!;
       }),
+      tool_subagent(
+        () => { const fn = currentFilename; return fn ? sessions.get(fn)! : null!; },
+        async () => ({ ctx: ctx!, loadSession }),
+      ),
+      tool_subagent_report(
+        () => { const fn = currentFilename; return fn ? sessions.get(fn)! : null!; },
+        () => {
+          // Find parent session from cache
+          const fn = currentFilename;
+          if (!fn) return null;
+          const s = sessions.get(fn);
+          if (!s) return null;
+          // Sync check for parent (loaded sessions only)
+          for (const [name, sess] of sessions) {
+            if (sess.pendingDialogs.has(`subagent:${fn}`)) return sess;
+          }
+          return null;
+        },
+      ),
     ];
 
     ctx = agent_createCtx({
