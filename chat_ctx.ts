@@ -19,6 +19,7 @@ import { tool_subagent } from "./tool_subagent.ts";
 import { tool_subagent_report } from "./tool_subagent_report.ts";
 import { tool_websearch } from "./tool_websearch.ts";
 import { tool_memory_search } from "./tool_memory_search.ts";
+import { tool_ts } from "./tool_ts.ts";
 
 let ctx: Ctx | null = null;
 
@@ -42,6 +43,7 @@ export async function chat_getCtx(): Promise<Ctx> {
       }),
       tool_websearch(),
       tool_memory_search(),
+      tool_ts(cwd),
     ];
 
     const { chat_loadSettings, chat_resolveModel, chat_resolveApiKey } = await import("./chat_settings.ts");

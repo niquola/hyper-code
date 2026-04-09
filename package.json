@@ -17,6 +17,7 @@
     "@anthropic-ai/sdk": "^0.87.0",
     "openai": "^6.33.0",
     "partial-json": "^0.1.7",
-    "shiki": "^4.0.2"
+    "shiki": "^4.0.2",
+    "ts-morph": "^27.0.2"
   }
 }
