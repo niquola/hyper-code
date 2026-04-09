@@ -28,7 +28,7 @@ function loadContextFiles(cwd: string): string[] {
   return results;
 }
 
-export function agent_buildSystemPrompt(cwd: string, tools: AgentTool[]): string {
+export function agent_buildSystemPrompt(cwd: string, tools: AgentTool[], sessionFilename?: string): string {
   const toolList = tools.map((t) => `- **${t.name}**: ${t.description}`).join("\n");
   const contextFiles = loadContextFiles(cwd);
   const contextSection = contextFiles.length > 0
@@ -38,6 +38,7 @@ export function agent_buildSystemPrompt(cwd: string, tools: AgentTool[]): string
   return `You are a coding assistant with access to the local filesystem.
 
 Working directory: ${cwd}
+Session: ${sessionFilename || "default"}
 
 ## Available tools
 ${toolList}
@@ -131,8 +132,9 @@ render_html({ interactive: true, html: \`
 \`\`\`
 
 ### Rules
-- \`interactive: true\` for any widget with \`hx-post="dispatch"\` forms
-- Always use \`hx-post="dispatch"\` (htmx) — never plain \`action\`
+- \`interactive: true\` for any widget with dispatch forms
+- Use \`hx-post="dispatch"\` (relative URL, htmx) — resolves to \`/session/:id/dispatch\` automatically
+- Never use absolute \`/dispatch\` or plain \`action\` attribute
 - Use \`<input type="hidden" name="text" value="...">\` for simple yes/no responses
 - Use named inputs (\`name="files"\`) for multi-value responses
 - Static for display-only: tables, reports, badges, alerts
