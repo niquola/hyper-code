@@ -1,7 +1,7 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
 import type { Session } from "./chat_type_Session.ts";
-import { getDb } from "./chat_db.ts";
+
 import { agent_run } from "./agent_run.ts";
 
 export function tool_subagent(
@@ -18,7 +18,7 @@ export function tool_subagent(
       required: ["task"],
     },
     execute: async (ctx: Ctx, session: Session, params: { task: string }) => {
-      const db = getDb();
+      const db = ctx.db;
       const savedCount = db.getMessageCount(session.session_id);
       const childFilename = db.forkSession(session.session_id, params.task, savedCount);
 

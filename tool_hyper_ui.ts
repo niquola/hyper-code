@@ -1,4 +1,6 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 import { hyper_ui_run } from "./hyper_ui_run.ts";
 import { hyper_ui_list } from "./hyper_ui_list.ts";
 import { widget_editor } from "./widget_editor.ts";
@@ -18,7 +20,7 @@ export function tool_hyper_ui(cwd: string): AgentTool {
       },
       required: ["action"],
     },
-    execute: async (_ctx: any, _session: any, params: { action: string; name?: string; query?: string }) => {
+    execute: async (_ctx: Ctx, _session: Session, params: { action: string; name?: string; query?: string }) => {
       if (params.action === "list") {
         const custom = await hyper_ui_list(cwd);
         const lines = [

@@ -19,7 +19,7 @@ const model: Model = {
 
 describe("agent_executeTools edge cases", () => {
   test("handles empty tool calls array", async () => {
-    const ctx = agent_createCtx({ model, apiKey: "test" });
+    const ctx = agent_createCtx({ model, apiKey: "test", db: {} as any, cwd: "." });
     const events: AgentEvent[] = [];
     const results = await agent_executeTools(ctx, createSession(), [], (e) => events.push(e));
     expect(results).toHaveLength(0);

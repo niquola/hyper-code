@@ -1,4 +1,6 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 import { tool_truncateOutput } from "./tool_truncate.ts";
 
 export function tool_bash(cwd: string): AgentTool {
@@ -13,7 +15,7 @@ export function tool_bash(cwd: string): AgentTool {
       },
       required: ["command"],
     },
-    execute: async (_ctx: any, _session: any, params: { command: string; timeout?: number }, signal) => {
+    execute: async (_ctx: Ctx, _session: Session, params: { command: string; timeout?: number }, signal) => {
       const timeout = (params.timeout || 30) * 1000;
 
       const proc = Bun.spawn(["bash", "-c", params.command], {

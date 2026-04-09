@@ -1,7 +1,7 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
 import type { Session } from "./chat_type_Session.ts";
-import { getDb } from "./chat_db.ts";
+
 
 export function tool_memory_search(): AgentTool {
   return {
@@ -17,7 +17,7 @@ export function tool_memory_search(): AgentTool {
       required: ["query"],
     },
     execute: async (ctx: Ctx, session: Session, params: { query: string; role?: string; limit?: number }) => {
-      const db = getDb();
+      const db = ctx.db;
       const results = db.searchMessages(params.query, params.role, params.limit || 20);
 
       if (results.length === 0) {

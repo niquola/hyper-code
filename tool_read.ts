@@ -1,6 +1,8 @@
 import { resolve } from "node:path";
 import { homedir } from "node:os";
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 import { tool_truncateOutput } from "./tool_truncate.ts";
 
 function resolvePath(path: string, cwd: string): string {
@@ -22,7 +24,7 @@ export function tool_read(cwd: string): AgentTool {
       },
       required: ["path"],
     },
-    execute: async (_ctx: any, _session: any, params: { path: string; offset?: number; limit?: number }, signal) => {
+    execute: async (_ctx: Ctx, _session: Session, params: { path: string; offset?: number; limit?: number }, signal) => {
       const abs = resolvePath(params.path, cwd);
       const file = Bun.file(abs);
       if (!await file.exists()) throw new Error(`File not found: ${params.path}`);

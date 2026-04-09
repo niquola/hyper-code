@@ -23,7 +23,7 @@ describe("tool_websearch", () => {
     process.env.TAVILY_API_KEY = "test-key";
     let captured: { url?: string; init?: RequestInit } = {};
 
-    globalThis.fetch = async (url: any, init?: RequestInit) => {
+    const mockFetch = async (url: any, init?: RequestInit) => {
       captured = { url: String(url), init };
       return new Response(JSON.stringify({
         answer: "Answer text",
@@ -33,6 +33,7 @@ describe("tool_websearch", () => {
         ],
       }), { status: 200, headers: { "content-type": "application/json" } });
     };
+    globalThis.fetch = mockFetch as typeof globalThis.fetch;
 
     const tool = tool_websearch();
     const result = await tool.execute({} as any, {} as any, { query: "tavily" });

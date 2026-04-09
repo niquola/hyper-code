@@ -30,7 +30,7 @@ function createSession(): Session {
 
 describe("agent_createCtx", () => {
   test("creates ctx with defaults", () => {
-    const ctx = agent_createCtx({ model: LM_STUDIO_MODEL, apiKey: "lm-studio" });
+    const ctx = agent_createCtx({ model: LM_STUDIO_MODEL, apiKey: "lm-studio", db: {} as any, cwd: "." });
     expect(ctx.model).toBe(LM_STUDIO_MODEL);
     expect(ctx.apiKey).toBe("lm-studio");
     expect(ctx.systemPrompt).toBe("");
@@ -46,7 +46,7 @@ describe("agent_createCtx", () => {
     };
     const ctx = agent_createCtx({
       model: LM_STUDIO_MODEL,
-      apiKey: "key",
+      apiKey: "key", db: {} as any, cwd: ".",
       systemPrompt: "Be helpful",
       tools: [tool],
     });
@@ -106,7 +106,7 @@ describe("agent_executeTools", () => {
   });
 
   test("handles missing tool", async () => {
-    const ctx = agent_createCtx({ model: LM_STUDIO_MODEL, apiKey: "lm-studio" });
+    const ctx = agent_createCtx({ model: LM_STUDIO_MODEL, apiKey: "lm-studio", db: {} as any, cwd: "." });
     const toolCalls: ToolCall[] = [
       { type: "toolCall", id: "tc1", name: "nonexistent", arguments: {} },
     ];
@@ -174,7 +174,7 @@ describe("agent_run", () => {
     const ctx = agent_createCtx({
       model: LM_STUDIO_MODEL,
       apiKey: "lm-studio",
-      systemPrompt: "Reply with exactly one word: OK",
+      systemPrompt: "Reply with exactly one word: OK", db: {} as any, cwd: "."
     });
     const session = createSession();
 
@@ -222,7 +222,7 @@ describe("agent_run", () => {
   });
 
   test("queues follow-up when already streaming", async () => {
-    const ctx = agent_createCtx({ model: LM_STUDIO_MODEL, apiKey: "lm-studio" });
+    const ctx = agent_createCtx({ model: LM_STUDIO_MODEL, apiKey: "lm-studio", db: {} as any, cwd: "." });
     const session = createSession();
     session.isStreaming = true;
     await agent_run(ctx, session, "hi", () => {});
@@ -234,7 +234,7 @@ describe("agent_run", () => {
       ...LM_STUDIO_MODEL,
       baseUrl: "http://localhost:99999/v1",
     };
-    const ctx = agent_createCtx({ model: badModel, apiKey: "lm-studio" });
+    const ctx = agent_createCtx({ model: badModel, apiKey: "lm-studio", db: {} as any, cwd: "." });
     const session = createSession();
 
     const events: AgentEvent[] = [];

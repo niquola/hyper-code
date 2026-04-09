@@ -1,11 +1,10 @@
 import type { Model } from "./ai_type_Model.ts";
-import { getDb } from "./chat_db.ts";
+import type { chat_db } from "./chat_db.ts";
 import { chat_loadSettings, chat_resolveModel } from "./chat_settings.ts";
 import { chat_getApiKey } from "./chat_apiKeys.ts";
 
-export async function chat_resolveSessionModel(filename: string): Promise<{ model: Model; apiKey: string }> {
-  const db = getDb();
-  const session = db.getSession(filename);
+export async function chat_resolveSessionModel(db: ReturnType<typeof chat_db>, sessionId: string): Promise<{ model: Model; apiKey: string }> {
+  const session = db.getSession(sessionId);
   const modelStr = session?.model || null;
   const settings = await chat_loadSettings();
 

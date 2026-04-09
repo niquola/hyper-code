@@ -8,15 +8,15 @@ export function agent_createCtx(opts: {
   apiKey: string;
   systemPrompt?: string;
   tools?: AgentTool[];
-  db: ReturnType<typeof chat_db>;
-  cwd: string;
+  db?: ReturnType<typeof chat_db>;
+  cwd?: string;
 }): Ctx {
   return {
     model: opts.model,
     apiKey: opts.apiKey,
     systemPrompt: opts.systemPrompt ?? "",
     tools: opts.tools ?? [],
-    db: opts.db,
-    cwd: opts.cwd,
+    db: opts.db ?? null as any,
+    cwd: opts.cwd ?? process.cwd(),
   };
 }

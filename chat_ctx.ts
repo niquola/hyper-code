@@ -91,7 +91,7 @@ async function loadSession(filename: string): Promise<Session> {
   }
 
   // Resolve model per session
-  const { model: sessionModel, apiKey: sessionApiKey } = await chat_resolveSessionModel(filename);
+  const { model: sessionModel, apiKey: sessionApiKey } = await chat_resolveSessionModel(db, filename);
   const sessionCtx = await chat_getCtx();
   const systemPrompt = agent_buildSystemPrompt(process.cwd(), sessionCtx.tools, filename, sessionModel.name || sessionModel.id);
 

@@ -64,7 +64,7 @@ describe("agent_run error handling", () => {
   });
 
   test("queues follow-up when already streaming", async () => {
-    const ctx = agent_createCtx({ model: LM_MODEL, apiKey: "lm-studio" });
+    const ctx = agent_createCtx({ model: LM_MODEL, apiKey: "lm-studio", db: {} as any, cwd: "." });
     const session = createSession();
     session.isStreaming = true;
 
