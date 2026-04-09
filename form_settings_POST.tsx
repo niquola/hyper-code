@@ -19,8 +19,9 @@ export default async function (req: Request) {
     apiKey: apiKey || current.apiKey, // keep old key if empty
   });
 
-  // Reset agent ctx so it picks up new settings
-  const { chat_resetCtx } = await import("./chat_ctx.ts");
+  // Reset agent config + session so it picks up new settings
+  const { chat_resetCtx, chat_resetConfig } = await import("./chat_ctx.ts");
+  chat_resetConfig();
   chat_resetCtx();
 
   return new Response(null, { status: 302, headers: { Location: "/" } });

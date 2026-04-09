@@ -1,6 +1,6 @@
 import { auth_codexLogin } from "./auth_codex.ts";
 import { chat_loadSettings, chat_saveSettings } from "./chat_settings.ts";
-import { chat_resetCtx } from "./chat_ctx.ts";
+import { chat_resetCtx, chat_resetConfig } from "./chat_ctx.ts";
 
 export default async function (req: Request) {
   try {
@@ -19,6 +19,7 @@ export default async function (req: Request) {
       settings.accountId = creds.accountId;
       await chat_saveSettings(settings);
       chat_resetCtx();
+      chat_resetConfig();
       console.log("[codex] Login successful, account:", creds.accountId);
     }).catch((err) => console.error("[codex] Login failed:", err));
 
