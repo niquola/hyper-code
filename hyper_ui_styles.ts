@@ -106,7 +106,13 @@ export const HYPER_UI_STYLES = `
 details[open] > summary svg:last-child { transform: rotate(180deg); }
 details > summary::-webkit-details-marker { display: none; }
 
-/* Code highlighting in tool results */
-[data-entity="tool"] pre.shiki { margin: 0; padding: 0.75rem 1rem; border-radius: 0; font-size: 12px; line-height: 1.5; }
-[data-entity="tool"] pre.shiki code { font-size: inherit; }
+/* Code highlighting — shiki overrides prose conflicts */
+pre.shiki { margin: 0; padding: 0.75rem 1rem; border-radius: 6px; font-size: 12px; line-height: 1.5; }
+pre.shiki code { font-size: inherit; background: none !important; color: inherit !important; padding: 0 !important; }
+.prose pre.shiki { margin-top: 0.5rem; margin-bottom: 0.5rem; }
+.prose code { background: #f3f4f6; padding: 0.15em 0.35em; border-radius: 3px; font-size: 0.85em; }
+.prose pre code { background: none; padding: 0; border-radius: 0; font-size: inherit; }
+
+/* Tool results code blocks */
+[data-entity="tool"] pre.shiki { border-radius: 0; }
 `;
