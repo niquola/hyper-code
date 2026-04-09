@@ -12,8 +12,8 @@ export default async function (req: Request) {
     totalCost += msg.usage.cost.total;
   }
 
-  if (assistantMessages.length === 0) return `<span id="nav-stats" class="block text-gray-500 text-xs"></span>`;
+  if (assistantMessages.length === 0) return `<span id="nav-stats" class="text-xs text-gray-400"></span>`;
 
   const costStr = totalCost > 0 ? ` · $${totalCost.toFixed(4)}` : "";
-  return `<span id="nav-stats" class="block text-gray-500 text-xs">${totalTokens} tok${costStr}</span>`;
+  return `<span id="nav-stats" class="text-xs text-gray-400">${totalTokens} tok${costStr}</span>`;
 }

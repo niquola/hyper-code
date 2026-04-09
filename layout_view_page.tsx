@@ -16,7 +16,7 @@ export function layout_view_page(title: string, body: string, modelName?: string
       </head>
       <body className="bg-gray-50 h-screen flex overflow-hidden">
 
-        <aside id="sidebar" className="w-64 shrink-0 bg-gray-900 text-gray-300 flex flex-col h-full">
+        <aside id="sidebar" className="w-56 shrink-0 bg-gray-900 text-gray-300 flex flex-col h-full">
           <div className="p-3 border-b border-gray-700 flex items-center justify-between">
             <a href="/" className="text-sm font-semibold text-white">Hyper Code</a>
             <form method="POST" action="/reset" className="m-0">
@@ -25,16 +25,22 @@ export function layout_view_page(title: string, body: string, modelName?: string
           </div>
           <div className="flex-1 overflow-y-auto p-2" hx-get="/sessions" hx-trigger="load" hx-swap="innerHTML">
           </div>
-          <div className="p-3 border-t border-gray-700 text-xs space-y-1">
-            {modelName && (
-              <a href="/settings" className="block text-gray-400 hover:text-gray-200 truncate" data-role="model-name">{modelName}</a>
-            )}
-            <span id="nav-stats" className="block text-gray-500" hx-get="/stats" hx-trigger="load" hx-swap="outerHTML"></span>
-            <a href="/settings" data-action="settings" className="block text-gray-400 hover:text-gray-200">Settings</a>
+          <div className="p-3 border-t border-gray-700 text-xs">
+            <a href="/settings" data-action="settings" className="text-gray-400 hover:text-gray-200">Settings</a>
           </div>
         </aside>
 
         <main className="flex-1 min-w-0 flex flex-col">
+          <header className="shrink-0 bg-white border-b border-gray-200 px-4 py-2">
+            <div className="max-w-3xl mx-auto flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                {modelName && (
+                  <a href="/settings" className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded hover:bg-gray-200" data-role="model-name">{modelName}</a>
+                )}
+                <span id="nav-stats" className="text-xs text-gray-400" hx-get="/stats" hx-trigger="load" hx-swap="outerHTML"></span>
+              </div>
+            </div>
+          </header>
           <div className="flex-1 min-h-0 flex flex-col max-w-3xl w-full mx-auto px-4" dangerouslySetInnerHTML={{ __html: body }} />
         </main>
 

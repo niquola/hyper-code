@@ -26,13 +26,11 @@ describe("router_buildRoutes", () => {
     expect(routes["/abort"]!["POST"]).toBeDefined();
   });
 
-  test("GET / returns HTML response", async () => {
+  test("GET / redirects to session", async () => {
     const routes = await router_buildRoutes(".");
     const handler = routes["/"]!["GET"] as (req: Request) => Promise<Response>;
     const res = await handler(new Request("http://localhost/"));
-    expect(res.status).toBe(200);
-    const html = await res.text();
-    expect(html).toContain("Hyper Code");
-    expect(html).toContain('data-page="chat"');
+    expect(res.status).toBe(302);
+    expect(res.headers.get("Location")).toContain("/session/");
   });
 });

@@ -62,37 +62,56 @@ export function chat_sessionAppend(filename: string, ...msgs: Message[]): void {
 export type SessionInfo = {
   filename: string;
   title: string;
-  createdAt: string; // from filename timestamp
+  createdAt: string;
   messageCount: number;
 };
 
-/** Get session title from first user message (first line of jsonl) */
+/** Get or set custom session title */
+export async function chat_sessionGetTitle(filename: string): Promise<string | null> {
+  const path = `${SESSION_DIR}/${filename}.title`;
+  const file = Bun.file(path);
+  if (await file.exists()) return (await file.text()).trim() || null;
+  return null;
+}
+
+export async function chat_sessionSetTitle(filename: string, title: string): Promise<void> {
+  ensureDir();
+  await Bun.write(`${SESSION_DIR}/${filename}.title`, title.trim());
+}
+
+/** Get session info — custom title, or first user message, or "New Chat" */
 export async function chat_sessionInfo(filename: string): Promise<SessionInfo> {
   const path = `${SESSION_DIR}/${filename}`;
   const file = Bun.file(path);
   let title = "New Chat";
   let messageCount = 0;
 
+  // Check custom title first
+  const customTitle = await chat_sessionGetTitle(filename);
+  if (customTitle) title = customTitle;
+
   if (await file.exists()) {
     const text = await file.text();
     const lines = text.split("\n").filter((l) => l.trim());
     messageCount = lines.length;
-    for (const line of lines) {
-      try {
-        const msg = JSON.parse(line);
-        if (msg.role === "user") {
-          const content = typeof msg.content === "string" ? msg.content : msg.content?.[0]?.text || "";
-          title = content.slice(0, 60) || "New Chat";
-          if (content.length > 60) title += "...";
-          break;
-        }
-      } catch {}
+
+    // Fall back to first user message if no custom title
+    if (!customTitle) {
+      for (const line of lines) {
+        try {
+          const msg = JSON.parse(line);
+          if (msg.role === "user") {
+            const content = typeof msg.content === "string" ? msg.content : msg.content?.[0]?.text || "";
+            title = content.slice(0, 60) || "New Chat";
+            if (content.length > 60) title += "...";
+            break;
+          }
+        } catch {}
+      }
     }
   }
 
-  // Extract timestamp from filename: 2026-04-09T09-28-48-xxx.jsonl
   const createdAt = filename.slice(0, 19).replace(/T/, " ").replace(/-/g, (m, i) => i > 9 ? ":" : "-");
-
   return { filename, title, createdAt, messageCount };
 }
 
@@ -103,8 +122,7 @@ export async function chat_sessionListInfo(): Promise<SessionInfo[]> {
 }
 
 export function chat_sessionDelete(filename: string): void {
-  try {
-    const { unlinkSync } = require("node:fs");
-    unlinkSync(`${SESSION_DIR}/${filename}`);
-  } catch {}
+  const { unlinkSync } = require("node:fs");
+  try { unlinkSync(`${SESSION_DIR}/${filename}`); } catch {}
+  try { unlinkSync(`${SESSION_DIR}/${filename}.title`); } catch {}
 }
