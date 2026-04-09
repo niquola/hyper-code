@@ -101,15 +101,19 @@ Both can coexist on the same page. htmx uses `hx-*` attributes, Datastar uses `d
 
 **ai** — LLM streaming via OpenAI-compatible APIs (OpenAI, LM Studio, Groq, etc.)
 - `ai_stream(model, context, opts)` → `AssistantMessageEventStream` (async iterable)
+- Auto-routes: Codex → `ai_streamCodex` (raw fetch), OpenAI/GitHub → `ai_streamResponses`, others → Completions API
 - Types: `Message`, `AssistantMessage`, `ToolCall`, `Usage`, `Model`, `StreamOptions`
-- Converts messages to OpenAI format, streams chunks, parses tool calls
 - `ai_renderMarkdown(text)` → HTML with shiki syntax highlighting
+- `ai_models_generated.ts` — 856 models across 23 providers
 
 **agent** — Agent loop: prompt → LLM → tool execution → repeat
-- `agent_run(ctx, prompt, onEvent)` — main loop, emits `AgentEvent`s
-- `Ctx` holds: model, apiKey, systemPrompt, messages, tools, abortController
-- `agent_createCtx(opts)` — create with defaults
-- `agent_executeTools(ctx, toolCalls, onEvent)` — sequential tool execution
+- `agent_run(ctx, session, prompt, onEvent)` — main loop, emits `AgentEvent`s
+- `Ctx` holds: model, apiKey, systemPrompt, tools (immutable config)
+- `Session` holds: filename, messages, steerQueue, followUpQueue, abortController, isStreaming, sseListeners
+- `agent_createCtx(opts)` — create config with defaults
+- `agent_executeTools(ctx, toolCalls, onEvent, signal?)` — sequential tool execution
+- `agent_abort(session)` — abort running agent
+- `agent_reset(session)` — clear session state
 
 **tools** — Coding tools (read, write, edit, bash, grep, find, ls, hyper_ui)
 - `tool_read(cwd)` — read file with line numbers, offset/limit

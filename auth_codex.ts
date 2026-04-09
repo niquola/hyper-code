@@ -10,12 +10,8 @@ const REDIRECT_URI = "http://localhost:1455/auth/callback";
 const SCOPE = "openid profile email offline_access";
 const JWT_CLAIM_PATH = "https://api.openai.com/auth";
 
-export type CodexCredentials = {
-  access: string;
-  refresh: string;
-  expires: number;
-  accountId: string;
-};
+import type { CodexCredentials } from "./auth_type_CodexCredentials.ts";
+export type { CodexCredentials } from "./auth_type_CodexCredentials.ts";
 
 // --- PKCE ---
 
