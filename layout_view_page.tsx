@@ -16,15 +16,15 @@ export function layout_view_page(title: string, body: string, modelName?: string
       </head>
       <body className="bg-gray-50 h-screen flex overflow-hidden">
 
-        <aside id="sidebar" className="w-56 shrink-0 bg-gray-900 text-gray-300 flex flex-col h-full">
-          <div className="p-3 border-b border-gray-700 flex items-center justify-between">
-            <a href="/" className="text-sm font-semibold text-white">Hyper Code</a>
-            <a href="/session/new" data-action="new" className="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded">+ New</a>
+        <aside id="sidebar" className="w-56 shrink-0 bg-white border-r border-gray-200 text-gray-700 flex flex-col h-full">
+          <div className="p-3 border-b border-gray-200 flex items-center justify-between">
+            <a href="/" className="text-sm font-semibold text-gray-900">Hyper Code</a>
+            <a href="/session/new" data-action="new" className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded">+ New</a>
           </div>
           <div className="flex-1 overflow-y-auto p-2" hx-get="/sessions" hx-trigger="load" hx-swap="innerHTML">
           </div>
-          <div className="p-3 border-t border-gray-700 text-xs">
-            <a href="/settings" data-action="settings" className="text-gray-400 hover:text-gray-200">Settings</a>
+          <div className="p-3 border-t border-gray-200 text-xs">
+            <a href="/settings" data-action="settings" className="text-gray-400 hover:text-gray-600">Settings</a>
           </div>
         </aside>
 

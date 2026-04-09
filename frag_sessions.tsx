@@ -12,8 +12,8 @@ export default async function (req: Request) {
     const active = s.filename === current;
     const unread = chat_getUnread(s.filename, s.messageCount);
     const cls = active
-      ? "bg-gray-700 text-white"
-      : "hover:bg-gray-800 text-gray-400";
+      ? "bg-gray-100 text-gray-900"
+      : "hover:bg-gray-50 text-gray-600";
     const enc = encodeURIComponent(s.filename);
     html += `<div class="group flex items-center rounded ${cls}" data-entity="session" data-id="${escapeHtml(s.filename)}">`;
     html += `<a href="/session/${enc}" class="flex-1 min-w-0 px-3 py-2 block">`;
@@ -31,7 +31,7 @@ export default async function (req: Request) {
     html += `</div>`;
     html += `<form method="POST" action="/session/rename" class="rename-form hidden px-3 pb-2">`;
     html += `<input type="hidden" name="filename" value="${escapeHtml(s.filename)}" />`;
-    html += `<input type="text" name="title" value="${escapeHtml(s.title)}" class="w-full text-xs bg-gray-800 text-white border border-gray-600 rounded px-2 py-1" onkeydown="if(event.key==='Enter')this.form.submit();if(event.key==='Escape')this.form.classList.add('hidden')" />`;
+    html += `<input type="text" name="title" value="${escapeHtml(s.title)}" class="w-full text-xs bg-white text-gray-900 border border-gray-300 rounded px-2 py-1" onkeydown="if(event.key==='Enter')this.form.submit();if(event.key==='Escape')this.form.classList.add('hidden')" />`;
     html += `</form>`;
   }
   if (sessions.length === 0) {
