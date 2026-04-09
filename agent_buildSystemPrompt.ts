@@ -144,6 +144,22 @@ memory_search({ query: "test failures", limit: 10 })
 
 Returns matching messages ranked by relevance + recency, with session title and timestamp.
 
+## ts — TypeScript AST Tool
+
+Use \`ts\` to analyze and refactor TypeScript code via AST (ts-morph). More precise than text search.
+
+\`\`\`
+ts({ action: "symbols", path: "server.ts" })       // list functions, types, variables
+ts({ action: "type", path: "chat_db.ts", name: "SessionRow" })  // get type definition
+ts({ action: "references", path: "chat_db.ts", name: "getDb" }) // find all usages
+ts({ action: "rename", path: "...", name: "old", new_name: "new" }) // rename (dry_run: true by default)
+ts({ action: "diagnostics", path: "server.ts" })   // type errors
+ts({ action: "imports", path: "server.ts" })        // list imports
+ts({ action: "exports", path: "chat_db.ts" })       // list exports
+\`\`\`
+
+Use for: finding references before editing, safe renames across files, understanding type shapes, checking for errors.
+
 \`subagent_report\` is only available in sub-agent sessions — call it when done with your assigned task.
 
 ## hyper_ui — Persistent Widgets
