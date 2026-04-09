@@ -1,6 +1,5 @@
 import type { Message } from "./ai_type_Message.ts";
 import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall } from "./chat_view_message.tsx";
-import { chat_view_stats } from "./chat_view_stats.tsx";
 
 export async function chat_view_page(messages: Message[]): Promise<string> {
   const rendered: string[] = [];
@@ -18,37 +17,25 @@ export async function chat_view_page(messages: Message[]): Promise<string> {
     }
   }
   return (
-    <div data-page="chat" className="flex flex-col" style="height: calc(100vh - 60px)">
-      <div id="messages" className="flex-1 overflow-y-auto pb-4">
+    <div data-page="chat" className="flex flex-col h-full">
+      <div id="messages" className="flex-1 min-h-0 overflow-y-auto py-4">
         {rendered.join("")}
         <div id="stream"></div>
       </div>
-      {chat_view_stats(messages)}
-      <div id="input-area" className="border-t border-gray-200 pt-4 pb-2">
+      <div id="input-area" className="shrink-0 border-t border-gray-200 py-3">
         <form id="chat-form" data-form="prompt" method="POST" action="/chat">
-          <div className="flex gap-2">
-            <textarea
-              name="prompt"
-              rows="2"
-              required
-              placeholder="Type a message..."
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
-              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.form.requestSubmit()}"
-            ></textarea>
-            <button
-              id="send-btn"
-              type="submit"
-              data-action="send"
-              className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-700 transition self-end"
-            >Send</button>
-            <button
-              id="abort-btn"
-              type="button"
-              data-action="abort"
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition self-end hidden"
-              onclick="fetch('/abort',{method:'POST'}).then(()=>window.location.reload())"
-            >Stop</button>
-          </div>
+          <textarea
+            name="prompt"
+            rows="3"
+            required
+            placeholder="Message... (Enter to send)"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();this.form.requestSubmit()}"
+          ></textarea>
+          <button id="abort-btn" type="button" data-action="abort"
+            className="mt-2 px-4 py-1.5 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition hidden"
+            onclick="fetch('/abort',{method:'POST'}).then(()=>window.location.reload())"
+          >Stop</button>
         </form>
       </div>
       <script dangerouslySetInnerHTML={{ __html: CHAT_SCRIPT }} />
@@ -61,15 +48,12 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
   e.preventDefault();
   var form = e.target;
   var textarea = form.querySelector('textarea');
-  var btn = form.querySelector('#send-btn');
   var abortBtn = document.getElementById('abort-btn');
   var prompt = textarea.value.trim();
   if (!prompt) return;
 
   // Disable input, show abort
   textarea.disabled = true;
-  btn.disabled = true;
-  btn.classList.add('hidden');
   abortBtn.classList.remove('hidden');
   form.setAttribute('data-status', 'streaming');
 
@@ -112,14 +96,14 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
           streamDiv.innerHTML = html;
           // Load stylesheets
           streamDiv.querySelectorAll('link[rel=stylesheet]').forEach(function(old) {
-            if (!document.querySelector('link[href=\"' + old.getAttribute('href') + '\"]')) {
+            if (!document.querySelector('link[href="' + old.getAttribute('href') + '"]')) {
               var l = document.createElement('link');
               l.rel = 'stylesheet';
               l.href = old.getAttribute('href');
               document.head.appendChild(l);
             }
           });
-          // Execute scripts sequentially (externals load in order, then inlines)
+          // Execute scripts sequentially
           (function execScripts(el) {
             var scripts = [].slice.call(el.querySelectorAll('script'));
             var idx = 0;
@@ -141,23 +125,19 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
     streamDiv.innerHTML = '<div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm">' + err.message + '</div>';
   }
 
-  // Update stats if present in stream
-  var newStats = streamDiv.querySelector('#stats');
-  if (newStats) {
-    var oldStats = document.getElementById('stats');
-    if (oldStats) oldStats.replaceWith(newStats);
-    else streamDiv.removeChild(newStats);
-  }
-
   // Move stream content before stream div as finalized messages
   while (streamDiv.firstChild) {
     messages.insertBefore(streamDiv.firstChild, streamDiv);
   }
 
+  // Update stats in navbar
+  fetch('/stats').then(function(r) { return r.text(); }).then(function(h) {
+    var el = document.getElementById('nav-stats');
+    if (el) el.outerHTML = h;
+  });
+
   // Re-enable input, hide abort
   textarea.disabled = false;
-  btn.disabled = false;
-  btn.classList.remove('hidden');
   abortBtn.classList.add('hidden');
   form.removeAttribute('data-status');
   textarea.focus();
