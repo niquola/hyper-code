@@ -24,14 +24,14 @@ describe("tool_hyper_ui", () => {
 
   test("action=list lists widgets", async () => {
     const tool = tool_hyper_ui(tmpDir);
-    const result = await tool.execute({ action: "list" });
+    const result = await tool.execute({} as any, {} as any, { action: "list" });
     const text = (result.content[0] as any).text;
     expect(text).toContain("hello");
   });
 
   test("action=show renders widget as HTML", async () => {
     const tool = tool_hyper_ui(tmpDir);
-    const result = await tool.execute({ action: "show", name: "hello" });
+    const result = await tool.execute({} as any, {} as any, { action: "show", name: "hello" });
     // Should return HTML content type
     const htmlBlock = result.content.find((c: any) => c.type === "html");
     expect(htmlBlock).toBeDefined();
@@ -40,14 +40,14 @@ describe("tool_hyper_ui", () => {
 
   test("action=show wraps in container", async () => {
     const tool = tool_hyper_ui(tmpDir);
-    const result = await tool.execute({ action: "show", name: "hello" });
+    const result = await tool.execute({} as any, {} as any, { action: "show", name: "hello" });
     const htmlBlock = result.content.find((c: any) => c.type === "html");
     expect((htmlBlock as any).html).toContain('id="hyper-ui-hello"');
   });
 
   test("action=show returns error for missing widget", async () => {
     const tool = tool_hyper_ui(tmpDir);
-    const result = await tool.execute({ action: "show", name: "nope" });
+    const result = await tool.execute({} as any, {} as any, { action: "show", name: "nope" });
     const text = (result.content[0] as any).text || (result.content[0] as any).html;
     expect(text).toContain("not found");
   });
@@ -55,7 +55,7 @@ describe("tool_hyper_ui", () => {
   test("action=list always shows built-in widgets", async () => {
     const emptyDir = mkdtempSync(join(tmpdir(), "empty-"));
     const tool = tool_hyper_ui(emptyDir);
-    const result = await tool.execute({ action: "list" });
+    const result = await tool.execute({} as any, {} as any, { action: "list" });
     expect((result.content[0] as any).text).toContain("editor");
     expect((result.content[0] as any).text).toContain("built-in");
     rmSync(emptyDir, { recursive: true });

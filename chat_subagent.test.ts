@@ -80,7 +80,7 @@ describe("tool_subagent", () => {
   test("subagent tool has correct metadata", async () => {
     const { tool_subagent } = await import("./tool_subagent.ts");
     const mockSession: Session = { filename: "t.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
-    const t = tool_subagent(() => mockSession, async () => ({ ctx: {} as any, loadSession: async () => mockSession }));
+    const t = tool_subagent(async (fn: string) => mockSession);
     expect(t.name).toBe("subagent");
     expect(t.description).toContain("sub-agent");
     expect(t.parameters.required).toContain("task");
@@ -91,7 +91,7 @@ describe("tool_subagent_report", () => {
   test("subagent_report tool has correct metadata", async () => {
     const { tool_subagent_report } = await import("./tool_subagent_report.ts");
     const mockSession: Session = { filename: "t.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
-    const t = tool_subagent_report(() => mockSession);
+    const t = tool_subagent_report(() => null);
     expect(t.name).toBe("subagent_report");
     expect(t.description).toContain("Report");
   });
@@ -105,8 +105,8 @@ describe("tool_subagent_report", () => {
     const { promise, resolve } = Promise.withResolvers<string>();
     parentSession.pendingDialogs.set("subagent:child.jsonl", resolve);
 
-    const t = tool_subagent_report(() => childSession, () => parentSession);
-    const resultPromise = t.execute({ result: "Fixed 3 tests, all passing" });
+    const t = tool_subagent_report(() => parentSession);
+    const resultPromise = t.execute({} as any, childSession, { result: "Fixed 3 tests, all passing" });
 
     const parentResult = await promise;
     expect(parentResult).toBe("Fixed 3 tests, all passing");

@@ -28,7 +28,7 @@ describe("tool_grep", () => {
 
   test("finds matches across files", async () => {
     const grep = tool_grep(tmpDir);
-    const result = await grep.execute({ pattern: "Hello" });
+    const result = await grep.execute({} as any, {} as any, { pattern: "Hello" });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("hello.ts");
     expect(text).toContain("Hello");
@@ -36,7 +36,7 @@ describe("tool_grep", () => {
 
   test("searches with regex", async () => {
     const grep = tool_grep(tmpDir);
-    const result = await grep.execute({ pattern: "function \\w+" });
+    const result = await grep.execute({} as any, {} as any, { pattern: "function \\w+" });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("greet");
     expect(text).toContain("world");
@@ -44,7 +44,7 @@ describe("tool_grep", () => {
 
   test("filters by glob pattern", async () => {
     const grep = tool_grep(tmpDir);
-    const result = await grep.execute({ pattern: "hello", glob: "*.json" });
+    const result = await grep.execute({} as any, {} as any, { pattern: "hello", glob: "*.json" });
     const text = (result.content[0] as any).text as string;
     // Should only find in data.json, not .ts files
     expect(text).toContain("data.json");
@@ -53,14 +53,14 @@ describe("tool_grep", () => {
 
   test("searches in subdirectories", async () => {
     const grep = tool_grep(tmpDir);
-    const result = await grep.execute({ pattern: "nested" });
+    const result = await grep.execute({} as any, {} as any, { pattern: "nested" });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("nested.ts");
   });
 
   test("searches specific path", async () => {
     const grep = tool_grep(tmpDir);
-    const result = await grep.execute({ pattern: "Hello", path: "sub" });
+    const result = await grep.execute({} as any, {} as any, { pattern: "Hello", path: "sub" });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("nested");
     expect(text).not.toContain("hello.ts");
@@ -68,14 +68,14 @@ describe("tool_grep", () => {
 
   test("returns no matches message", async () => {
     const grep = tool_grep(tmpDir);
-    const result = await grep.execute({ pattern: "zzzznonexistent" });
+    const result = await grep.execute({} as any, {} as any, { pattern: "zzzznonexistent" });
     const text = (result.content[0] as any).text as string;
     expect(text.toLowerCase()).toContain("no matches");
   });
 
   test("supports case insensitive search", async () => {
     const grep = tool_grep(tmpDir);
-    const result = await grep.execute({ pattern: "hello", ignoreCase: true });
+    const result = await grep.execute({} as any, {} as any, { pattern: "hello", ignoreCase: true });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("Hello");
   });

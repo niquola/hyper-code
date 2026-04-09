@@ -13,7 +13,7 @@ export function tool_bash(cwd: string): AgentTool {
       },
       required: ["command"],
     },
-    execute: async (params: { command: string; timeout?: number }, signal) => {
+    execute: async (_ctx: any, _session: any, params: { command: string; timeout?: number }, signal) => {
       const timeout = (params.timeout || 30) * 1000;
 
       const proc = Bun.spawn(["bash", "-c", params.command], {

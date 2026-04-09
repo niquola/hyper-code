@@ -18,7 +18,7 @@ export function tool_hyper_ui(cwd: string): AgentTool {
       },
       required: ["action"],
     },
-    execute: async (params: { action: string; name?: string; query?: string }) => {
+    execute: async (_ctx: any, _session: any, params: { action: string; name?: string; query?: string }) => {
       if (params.action === "list") {
         const custom = await hyper_ui_list(cwd);
         const lines = [

@@ -10,7 +10,7 @@ const t = tool_edit(DIR);
 
 test("edits file with unique match", async () => {
   await Bun.write(`${DIR}/test.txt`, "hello world\nfoo bar\n");
-  const result = await t.execute({ path: "test.txt", edits: [{ oldText: "foo bar", newText: "baz qux" }] });
+  const result = await t.execute({} as any, {} as any, { path: "test.txt", edits: [{ oldText: "foo bar", newText: "baz qux" }] });
   const text = result.content.find((c) => c.type === "text")?.text || "";
   expect(text.toLowerCase()).toContain("edit");
   const content = await Bun.file(`${DIR}/test.txt`).text();
@@ -20,7 +20,7 @@ test("edits file with unique match", async () => {
 
 test("fails on non-unique match", async () => {
   await Bun.write(`${DIR}/dup.txt`, "aaa\naaa\n");
-  const result = await t.execute({ path: "dup.txt", edits: [{ oldText: "aaa", newText: "bbb" }] });
+  const result = await t.execute({} as any, {} as any, { path: "dup.txt", edits: [{ oldText: "aaa", newText: "bbb" }] });
   const text = result.content.find((c) => c.type === "text")?.text || "";
   expect(text.toLowerCase()).toMatch(/multiple|unique|found|2 match/i);
 });

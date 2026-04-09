@@ -8,10 +8,10 @@ function mockSession(): Session {
 
 test("returns dialog HTML and blocks until resolved", async () => {
   const session = mockSession();
-  const t = tool_html_dialog(() => session);
+  const t = tool_html_dialog();
 
   // Start execute — will block on pending dialog
-  const resultPromise = t.execute({ title: "Pick one", html: '<input name="choice" value="a" />' });
+  const resultPromise = t.execute({} as any, session, { title: "Pick one", html: '<input name="choice" value="a" />' });
 
   // Dialog should be pending
   await Bun.sleep(10);
@@ -28,13 +28,13 @@ test("returns dialog HTML and blocks until resolved", async () => {
 
 test("dialog HTML has correct structure", async () => {
   const session = mockSession();
-  const t = tool_html_dialog(() => session);
+  const t = tool_html_dialog();
 
   // Capture emitted HTML
   let emittedHtml = "";
   session.emitHtml = (html) => { emittedHtml = html; };
 
-  const resultPromise = t.execute({ title: "Test", html: '<input name="x" />', submit_label: "Go" });
+  const resultPromise = t.execute({} as any, session, { title: "Test", html: '<input name="x" />', submit_label: "Go" });
   await Bun.sleep(10);
 
   expect(emittedHtml).toContain("<dialog");
@@ -52,7 +52,7 @@ test("dialog HTML has correct structure", async () => {
 });
 
 test("has correct metadata", () => {
-  const t = tool_html_dialog(() => mockSession());
+  const t = tool_html_dialog();
   expect(t.name).toBe("html_dialog");
   expect(t.description).toContain("blocking");
 });

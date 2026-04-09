@@ -21,7 +21,7 @@ export function tool_write(cwd: string): AgentTool {
       },
       required: ["path", "content"],
     },
-    execute: async (params: { path: string; content: string }) => {
+    execute: async (_ctx: any, _session: any, params: { path: string; content: string }) => {
       const abs = resolvePath(params.path, cwd);
       await mkdir(dirname(abs), { recursive: true });
       await Bun.write(abs, params.content);

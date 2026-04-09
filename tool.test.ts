@@ -25,7 +25,7 @@ afterAll(() => {
 describe("tool_read", () => {
   test("reads a file with line numbers", async () => {
     const read = tool_read(tmpDir);
-    const result = await read.execute({ path: "hello.ts" });
+    const result = await read.execute({} as any, {} as any, { path: "hello.ts" });
     expect(result.content[0]!.type).toBe("text");
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("1\texport function greet");
@@ -34,7 +34,7 @@ describe("tool_read", () => {
 
   test("reads with offset", async () => {
     const read = tool_read(tmpDir);
-    const result = await read.execute({ path: "hello.ts", offset: 2 });
+    const result = await read.execute({} as any, {} as any, { path: "hello.ts", offset: 2 });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("2\t  return");
     expect(text).not.toContain("1\texport");
@@ -42,7 +42,7 @@ describe("tool_read", () => {
 
   test("reads with limit", async () => {
     const read = tool_read(tmpDir);
-    const result = await read.execute({ path: "hello.ts", limit: 1 });
+    const result = await read.execute({} as any, {} as any, { path: "hello.ts", limit: 1 });
     const text = (result.content[0] as any).text as string;
     const lines = text.trim().split("\n");
     expect(lines).toHaveLength(1);
@@ -50,12 +50,12 @@ describe("tool_read", () => {
 
   test("errors on missing file", async () => {
     const read = tool_read(tmpDir);
-    expect(read.execute({ path: "nonexistent.ts" })).rejects.toThrow();
+    expect(read.execute({} as any, {} as any, { path: "nonexistent.ts" })).rejects.toThrow();
   });
 
   test("reads absolute path", async () => {
     const read = tool_read(tmpDir);
-    const result = await read.execute({ path: join(tmpDir, "data.json") });
+    const result = await read.execute({} as any, {} as any, { path: join(tmpDir, "data.json") });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain('"key"');
   });
@@ -73,29 +73,29 @@ describe("tool_read", () => {
 describe("tool_write", () => {
   test("creates a new file", async () => {
     const write = tool_write(tmpDir);
-    const result = await write.execute({ path: "new.txt", content: "hello world" });
+    const result = await write.execute({} as any, {} as any, { path: "new.txt", content: "hello world" });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("11 bytes");
     // Verify file exists
     const read = tool_read(tmpDir);
-    const readResult = await read.execute({ path: "new.txt" });
+    const readResult = await read.execute({} as any, {} as any, { path: "new.txt" });
     expect((readResult.content[0] as any).text).toContain("hello world");
   });
 
   test("creates nested directories", async () => {
     const write = tool_write(tmpDir);
-    await write.execute({ path: "sub/dir/deep.txt", content: "nested" });
+    await write.execute({} as any, {} as any, { path: "sub/dir/deep.txt", content: "nested" });
     const read = tool_read(tmpDir);
-    const result = await read.execute({ path: "sub/dir/deep.txt" });
+    const result = await read.execute({} as any, {} as any, { path: "sub/dir/deep.txt" });
     expect((result.content[0] as any).text).toContain("nested");
   });
 
   test("overwrites existing file", async () => {
     const write = tool_write(tmpDir);
-    await write.execute({ path: "overwrite.txt", content: "first" });
-    await write.execute({ path: "overwrite.txt", content: "second" });
+    await write.execute({} as any, {} as any, { path: "overwrite.txt", content: "first" });
+    await write.execute({} as any, {} as any, { path: "overwrite.txt", content: "second" });
     const read = tool_read(tmpDir);
-    const result = await read.execute({ path: "overwrite.txt" });
+    const result = await read.execute({} as any, {} as any, { path: "overwrite.txt" });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("second");
     expect(text).not.toContain("first");
@@ -114,26 +114,26 @@ describe("tool_write", () => {
 describe("tool_edit", () => {
   test("replaces text in file", async () => {
     const write = tool_write(tmpDir);
-    await write.execute({ path: "edit-me.ts", content: 'const x = 1;\nconst y = 2;\n' });
+    await write.execute({} as any, {} as any, { path: "edit-me.ts", content: 'const x = 1;\nconst y = 2;\n' });
 
     const edit = tool_edit(tmpDir);
-    const result = await edit.execute({
+    const result = await edit.execute({} as any, {} as any, {
       path: "edit-me.ts",
       edits: [{ oldText: "const x = 1;", newText: "const x = 42;" }],
     });
     expect((result.content[0] as any).text).toContain("Applied 1 edit");
 
     const read = tool_read(tmpDir);
-    const readResult = await read.execute({ path: "edit-me.ts" });
+    const readResult = await read.execute({} as any, {} as any, { path: "edit-me.ts" });
     expect((readResult.content[0] as any).text).toContain("const x = 42;");
   });
 
   test("applies multiple edits", async () => {
     const write = tool_write(tmpDir);
-    await write.execute({ path: "multi-edit.ts", content: 'let a = 1;\nlet b = 2;\n' });
+    await write.execute({} as any, {} as any, { path: "multi-edit.ts", content: 'let a = 1;\nlet b = 2;\n' });
 
     const edit = tool_edit(tmpDir);
-    const result = await edit.execute({
+    const result = await edit.execute({} as any, {} as any, {
       path: "multi-edit.ts",
       edits: [
         { oldText: "let a = 1;", newText: "const a = 10;" },
@@ -145,10 +145,10 @@ describe("tool_edit", () => {
 
   test("errors on missing text", async () => {
     const write = tool_write(tmpDir);
-    await write.execute({ path: "no-match.ts", content: "hello" });
+    await write.execute({} as any, {} as any, { path: "no-match.ts", content: "hello" });
 
     const edit = tool_edit(tmpDir);
-    const result = await edit.execute({
+    const result = await edit.execute({} as any, {} as any, {
       path: "no-match.ts",
       edits: [{ oldText: "world", newText: "earth" }],
     });
@@ -157,10 +157,10 @@ describe("tool_edit", () => {
 
   test("errors on duplicate match", async () => {
     const write = tool_write(tmpDir);
-    await write.execute({ path: "dup.ts", content: "x = 1;\nx = 1;\n" });
+    await write.execute({} as any, {} as any, { path: "dup.ts", content: "x = 1;\nx = 1;\n" });
 
     const edit = tool_edit(tmpDir);
-    const result = await edit.execute({
+    const result = await edit.execute({} as any, {} as any, {
       path: "dup.ts",
       edits: [{ oldText: "x = 1;", newText: "x = 2;" }],
     });
@@ -173,32 +173,32 @@ describe("tool_edit", () => {
 describe("tool_bash", () => {
   test("runs a command and returns output", async () => {
     const bash = tool_bash(tmpDir);
-    const result = await bash.execute({ command: "echo hello" });
+    const result = await bash.execute({} as any, {} as any, { command: "echo hello" });
     const text = (result.content[0] as any).text as string;
     expect(text.trim()).toContain("hello");
   });
 
   test("captures stderr", async () => {
     const bash = tool_bash(tmpDir);
-    const result = await bash.execute({ command: "echo error >&2" });
+    const result = await bash.execute({} as any, {} as any, { command: "echo error >&2" });
     expect((result.content[0] as any).text).toContain("error");
   });
 
   test("reports non-zero exit code", async () => {
     const bash = tool_bash(tmpDir);
-    const result = await bash.execute({ command: "exit 1" });
+    const result = await bash.execute({} as any, {} as any, { command: "exit 1" });
     expect((result.content[0] as any).text).toContain("Exit code: 1");
   });
 
   test("runs in correct cwd", async () => {
     const bash = tool_bash(tmpDir);
-    const result = await bash.execute({ command: "ls hello.ts" });
+    const result = await bash.execute({} as any, {} as any, { command: "ls hello.ts" });
     expect((result.content[0] as any).text).toContain("hello.ts");
   });
 
   test("respects timeout", async () => {
     const bash = tool_bash(tmpDir);
-    const result = await bash.execute({ command: "sleep 10", timeout: 1 });
+    const result = await bash.execute({} as any, {} as any, { command: "sleep 10", timeout: 1 });
     // Should complete (killed) within ~1s, not 10s
     const text = (result.content[0] as any).text as string;
     expect(text).toBeTruthy();

@@ -12,7 +12,7 @@ export function tool_ls(cwd: string): AgentTool {
         path: { type: "string", description: "Directory path (default: working directory)" },
       },
     },
-    execute: async (params: { path?: string }) => {
+    execute: async (_ctx: any, _session: any, params: { path?: string }) => {
       const dir = params.path ? resolve(cwd, params.path) : cwd;
 
       try {

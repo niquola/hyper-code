@@ -11,7 +11,7 @@ export function tool_html_message(): AgentTool {
       },
       required: ["html"],
     },
-    execute: async (params: { html: string }) => {
+    execute: async (_ctx: any, _session: any, params: { html: string }) => {
       return { content: [{ type: "html", html: params.html }] };
     },
   };

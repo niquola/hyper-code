@@ -1,9 +1,10 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
 import type { Session } from "./chat_type_Session.ts";
 
 let dialogCounter = 0;
 
-export function tool_html_dialog(getSession: () => Session): AgentTool {
+export function tool_html_dialog(): AgentTool {
   return {
     name: "html_dialog",
     description: "Open a blocking modal dialog for user input. Provide title + form fields. Blocks until user responds — their answer returned as tool result. Agent pauses while waiting.",
@@ -16,8 +17,7 @@ export function tool_html_dialog(getSession: () => Session): AgentTool {
       },
       required: ["title", "html"],
     },
-    execute: async (params: { title: string; html: string; submit_label?: string }) => {
-      const session = getSession();
+    execute: async (ctx: Ctx, session: Session, params: { title: string; html: string; submit_label?: string }) => {
       const id = `dlg-${Date.now()}-${++dialogCounter}`;
       const submitLabel = params.submit_label || "Submit";
 
@@ -33,19 +33,16 @@ export function tool_html_dialog(getSession: () => Session): AgentTool {
 </dialog>
 <script>var d=document.getElementById('${id}');if(d&&!d.open)d.showModal()</script>`;
 
-      // Push dialog HTML to client immediately via SSE
+      // Push dialog HTML to client via SSE
       session.emitHtml?.(dialogHtml);
 
-      // Block: wait for user to submit
+      // Block until user responds
       const { promise, resolve } = Promise.withResolvers<string>();
       session.pendingDialogs.set(id, resolve);
       const userResponse = await promise;
       session.pendingDialogs.delete(id);
 
-      // Return user response as tool result — agent continues with this
-      return {
-        content: [{ type: "text", text: userResponse }],
-      };
+      return { content: [{ type: "text", text: userResponse }] };
     },
   };
 }

@@ -32,7 +32,7 @@ describe("agent_run error handling", () => {
         name: "fail",
         description: "This tool always fails. Call it to test error handling.",
         parameters: { type: "object", properties: {} },
-        execute: async () => { toolCallCount++; throw new Error("intentional failure"); },
+        execute: async (_c: any, _s: any) => { toolCallCount++; throw new Error("intentional failure"); },
       }],
     });
     const session = createSession();

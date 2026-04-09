@@ -13,7 +13,7 @@ export function tool_find(cwd: string): AgentTool {
       },
       required: ["pattern"],
     },
-    execute: async (params: { pattern: string; path?: string }) => {
+    execute: async (_ctx: any, _session: any, params: { pattern: string; path?: string }) => {
       const searchDir = params.path ? resolve(cwd, params.path) : cwd;
       const glob = new Bun.Glob(params.pattern);
       const matches: string[] = [];

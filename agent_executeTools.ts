@@ -1,9 +1,11 @@
 import type { ToolCall, ToolResultMessage } from "./ai_type_Message.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 import type { AgentEvent } from "./agent_type_Event.ts";
 
 export async function agent_executeTools(
   ctx: Ctx,
+  session: Session,
   toolCalls: ToolCall[],
   onEvent: (event: AgentEvent) => void,
   signal?: AbortSignal,
@@ -30,7 +32,7 @@ export async function agent_executeTools(
     }
 
     try {
-      const toolResult = await tool.execute(tc.arguments, signal);
+      const toolResult = await tool.execute(ctx, session, tc.arguments, signal);
       const result: ToolResultMessage = {
         role: "toolResult",
         toolCallId: tc.id,

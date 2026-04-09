@@ -31,7 +31,7 @@ export function tool_edit(cwd: string): AgentTool {
       },
       required: ["path", "edits"],
     },
-    execute: async (params: { path: string; edits: { oldText: string; newText: string }[] }) => {
+    execute: async (_ctx: any, _session: any, params: { path: string; edits: { oldText: string; newText: string }[] }) => {
       const abs = resolvePath(params.path, cwd);
       let content = await Bun.file(abs).text();
 

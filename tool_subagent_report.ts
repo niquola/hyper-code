@@ -1,9 +1,9 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
 import type { Session } from "./chat_type_Session.ts";
 
 export function tool_subagent_report(
-  getSession: () => Session,
-  findParent?: (childFilename: string) => Session | null,
+  findParent: (childFilename: string) => Session | null,
 ): AgentTool {
   return {
     name: "subagent_report",
@@ -15,20 +15,13 @@ export function tool_subagent_report(
       },
       required: ["result"],
     },
-    execute: async (params: { result: string }) => {
-      const session = getSession();
-      const key = `subagent:${session.filename}`;
-
-      // Search all cached sessions for the one waiting for this subagent
-      const parentSession = findParent?.(session.filename);
+    execute: async (ctx: Ctx, session: Session, params: { result: string }) => {
+      const parentSession = findParent(session.filename);
       if (parentSession) {
-        const resolve = parentSession.pendingDialogs.get(key);
+        const resolve = parentSession.pendingDialogs.get(`subagent:${session.filename}`);
         if (resolve) resolve(params.result);
       }
-
-      return {
-        content: [{ type: "text", text: `Report sent: ${params.result}` }],
-      };
+      return { content: [{ type: "text", text: `Report sent: ${params.result}` }] };
     },
   };
 }

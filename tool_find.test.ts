@@ -32,7 +32,7 @@ describe("tool_find", () => {
 
   test("finds files by glob", async () => {
     const find = tool_find(tmpDir);
-    const result = await find.execute({ pattern: "*.ts" });
+    const result = await find.execute({} as any, {} as any, { pattern: "*.ts" });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("app.ts");
     expect(text).toContain("app.test.ts");
@@ -41,7 +41,7 @@ describe("tool_find", () => {
 
   test("finds files recursively", async () => {
     const find = tool_find(tmpDir);
-    const result = await find.execute({ pattern: "**/*.ts" });
+    const result = await find.execute({} as any, {} as any, { pattern: "**/*.ts" });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("src/index.ts");
     expect(text).toContain("src/util.ts");
@@ -49,14 +49,14 @@ describe("tool_find", () => {
 
   test("finds tsx files", async () => {
     const find = tool_find(tmpDir);
-    const result = await find.execute({ pattern: "**/*.tsx" });
+    const result = await find.execute({} as any, {} as any, { pattern: "**/*.tsx" });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("Button.tsx");
   });
 
   test("searches in specific path", async () => {
     const find = tool_find(tmpDir);
-    const result = await find.execute({ pattern: "*.ts", path: "src" });
+    const result = await find.execute({} as any, {} as any, { pattern: "*.ts", path: "src" });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("index.ts");
     expect(text).not.toContain("app.ts");
@@ -64,7 +64,7 @@ describe("tool_find", () => {
 
   test("returns no matches message", async () => {
     const find = tool_find(tmpDir);
-    const result = await find.execute({ pattern: "*.xyz" });
+    const result = await find.execute({} as any, {} as any, { pattern: "*.xyz" });
     const text = (result.content[0] as any).text as string;
     expect(text.toLowerCase()).toContain("no files");
   });

@@ -90,7 +90,7 @@ export async function agent_run(
       if (toolCalls.length === 0) break;
 
       // Execute tools and add results to messages
-      const toolResults = await agent_executeTools(ctx, toolCalls, onEvent, session.abortController?.signal);
+      const toolResults = await agent_executeTools(ctx, session, toolCalls, onEvent, session.abortController?.signal);
       session.messages.push(...toolResults);
 
       // Loop back for next LLM turn
@@ -139,7 +139,7 @@ export async function agent_run(
         onEvent({ type: "turn_end", message: assistantMessage });
         const toolCalls = assistantMessage.content.filter((b) => b.type === "toolCall") as ToolCall[];
         if (toolCalls.length === 0) break;
-        const toolResults = await agent_executeTools(ctx, toolCalls, onEvent, session.abortController?.signal);
+        const toolResults = await agent_executeTools(ctx, session, toolCalls, onEvent, session.abortController?.signal);
         session.messages.push(...toolResults);
       }
       onEvent({ type: "agent_end", messages: session.messages });

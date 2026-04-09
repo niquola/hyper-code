@@ -15,7 +15,7 @@ export function tool_grep(cwd: string): AgentTool {
       },
       required: ["pattern"],
     },
-    execute: async (params: { pattern: string; path?: string; glob?: string; ignoreCase?: boolean }) => {
+    execute: async (_ctx: any, _session: any, params: { pattern: string; path?: string; glob?: string; ignoreCase?: boolean }) => {
       const searchPath = params.path ? resolve(cwd, params.path) : cwd;
 
       const args = ["rg", "--no-heading", "--line-number", "--color=never"];

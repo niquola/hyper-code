@@ -4,6 +4,11 @@ import { agent_createCtx } from "./agent_createCtx.ts";
 import type { AgentEvent } from "./agent_type_Event.ts";
 import type { ToolCall } from "./ai_type_Message.ts";
 import type { Model } from "./ai_type_Model.ts";
+import type { Session } from "./chat_type_Session.ts";
+
+function createSession(): Session {
+  return { filename: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };
+}
 
 const model: Model = {
   id: "test", name: "Test", provider: "test", baseUrl: "",
@@ -16,7 +21,7 @@ describe("agent_executeTools edge cases", () => {
   test("handles empty tool calls array", async () => {
     const ctx = agent_createCtx({ model, apiKey: "test" });
     const events: AgentEvent[] = [];
-    const results = await agent_executeTools(ctx, [], (e) => events.push(e));
+    const results = await agent_executeTools(ctx, createSession(), [], (e) => events.push(e));
     expect(results).toHaveLength(0);
     expect(events).toHaveLength(0);
   });
@@ -25,8 +30,8 @@ describe("agent_executeTools edge cases", () => {
     const ctx = agent_createCtx({
       model, apiKey: "test",
       tools: [
-        { name: "ok", description: "works", parameters: {}, execute: async () => ({ content: [{ type: "text" as const, text: "ok" }] }) },
-        { name: "fail", description: "fails", parameters: {}, execute: async () => { throw new Error("nope"); } },
+        { name: "ok", description: "works", parameters: {}, execute: async (_c: any, _s: any) => ({ content: [{ type: "text" as const, text: "ok" }] }) },
+        { name: "fail", description: "fails", parameters: {}, execute: async (_c: any, _s: any) => { throw new Error("nope"); } },
       ],
     });
 
@@ -36,7 +41,7 @@ describe("agent_executeTools edge cases", () => {
       { type: "toolCall", id: "tc3", name: "ok", arguments: {} },
     ];
 
-    const results = await agent_executeTools(ctx, toolCalls, () => {});
+    const results = await agent_executeTools(ctx, createSession(), toolCalls,() => {});
     expect(results).toHaveLength(3);
     expect(results[0]!.isError).toBe(false);
     expect(results[1]!.isError).toBe(true);
@@ -50,7 +55,7 @@ describe("agent_executeTools edge cases", () => {
         name: "slow",
         description: "slow",
         parameters: {},
-        execute: async (_params, signal) => {
+        execute: async (_c: any, _s: any, _params: any, signal: any) => {
           await Bun.sleep(100);
           if (signal?.aborted) throw new Error("aborted");
           return { content: [{ type: "text" as const, text: "done" }] };
@@ -63,6 +68,7 @@ describe("agent_executeTools edge cases", () => {
 
     const results = await agent_executeTools(
       ctx,
+      createSession(),
       [{ type: "toolCall", id: "tc1", name: "slow", arguments: {} }],
       () => {},
       ac.signal,
@@ -74,11 +80,11 @@ describe("agent_executeTools edge cases", () => {
   test("emits start and end events for each tool", async () => {
     const ctx = agent_createCtx({
       model, apiKey: "test",
-      tools: [{ name: "x", description: "x", parameters: {}, execute: async () => ({ content: [{ type: "text" as const, text: "r" }] }) }],
+      tools: [{ name: "x", description: "x", parameters: {}, execute: async (_c: any, _s: any) => ({ content: [{ type: "text" as const, text: "r" }] }) }],
     });
 
     const events: AgentEvent[] = [];
-    await agent_executeTools(ctx, [
+    await agent_executeTools(ctx, createSession(), [
       { type: "toolCall", id: "tc1", name: "x", arguments: { a: 1 } },
       { type: "toolCall", id: "tc2", name: "x", arguments: { a: 2 } },
     ], (e) => events.push(e));

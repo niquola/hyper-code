@@ -26,7 +26,7 @@ describe("tool_ls", () => {
 
   test("lists current directory", async () => {
     const ls = tool_ls(tmpDir);
-    const result = await ls.execute({});
+    const result = await ls.execute({} as any, {} as any, {});
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("file.ts");
     expect(text).toContain("readme.md");
@@ -35,7 +35,7 @@ describe("tool_ls", () => {
 
   test("shows directory indicator", async () => {
     const ls = tool_ls(tmpDir);
-    const result = await ls.execute({});
+    const result = await ls.execute({} as any, {} as any, {});
     const text = (result.content[0] as any).text as string;
     // Directories should be distinguishable
     expect(text).toContain("src/");
@@ -43,7 +43,7 @@ describe("tool_ls", () => {
 
   test("lists subdirectory", async () => {
     const ls = tool_ls(tmpDir);
-    const result = await ls.execute({ path: "src" });
+    const result = await ls.execute({} as any, {} as any, { path: "src" });
     const text = (result.content[0] as any).text as string;
     expect(text).toContain("index.ts");
     expect(text).not.toContain("readme.md");
@@ -51,7 +51,7 @@ describe("tool_ls", () => {
 
   test("errors on nonexistent path", async () => {
     const ls = tool_ls(tmpDir);
-    const result = await ls.execute({ path: "nonexistent" });
+    const result = await ls.execute({} as any, {} as any, { path: "nonexistent" });
     const text = (result.content[0] as any).text as string;
     expect(text.toLowerCase()).toContain("not found") ;
   });

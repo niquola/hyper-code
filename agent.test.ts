@@ -42,7 +42,7 @@ describe("agent_createCtx", () => {
       name: "echo",
       description: "Echo input",
       parameters: { type: "object", properties: { text: { type: "string" } } },
-      execute: async (p) => ({ content: [{ type: "text", text: p.text }] }),
+      execute: async (_c: any, _s: any, p: any) => ({ content: [{ type: "text", text: p.text }] }),
     };
     const ctx = agent_createCtx({
       model: LM_STUDIO_MODEL,
@@ -84,7 +84,7 @@ describe("agent_executeTools", () => {
         name: "greet",
         description: "Greet someone",
         parameters: { type: "object", properties: { name: { type: "string" } } },
-        execute: async (p) => ({ content: [{ type: "text", text: `Hello ${p.name}!` }] }),
+        execute: async (_c: any, _s: any, p: any) => ({ content: [{ type: "text", text: `Hello ${p.name}!` }] }),
       }],
     });
 
@@ -93,7 +93,7 @@ describe("agent_executeTools", () => {
     ];
 
     const events: AgentEvent[] = [];
-    const results = await agent_executeTools(ctx, toolCalls, (e) => events.push(e));
+    const results = await agent_executeTools(ctx, createSession(), toolCalls, (e) => events.push(e));
 
     expect(results).toHaveLength(1);
     expect(results[0]!.toolCallId).toBe("tc1");
@@ -112,7 +112,7 @@ describe("agent_executeTools", () => {
     ];
 
     const events: AgentEvent[] = [];
-    const results = await agent_executeTools(ctx, toolCalls, (e) => events.push(e));
+    const results = await agent_executeTools(ctx, createSession(), toolCalls, (e) => events.push(e));
 
     expect(results).toHaveLength(1);
     expect(results[0]!.isError).toBe(true);
@@ -127,7 +127,7 @@ describe("agent_executeTools", () => {
         name: "fail",
         description: "Always fails",
         parameters: {},
-        execute: async () => { throw new Error("kaboom"); },
+        execute: async (_c: any, _s: any) => { throw new Error("kaboom"); },
       }],
     });
 
@@ -136,7 +136,7 @@ describe("agent_executeTools", () => {
     ];
 
     const events: AgentEvent[] = [];
-    const results = await agent_executeTools(ctx, toolCalls, (e) => events.push(e));
+    const results = await agent_executeTools(ctx, createSession(), toolCalls, (e) => events.push(e));
 
     expect(results).toHaveLength(1);
     expect(results[0]!.isError).toBe(true);
@@ -152,7 +152,7 @@ describe("agent_executeTools", () => {
         name: "step",
         description: "A step",
         parameters: { type: "object", properties: { n: { type: "number" } } },
-        execute: async (p) => { order.push(`step-${p.n}`); return { content: [{ type: "text", text: `done ${p.n}` }] }; },
+        execute: async (_c: any, _s: any, p: any) => { order.push(`step-${p.n}`); return { content: [{ type: "text", text: `done ${p.n}` }] }; },
       }],
     });
 
@@ -162,7 +162,7 @@ describe("agent_executeTools", () => {
       { type: "toolCall", id: "tc3", name: "step", arguments: { n: 3 } },
     ];
 
-    await agent_executeTools(ctx, toolCalls, () => {});
+    await agent_executeTools(ctx, createSession(), toolCalls, () => {});
     expect(order).toEqual(["step-1", "step-2", "step-3"]);
   });
 });
@@ -203,7 +203,7 @@ describe("agent_run", () => {
         name: "read_file",
         description: "Read a file and return its contents",
         parameters: { type: "object", properties: { path: { type: "string", description: "File path" } }, required: ["path"] },
-        execute: async (p) => ({ content: [{ type: "text", text: `Contents of ${p.path}:\nexport default { port: 3000 };` }] }),
+        execute: async (_c: any, _s: any, p: any) => ({ content: [{ type: "text", text: `Contents of ${p.path}:\nexport default { port: 3000 };` }] }),
       }],
     });
     const session = createSession();
