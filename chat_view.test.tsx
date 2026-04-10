@@ -21,6 +21,31 @@ describe("chat_view_userMessage", () => {
     expect(html).not.toContain("<script>alert");
     expect(html).toContain("&lt;script&gt;");
   });
+
+  test("shows rewind button with session and index", () => {
+    const html = chat_view_userMessage("hi", 3, "sess-1");
+    expect(html).toContain("/session/sess-1/rewind?index=3");
+    expect(html).toContain("Rewind to here");
+  });
+
+  test("shows fork button with session and index", () => {
+    const html = chat_view_userMessage("hi", 3, "sess-1");
+    expect(html).toContain("hx-post=\"/session/sess-1/fork\"");
+    expect(html).toContain('"offset":"4"');
+    expect(html).toContain("Fork from here");
+  });
+
+  test("no rewind/fork without sessionId", () => {
+    const html = chat_view_userMessage("hi", 3);
+    expect(html).not.toContain("rewind");
+    expect(html).not.toContain("fork");
+  });
+
+  test("no rewind/fork without messageIndex", () => {
+    const html = chat_view_userMessage("hi");
+    expect(html).not.toContain("rewind");
+    expect(html).not.toContain("fork");
+  });
 });
 
 // -- chat_view_assistantMessage --

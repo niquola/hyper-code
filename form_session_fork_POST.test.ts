@@ -48,6 +48,27 @@ describe("POST /session/:id/fork", () => {
     expect(child!.title).toBe("Fork: My Research");
   });
 
+  test("fork with custom offset forks from specific message", () => {
+    const db = chat_db(":memory:");
+    const parentId = db.createSession({ title: "Parent", model: "openai/gpt-4o" });
+    db.addMessage(parentId, { role: "user", content: "msg1", timestamp: 1000 });
+    db.addMessage(parentId, { role: "user", content: "msg2", timestamp: 1001 });
+    db.addMessage(parentId, { role: "user", content: "msg3", timestamp: 1002 });
+
+    // Fork after message 2 (offset=2)
+    const childId = db.createSession({
+      title: "Fork: Parent",
+      parent: parentId,
+      model: "openai/gpt-4o",
+      offset: 2,
+    });
+
+    const fullMsgs = db.getFullMessages(childId);
+    expect(fullMsgs.length).toBe(2); // only msg1 + msg2
+    expect(fullMsgs[0]!.content).toBe("msg1");
+    expect(fullMsgs[1]!.content).toBe("msg2");
+  });
+
   test("getSession returns parent info for forked session", () => {
     const db = chat_db(":memory:");
     const parentId = db.createSession({ title: "Original" });

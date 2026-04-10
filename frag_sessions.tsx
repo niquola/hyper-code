@@ -43,8 +43,9 @@ function renderSession(s: TreeNode, current: string | null, db: any): string {
 
   let html = `<div class="group flex items-center rounded ${cls}" data-entity="session" data-id="${escapeHtml(s.session_id)}" style="${indent}">`;
   html += `<a href="/session/${enc}/" class="flex-1 min-w-0 px-3 py-2 block">`;
+  html += `<div class="truncate text-sm">`;
   if (isChild) html += `<span class="text-gray-300 text-xs mr-1">↳</span>`;
-  html += `<div class="truncate text-sm">${escapeHtml(s.title)}</div>`;
+  html += `${escapeHtml(s.title)}</div>`;
   html += `<div class="text-xs text-gray-400">${s.msgCount} msgs${s.model ? ` · ${escapeHtml(s.model.split("/").pop() || s.model)}` : ""}</div>`;
   html += `</a>`;
   if (unread > 0 && !active) html += `<span class="shrink-0 w-2 h-2 rounded-full bg-blue-400 mr-1"></span>`;

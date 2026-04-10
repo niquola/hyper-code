@@ -39,13 +39,21 @@ const server = Bun.serve({
       const db = appCtx.db;
       const parent = db.getSession(parentId);
       if (!parent) return new Response("Session not found", { status: 404 });
+      const form = await req.formData().catch(() => null);
+      const customOffset = form?.get("offset") ? Number(form.get("offset")) : null;
+      const offset = customOffset ?? db.getFullMessages(parentId).length;
       const childId = db.createSession({
         title: `Fork: ${parent.title}`,
         parent: parentId,
         model: parent.model,
-        offset: db.getFullMessages(parentId).length,
+        offset,
       });
-      return new Response(null, { status: 302, headers: { Location: `/session/${encodeURIComponent(childId)}/` } });
+      const redirectUrl = `/session/${encodeURIComponent(childId)}/`;
+      // HX-Redirect for htmx requests, 302 for regular form submits
+      if (req.headers.get("HX-Request")) {
+        return new Response(null, { status: 200, headers: { "HX-Redirect": redirectUrl } });
+      }
+      return new Response(null, { status: 302, headers: { Location: redirectUrl } });
     }
 
     // /session/:id/:action — per-session endpoints
