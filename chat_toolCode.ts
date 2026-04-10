@@ -12,6 +12,7 @@ const EXT_TO_LANG: Record<string, string> = {
 };
 
 export function detectToolLang(toolName: string, argsJson: string): string | null {
+  if (toolName === "edit") return "diff";
   if (!TOOLS_WITH_PATH.has(toolName)) return null;
   try {
     const parsed = JSON.parse(argsJson);
@@ -35,15 +36,11 @@ export function getToolCode(toolName: string, argsJson: string, result?: string)
   if (toolName === "write") {
     try { return JSON.parse(argsJson).content; } catch { return null; }
   }
-  if (toolName === "edit") {
-    try {
-      const parsed = JSON.parse(argsJson);
-      if (parsed.edits) {
-        return parsed.edits.map((e: any) =>
-          `// --- old ---\n${e.oldText}\n// --- new ---\n${e.newText}`
-        ).join("\n\n");
-      }
-    } catch {}
+  if (toolName === "edit" && result) {
+    // Result already contains diff lines (- old / + new)
+    const lines = result.split("\n");
+    const diffStart = lines.findIndex(l => l.startsWith("- ") || l.startsWith("+ "));
+    if (diffStart >= 0) return lines.slice(diffStart).join("\n");
     return null;
   }
   return null;
