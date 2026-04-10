@@ -1,5 +1,5 @@
-import { MODELS } from "./ai_models_generated.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
 
-export function ai_getProviders(): string[] {
-  return Object.keys(MODELS);
+export function ai_getProviders(ctx: Ctx): string[] {
+  return ctx.modelIndex.providers;
 }

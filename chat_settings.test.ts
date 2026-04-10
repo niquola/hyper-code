@@ -2,23 +2,23 @@ import { test, expect } from "bun:test";
 import { chat_resolveModel, chat_resolveApiKey } from "./chat_settings.ts";
 import type { ChatSettings } from "./chat_settings.ts";
 
-test("resolveModel returns registry model for known provider", () => {
+test("resolveModel returns registry model for known provider", async () => {
   const s: ChatSettings = { provider: "openai", modelId: "gpt-4o", apiKey: "" };
-  const m = chat_resolveModel(s);
+  const m = await chat_resolveModel(process.cwd(), s);
   expect(m.id).toBe("gpt-4o");
   expect(m.provider).toBe("openai");
 });
 
-test("resolveModel returns fallback for unknown model", () => {
+test("resolveModel returns fallback for unknown model", async () => {
   const s: ChatSettings = { provider: "lmstudio", modelId: "custom-model", apiKey: "" };
-  const m = chat_resolveModel(s);
+  const m = await chat_resolveModel(process.cwd(), s);
   expect(m.id).toBe("custom-model");
   expect(m.baseUrl).toBe("http://localhost:1234/v1");
 });
 
-test("resolveModel codex baseUrl", () => {
+test("resolveModel codex baseUrl", async () => {
   const s: ChatSettings = { provider: "openai-codex", modelId: "gpt-5.2-codex", apiKey: "" };
-  const m = chat_resolveModel(s);
+  const m = await chat_resolveModel(process.cwd(), s);
   expect(m.baseUrl).toContain("chatgpt.com");
 });
 

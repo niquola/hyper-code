@@ -6,7 +6,7 @@ import type { ResponseStreamEvent } from "openai/resources/responses/responses.j
 import type { AssistantMessage, Context, StopReason, TextContent, ThinkingContent, ToolCall } from "./ai_type_Message.ts";
 import type { Model } from "./ai_type_Model.ts";
 import type { StreamOptions } from "./ai_type_StreamOptions.ts";
-import { AssistantMessageEventStream } from "./ai_EventStream.ts";
+import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./ai_EventStream.ts";
 import { ai_getEnvApiKey } from "./ai_getEnvApiKey.ts";
 import { auth_codexRefresh } from "./auth_codex.ts";
 import { chat_saveApiKey } from "./chat_apiKeys.ts";
@@ -102,7 +102,7 @@ function isRetryableError(status: number, text: string): boolean {
 // --- Main stream function ---
 
 export function ai_streamCodex(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
-  const stream = new AssistantMessageEventStream();
+  const stream = ai_stream_createAssistantMessageEventStream();
 
   (async () => {
     const output: AssistantMessage = {

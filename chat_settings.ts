@@ -1,5 +1,5 @@
 import type { ChatSettings } from "./chat_type_ChatSettings.ts";
-import { ai_getModel, ai_getModels } from "./ai_models.ts";
+import { ai_models_readProvider } from "./ai_models_readProvider.ts";
 import { ai_getEnvApiKey } from "./ai_getEnvApiKey.ts";
 import type { Model } from "./ai_type_Model.ts";
 
@@ -35,8 +35,9 @@ function resolveBaseUrl(provider: string): string {
   return `https://api.${provider}.com/v1`;
 }
 
-export function chat_resolveModel(settings: ChatSettings): Model {
-  const model = ai_getModel(settings.provider, settings.modelId);
+export async function chat_resolveModel(cwd: string, settings: ChatSettings): Promise<Model> {
+  const providerModels = await ai_models_readProvider(cwd, settings.provider);
+  const model = providerModels ? (providerModels[settings.modelId] as Model | undefined) : undefined;
   if (model) return model;
 
   return {

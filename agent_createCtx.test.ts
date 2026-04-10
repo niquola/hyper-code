@@ -10,6 +10,9 @@ test("creates ctx with defaults", () => {
   expect(ctx.apiKey).toBe("k");
   expect(ctx.systemPrompt).toBe("");
   expect(ctx.tools).toEqual([]);
+  expect(ctx.modelIndex.providers).toEqual([]);
+  expect(ctx.modelProviders.size).toBe(0);
+  expect(ctx.modelAll).toBeNull();
 });
 
 test("creates ctx with custom values", () => {

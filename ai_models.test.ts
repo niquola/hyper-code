@@ -1,60 +1,86 @@
 import { test, expect, describe } from "bun:test";
-import { AI_MODELS, ai_getModel, ai_getModels, ai_getProviders } from "./ai_models.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Model } from "./ai_type_Model.ts";
+import { agent_createCtx } from "./agent_createCtx.ts";
+import { ai_models_getAll, ai_getModel, ai_getModels, ai_getProviders } from "./ai_models.ts";
+import { ai_models_loadIndex } from "./ai_models_loadIndex.ts";
 import { ai_getEnvApiKey } from "./ai_getEnvApiKey.ts";
 
-describe("AI_MODELS", () => {
-  test("has many models from all providers", () => {
-    const count = Object.keys(AI_MODELS).length;
+const M: Model = { id: "t", name: "T", provider: "test", baseUrl: "", reasoning: false, input: ["text"], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 32000 };
+
+async function createCtx(): Promise<Ctx> {
+  const cwd = process.cwd();
+  const modelIndex = await ai_models_loadIndex(cwd);
+  return agent_createCtx({ model: M, apiKey: "k", db: {} as any, cwd, modelIndex });
+}
+
+describe("ai_models_getAll", () => {
+  test("has many models from all providers", async () => {
+    const ctx = await createCtx();
+    const all = await ai_models_getAll(ctx);
+    const count = Object.keys(all).length;
     expect(count).toBeGreaterThan(100);
   });
 
-  test("gpt-4o exists with correct fields", () => {
-    const m = AI_MODELS["gpt-4o"]!;
+  test("gpt-4o exists with correct fields", async () => {
+    const ctx = await createCtx();
+    const all = await ai_models_getAll(ctx);
+    const m = all["gpt-4o"]!;
     expect(m.id).toBe("gpt-4o");
     expect(m.provider).toBe("openai");
     expect(m.input).toContain("image");
     expect(m.reasoning).toBe(false);
   });
 
-  test("claude models exist", () => {
-    expect(AI_MODELS["claude-sonnet-4-20250514"]).toBeDefined();
+  test("claude models exist", async () => {
+    const ctx = await createCtx();
+    const all = await ai_models_getAll(ctx);
+    expect(all["claude-sonnet-4-20250514"]).toBeDefined();
   });
 
-  test("o3-mini has reasoning", () => {
-    expect(AI_MODELS["o3-mini"]!.reasoning).toBe(true);
+  test("o3-mini has reasoning", async () => {
+    const ctx = await createCtx();
+    const all = await ai_models_getAll(ctx);
+    expect(all["o3-mini"]!.reasoning).toBe(true);
   });
 });
 
 describe("ai_getModel", () => {
-  test("finds model by provider + id", () => {
-    const m = ai_getModel("openai", "gpt-4o");
+  test("finds model by provider + id", async () => {
+    const ctx = await createCtx();
+    const m = await ai_getModel(ctx, "openai", "gpt-4o");
     expect(m).toBeDefined();
     expect(m!.id).toBe("gpt-4o");
   });
 
-  test("returns undefined for missing model", () => {
-    expect(ai_getModel("openai", "nonexistent")).toBeUndefined();
+  test("returns undefined for missing model", async () => {
+    const ctx = await createCtx();
+    expect(await ai_getModel(ctx, "openai", "nonexistent")).toBeUndefined();
   });
 
-  test("returns undefined for missing provider", () => {
-    expect(ai_getModel("nonexistent", "gpt-4o")).toBeUndefined();
+  test("returns undefined for missing provider", async () => {
+    const ctx = await createCtx();
+    expect(await ai_getModel(ctx, "nonexistent", "gpt-4o")).toBeUndefined();
   });
 });
 
 describe("ai_getModels", () => {
-  test("returns all models for provider", () => {
-    const models = ai_getModels("openai");
+  test("returns all models for provider", async () => {
+    const ctx = await createCtx();
+    const models = await ai_getModels(ctx, "openai");
     expect(models.length).toBeGreaterThan(10);
   });
 
-  test("returns empty for unknown provider", () => {
-    expect(ai_getModels("nonexistent")).toEqual([]);
+  test("returns empty for unknown provider", async () => {
+    const ctx = await createCtx();
+    expect(await ai_getModels(ctx, "nonexistent")).toEqual([]);
   });
 });
 
 describe("ai_getProviders", () => {
-  test("returns all providers", () => {
-    const providers = ai_getProviders();
+  test("returns all providers", async () => {
+    const ctx = await createCtx();
+    const providers = ai_getProviders(ctx);
     expect(providers).toContain("openai");
     expect(providers).toContain("anthropic");
     expect(providers).toContain("google");

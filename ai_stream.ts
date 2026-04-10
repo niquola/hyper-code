@@ -3,7 +3,7 @@ import type { ChatCompletionChunk } from "openai/resources/chat/completions.js";
 import type { AssistantMessage, Context, StopReason, TextContent, ThinkingContent, ToolCall } from "./ai_type_Message.ts";
 import type { Model } from "./ai_type_Model.ts";
 import type { StreamOptions } from "./ai_type_StreamOptions.ts";
-import { AssistantMessageEventStream } from "./ai_EventStream.ts";
+import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./ai_EventStream.ts";
 import { ai_convertMessages } from "./ai_convertMessages.ts";
 import { ai_convertTools } from "./ai_convertTools.ts";
 import { ai_getEnvApiKey } from "./ai_getEnvApiKey.ts";
@@ -35,7 +35,7 @@ export function ai_stream(model: Model, context: Context, options?: StreamOption
   }
 
   // Default: OpenAI Completions API (works with LM Studio, Groq, OpenRouter, etc.)
-  const stream = new AssistantMessageEventStream();
+  const stream = ai_stream_createAssistantMessageEventStream();
 
   (async () => {
     const output: AssistantMessage = {

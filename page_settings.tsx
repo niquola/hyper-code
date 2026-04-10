@@ -61,8 +61,8 @@ export default async function (ctx: Ctx, req: Request) {
   const settings = await chat_loadSettings();
   const url = new URL(req.url, "http://localhost");
   const currentProvider = url.searchParams.get("provider") || settings.provider;
-  const providers = ai_getProviders();
-  const models = ai_getModels(currentProvider);
+  const providers = ai_getProviders(ctx);
+  const models = await ai_getModels(ctx, currentProvider);
 
   const keys: KeyInfo[] = [];
   for (const p of PROVIDERS) {

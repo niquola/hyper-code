@@ -7,10 +7,24 @@ import { ai_transformMessages } from "./ai_transformMessages.ts";
 import { ai_convertMessages } from "./ai_convertMessages.ts";
 import { ai_convertTools } from "./ai_convertTools.ts";
 import { ai_stream } from "./ai_stream.ts";
-import { AI_MODELS } from "./ai_models.ts";
-import { AssistantMessageEventStream } from "./ai_EventStream.ts";
+import { ai_models_getAll } from "./ai_models.ts";
+import { ai_models_loadIndex } from "./ai_models_loadIndex.ts";
+import { agent_createCtx } from "./agent_createCtx.ts";
+import { ai_stream_createAssistantMessageEventStream } from "./ai_EventStream.ts";
 import type { AssistantMessage, Message, ToolCall, Usage } from "./ai_type_Message.ts";
 import type { Model } from "./ai_type_Model.ts";
+
+const lmStudioModel: Model = {
+  id: "qwen3-coder-next",
+  name: "Qwen3 Coder Next",
+  provider: "lmstudio",
+  baseUrl: "http://localhost:1234/v1",
+  reasoning: true,
+  input: ["text"],
+  cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+  contextWindow: 128000,
+  maxTokens: 32000,
+};
 
 // -- ai_sanitizeSurrogates --
 
@@ -236,7 +250,7 @@ describe("ai_convertTools", () => {
 
 describe("AssistantMessageEventStream", () => {
   test("push and iterate events", async () => {
-    const stream = new AssistantMessageEventStream();
+    const stream = ai_stream_createAssistantMessageEventStream();
     const msg: AssistantMessage = {
       role: "assistant", content: [{ type: "text", text: "hi" }],
       provider: "test", model: "test",
@@ -262,7 +276,7 @@ describe("AssistantMessageEventStream", () => {
   });
 
   test("result() resolves with final message", async () => {
-    const stream = new AssistantMessageEventStream();
+    const stream = ai_stream_createAssistantMessageEventStream();
     const msg: AssistantMessage = {
       role: "assistant", content: [{ type: "text", text: "done" }],
       provider: "test", model: "test",
@@ -281,7 +295,7 @@ describe("AssistantMessageEventStream", () => {
   });
 
   test("result() resolves with error message", async () => {
-    const stream = new AssistantMessageEventStream();
+    const stream = ai_stream_createAssistantMessageEventStream();
     const msg: AssistantMessage = {
       role: "assistant", content: [],
       provider: "test", model: "test",
@@ -303,17 +317,6 @@ describe("AssistantMessageEventStream", () => {
 // -- ai_stream (integration, local LM Studio) --
 
 describe("ai_stream", () => {
-  const lmStudioModel: Model = {
-    id: "qwen3-coder-next",
-    name: "Qwen3 Coder Next",
-    provider: "lmstudio",
-    baseUrl: "http://localhost:1234/v1",
-    reasoning: true,
-    input: ["text"],
-    cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-    contextWindow: 128000,
-    maxTokens: 32000,
-  };
 
   test("streams from LM Studio", async () => {
     const stream = ai_stream(lmStudioModel, {
@@ -347,17 +350,25 @@ describe("ai_stream", () => {
   });
 });
 
-// -- AI_MODELS --
+// -- ai_models_getAll --
 
-describe("AI_MODELS", () => {
-  test("has expected models", () => {
-    expect(AI_MODELS["gpt-4o"]).toBeDefined();
-    expect(AI_MODELS["gpt-4o-mini"]).toBeDefined();
-    expect(AI_MODELS["o3-mini"]).toBeDefined();
+describe("ai_models_getAll", () => {
+  test("has expected models", async () => {
+    const cwd = process.cwd();
+    const modelIndex = await ai_models_loadIndex(cwd);
+    const ctx = agent_createCtx({ model: lmStudioModel, apiKey: "", db: {} as any, cwd, modelIndex });
+    const all = await ai_models_getAll(ctx);
+    expect(all["gpt-4o"]).toBeDefined();
+    expect(all["gpt-4o-mini"]).toBeDefined();
+    expect(all["o3-mini"]).toBeDefined();
   });
 
-  test("models have required fields", () => {
-    const model = AI_MODELS["gpt-4o"]!;
+  test("models have required fields", async () => {
+    const cwd = process.cwd();
+    const modelIndex = await ai_models_loadIndex(cwd);
+    const ctx = agent_createCtx({ model: lmStudioModel, apiKey: "", db: {} as any, cwd, modelIndex });
+    const all = await ai_models_getAll(ctx);
+    const model = all["gpt-4o"]!;
     expect(model.id).toBe("gpt-4o");
     expect(model.provider).toBe("openai");
     expect(model.baseUrl).toBe("https://api.openai.com/v1");

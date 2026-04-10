@@ -7,10 +7,13 @@ function createTestCtx(): Ctx {
   return {
     db: chat_db(":memory:"),
     cwd: "/tmp/test",
-    model: { provider: "test", modelId: "test", name: "Test", contextWindow: 1000, maxOutputTokens: 1000 },
+    model: { id: "test", name: "Test", provider: "test", baseUrl: "", reasoning: false, input: ["text"], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 1000, maxTokens: 1000 },
     apiKey: "test-key",
     systemPrompt: "test",
     tools: [],
+    modelIndex: { providers: [] },
+    modelProviders: new Map(),
+    modelAll: null,
   };
 }
 
@@ -24,7 +27,7 @@ describe("api_sessions_GET", () => {
   test("returns empty sessions array when no sessions", async () => {
     const res = await api_sessions_GET(ctx, new Request("http://localhost/api/sessions"));
     expect(res.status).toBe(200);
-    const data = await res.json();
+    const data = await res.json() as { sessions: unknown[] };
     expect(data.sessions).toEqual([]);
   });
 
@@ -33,7 +36,7 @@ describe("api_sessions_GET", () => {
     const child = ctx.db.createSession({ title: "Child", parent });
 
     const res = await api_sessions_GET(ctx, new Request("http://localhost/api/sessions"));
-    const data = await res.json();
+    const data = await res.json() as { sessions: Array<{ id: string; title: string; parent?: string; depth: number }> };
 
     expect(data.sessions).toHaveLength(2);
     expect(data.sessions[0]).toMatchObject({ id: parent, title: "Parent", depth: 0 });

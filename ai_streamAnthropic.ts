@@ -3,7 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { AssistantMessage, Context, StopReason, TextContent, ThinkingContent, ToolCall, Tool } from "./ai_type_Message.ts";
 import type { Model } from "./ai_type_Model.ts";
 import type { StreamOptions } from "./ai_type_StreamOptions.ts";
-import { AssistantMessageEventStream } from "./ai_EventStream.ts";
+import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./ai_EventStream.ts";
 import { ai_getEnvApiKey } from "./ai_getEnvApiKey.ts";
 import { ai_calculateCost } from "./ai_calculateCost.ts";
 import { ai_parseStreamingJson } from "./ai_parseStreamingJson.ts";
@@ -11,7 +11,7 @@ import { ai_sanitizeSurrogates } from "./ai_sanitizeSurrogates.ts";
 import { ai_transformMessages } from "./ai_transformMessages.ts";
 
 export function ai_streamAnthropic(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
-  const stream = new AssistantMessageEventStream();
+  const stream = ai_stream_createAssistantMessageEventStream();
 
   (async () => {
     const output: AssistantMessage = {

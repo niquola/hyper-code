@@ -4,7 +4,7 @@ import type { Ctx } from "./agent_type_Ctx.ts";
 export default async function (ctx: Ctx, req: Request) {
   const url = new URL(req.url, "http://localhost");
   const provider = url.searchParams.get("provider") || "";
-  const models = ai_getModels(provider);
+  const models = await ai_getModels(ctx, provider);
 
   let html = "";
   for (const m of models) {

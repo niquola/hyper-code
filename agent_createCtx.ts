@@ -1,4 +1,5 @@
 import type { Model } from "./ai_type_Model.ts";
+import type { ModelIndex } from "./ai_type_ModelIndex.ts";
 import type { AgentTool } from "./agent_type_Tool.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
 import type { chat_db } from "./chat_db.ts";
@@ -10,6 +11,9 @@ export function agent_createCtx(opts: {
   tools?: AgentTool[];
   db?: ReturnType<typeof chat_db>;
   cwd?: string;
+  modelIndex?: ModelIndex;
+  modelProviders?: Map<string, Record<string, Model>>;
+  modelAll?: Record<string, Model> | null;
 }): Ctx {
   return {
     model: opts.model,
@@ -18,5 +22,8 @@ export function agent_createCtx(opts: {
     tools: opts.tools ?? [],
     db: opts.db ?? null as any,
     cwd: opts.cwd ?? ".",
+    modelIndex: opts.modelIndex ?? { providers: [] },
+    modelProviders: opts.modelProviders ?? new Map(),
+    modelAll: opts.modelAll ?? null,
   };
 }

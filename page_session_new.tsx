@@ -5,8 +5,9 @@ import type { Ctx } from "./agent_type_Ctx.ts";
 
 export default async function (ctx: Ctx, req: Request) {
   const settings = await chat_loadSettings();
-  const providers = ai_getProviders();
+  const providers = ai_getProviders(ctx);
   const allProviders = providers.includes(settings.provider) ? providers : [settings.provider, ...providers];
+  const modelOptions = await renderModelOptions(ctx, settings.provider, settings.modelId);
 
   const body = (
     <div data-page="new-session" className="flex flex-col h-full items-center justify-center">
@@ -31,7 +32,7 @@ export default async function (ctx: Ctx, req: Request) {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
             <select id="model-list" name="modelId" className="w-full px-3 py-2 border border-gray-300 rounded-lg"
-              dangerouslySetInnerHTML={{ __html: renderModelOptions(settings.provider, settings.modelId) }} />
+              dangerouslySetInnerHTML={{ __html: modelOptions }} />
           </div>
           <div className="flex gap-3 pt-2">
             <button type="submit" className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-700 text-sm">Create Session</button>
@@ -45,8 +46,8 @@ export default async function (ctx: Ctx, req: Request) {
   return layout_view_page("New Session", body, ctx.model.name || ctx.model.id);
 }
 
-function renderModelOptions(provider: string, selectedId?: string): string {
-  const models = ai_getModels(provider);
+async function renderModelOptions(ctx: Ctx, provider: string, selectedId?: string): Promise<string> {
+  const models = await ai_getModels(ctx, provider);
   let html = "";
   for (const m of models) {
     const sel = m.id === selectedId ? " selected" : "";

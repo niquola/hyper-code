@@ -5,6 +5,7 @@ import type { Session } from "./chat_type_Session.ts";
 import type { Message } from "./ai_type_Message.ts";
 import { chat_db } from "./chat_db.ts";
 import { chat_resolveSessionModel } from "./chat_resolveSessionModel.ts";
+import { ai_models_loadIndex } from "./ai_models_loadIndex.ts";
 import { chat_loadMessages } from "./chat_loadMessages.ts";
 import { tool_read } from "./tool_read.ts";
 import { tool_write } from "./tool_write.ts";
@@ -51,8 +52,9 @@ export async function chat_getCtx(): Promise<Ctx> {
 
     const { chat_loadSettings, chat_resolveModel, chat_resolveApiKey } = await import("./chat_settings.ts");
     const settings = await chat_loadSettings();
-    const model = chat_resolveModel(settings);
+    const model = await chat_resolveModel(cwd, settings);
     const apiKey = chat_resolveApiKey(settings);
+    const modelIndex = await ai_models_loadIndex(cwd);
 
     ctx = agent_createCtx({
       model, apiKey,
@@ -60,6 +62,7 @@ export async function chat_getCtx(): Promise<Ctx> {
       tools,
       db: chat_db(),
       cwd,
+      modelIndex,
     });
   }
   return ctx;
@@ -92,7 +95,7 @@ async function loadSession(filename: string): Promise<Session> {
   );
 
   // Resolve model per session
-  const { model: sessionModel, apiKey: sessionApiKey } = await chat_resolveSessionModel(db, filename);
+  const { model: sessionModel, apiKey: sessionApiKey } = await chat_resolveSessionModel(ctx!.cwd, db, filename);
   const sessionCtx = await chat_getCtx();
   const systemPrompt = agent_buildSystemPrompt(ctx!.cwd, sessionCtx.tools, filename, sessionModel.name || sessionModel.id);
 
