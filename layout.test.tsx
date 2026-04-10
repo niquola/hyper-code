@@ -35,4 +35,27 @@ describe("layout_view_page", () => {
     const html = layout_view_page("T", "");
     expect(queryExists(html, '[data-action="new"]')).toBe(true);
   });
+
+  test("shows Fork button when sessionId provided", () => {
+    const html = layout_view_page("T", "", "gpt-4o", { sessionId: "s1" });
+    expect(queryExists(html, '[data-action="fork"]')).toBe(true);
+    expect(html).toContain("/session/s1/fork");
+  });
+
+  test("no Fork button without session", () => {
+    const html = layout_view_page("T", "");
+    expect(queryExists(html, '[data-action="fork"]')).toBe(false);
+  });
+
+  test("shows parent link when session has parent", () => {
+    const html = layout_view_page("T", "", "gpt-4o", { sessionId: "child1", parentId: "parent1", parentTitle: "My Chat" });
+    expect(queryExists(html, '[data-role="parent-link"]')).toBe(true);
+    expect(html).toContain("My Chat");
+    expect(html).toContain("/session/parent1/");
+  });
+
+  test("no parent link for root session", () => {
+    const html = layout_view_page("T", "", "gpt-4o", { sessionId: "s1" });
+    expect(queryExists(html, '[data-role="parent-link"]')).toBe(false);
+  });
 });

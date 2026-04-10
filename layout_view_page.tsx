@@ -1,7 +1,13 @@
 import { PAGE_STATE_SCRIPT } from "./pageState_script.ts";
 import { HYPER_UI_STYLES } from "./hyper_ui_styles.ts";
 
-export function layout_view_page(title: string, body: string, modelName?: string): string {
+type SessionMeta = {
+  sessionId?: string;
+  parentId?: string;
+  parentTitle?: string;
+};
+
+export function layout_view_page(title: string, body: string, modelName?: string, session?: SessionMeta): string {
   return (
     <html>
       <head>
@@ -32,10 +38,22 @@ export function layout_view_page(title: string, body: string, modelName?: string
           <header className="shrink-0 bg-white border-b border-gray-200 px-4 py-2">
             <div className="max-w-3xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-3">
+                {session?.parentId && (
+                  <a href={`/session/${encodeURIComponent(session.parentId)}/`} className="text-xs text-gray-400 hover:text-gray-600" data-role="parent-link">
+                    ← {session.parentTitle || "parent"}
+                  </a>
+                )}
                 {modelName && (
                   <a href="/settings" className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded hover:bg-gray-200" data-role="model-name">{modelName}</a>
                 )}
                 <span id="nav-stats" className="text-xs text-gray-400"></span>
+              </div>
+              <div className="flex items-center gap-2">
+                {session?.sessionId && (
+                  <form method="POST" action={`/session/${encodeURIComponent(session.sessionId)}/fork`} className="m-0">
+                    <button type="submit" className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded hover:bg-gray-200" data-action="fork">Fork</button>
+                  </form>
+                )}
               </div>
             </div>
           </header>

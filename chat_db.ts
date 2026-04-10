@@ -132,7 +132,7 @@ export function chat_db(path?: string) {
       title: `subagent: ${task.slice(0, 50)}`,
       parent: parentFilename,
       model,
-      offset: offset ?? getMessageCount(parentFilename),
+      offset: offset ?? getFullMessages(parentFilename).length,
     });
   }
 

@@ -5,6 +5,7 @@ import type { Session } from "./chat_type_Session.ts";
 import type { Message } from "./ai_type_Message.ts";
 import { chat_db } from "./chat_db.ts";
 import { chat_resolveSessionModel } from "./chat_resolveSessionModel.ts";
+import { chat_loadMessages } from "./chat_loadMessages.ts";
 import { tool_read } from "./tool_read.ts";
 import { tool_write } from "./tool_write.ts";
 import { tool_edit } from "./tool_edit.ts";
@@ -25,6 +26,8 @@ let ctx: Ctx | null = null;
 
 // Session cache — runtime state (queues, streaming, listeners)
 const sessions = new Map<string, Session>();
+// Message cache — full parent chain, shared across forks
+const messageCache = new Map<string, Message[]>();
 
 export async function chat_getCtx(): Promise<Ctx> {
   if (!ctx) {
@@ -72,23 +75,21 @@ async function loadSession(filename: string): Promise<Session> {
 
   const db = ctx!.db;
 
-  // Load messages: for child sessions, chain parent + own with offset
-  const sessionRow = db.getSession(filename);
-  let messages: Message[];
-  if (sessionRow?.parent) {
-    // Use cached parent if available (has in-memory unsaved msgs)
-    let parentMessages: Message[];
-    if (sessions.has(sessionRow.parent)) {
-      parentMessages = sessions.get(sessionRow.parent)!.messages;
-    } else {
-      parentMessages = db.getFullMessages(sessionRow.parent).map(rowToMessage);
-    }
-    if (sessionRow.offset != null) parentMessages = parentMessages.slice(0, sessionRow.offset);
-    const ownMessages = db.getMessages(filename).map(rowToMessage);
-    messages = [...parentMessages, ...ownMessages];
-  } else {
-    messages = db.getMessages(filename).map(rowToMessage);
-  }
+  // Load full message chain (parent → child), with caching
+  const messages = chat_loadMessages(
+    filename,
+    (id) => {
+      // Use in-memory session messages if loaded (has unsaved msgs from current run)
+      const cached = sessions.get(id);
+      if (cached) {
+        messageCache.set(id, cached.messages);
+      }
+      const row = db.getSession(id);
+      return row ? { parent: row.parent, offset: row.offset } : null;
+    },
+    (id) => db.getMessages(id),
+    messageCache,
+  );
 
   // Resolve model per session
   const { model: sessionModel, apiKey: sessionApiKey } = await chat_resolveSessionModel(db, filename);
@@ -112,17 +113,6 @@ async function loadSession(filename: string): Promise<Session> {
   return session;
 }
 
-function rowToMessage(row: { role: string; content: string; timestamp: number }): Message {
-  // Messages stored as JSON content for assistant/toolResult, plain text for user
-  if (row.role === "user") {
-    return { role: "user", content: row.content, timestamp: row.timestamp };
-  }
-  try {
-    return JSON.parse(row.content);
-  } catch {
-    return { role: "user", content: row.content, timestamp: row.timestamp };
-  }
-}
 
 export async function chat_getSession(): Promise<Session> {
   const db = ctx!.db;

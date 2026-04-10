@@ -32,6 +32,22 @@ const server = Bun.serve({
       return hyper_ui_handleRequest(cwd, req);
     }
 
+    // POST /session/:id/fork — fork session
+    const forkMatch = url.pathname.match(/^\/session\/([^/]+)\/fork\/?$/);
+    if (forkMatch && req.method === "POST") {
+      const parentId = decodeURIComponent(forkMatch[1]!);
+      const db = appCtx.db;
+      const parent = db.getSession(parentId);
+      if (!parent) return new Response("Session not found", { status: 404 });
+      const childId = db.createSession({
+        title: `Fork: ${parent.title}`,
+        parent: parentId,
+        model: parent.model,
+        offset: db.getFullMessages(parentId).length,
+      });
+      return new Response(null, { status: 302, headers: { Location: `/session/${encodeURIComponent(childId)}/` } });
+    }
+
     // /session/:id/:action — per-session endpoints
     const actionMatch = url.pathname.match(/^\/session\/([^/]+)\/(chat|steer|abort|dispatch|stream|stats|rewind)\/?$/);
     if (actionMatch) {
@@ -178,7 +194,14 @@ const server = Bun.serve({
         try { return JSON.parse(r.content); } catch { return { role: "user" as const, content: r.content, timestamp: r.timestamp }; }
       });
       const body = await chat_view_page(visibleMessages, session.session_id, session.isStreaming);
-      return new Response(layout_view_page("Hyper Code", body, session.model.name || session.model.id), {
+      const sessionRow = appCtx.db.getSession(filename);
+      const parentRow = sessionRow?.parent ? appCtx.db.getSession(sessionRow.parent) : null;
+      const sessionMeta = {
+        sessionId: filename,
+        parentId: sessionRow?.parent || undefined,
+        parentTitle: parentRow?.title || undefined,
+      };
+      return new Response(layout_view_page("Hyper Code", body, session.model.name || session.model.id, sessionMeta), {
         headers: { "Content-Type": "text/html; charset=utf-8" },
       });
     }

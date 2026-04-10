@@ -52,11 +52,38 @@ Browser ←→ Bun.serve (server.ts)
 **Ctx** = `{ db, cwd, model, apiKey, systemPrompt, tools }` — created once at startup, passed everywhere.
 **Session** = `{ session_id, messages, model, apiKey, systemPrompt, steerQueue, followUpQueue, ... }` — per-conversation, mutable.
 
+### Function Signatures
+
+**Every function that touches shared state gets `(ctx, session, ...)` as first params.** If a function might need DB, config, cwd, or session data — pass ctx/session explicitly, don't reach into globals.
+
+| Scope | Signature |
+|-------|-----------|
+| Tool execute | `(ctx, session, params, signal?)` |
+| Route handler | `(ctx, req, params?)` |
+| DB/business logic | `(ctx, ...)` or `(db, ...)` |
+| Pure logic (no state) | bare params OK — but pass data in, not accessors |
+
+**Pure functions** that do computation on data (not fetching it) can take bare params. But the **caller** must extract data from ctx/session — the function itself never reaches up.
+
+```ts
+// ✅ Pure function — all data passed in
+chat_loadMessages(sessionId, sessions, messages, cache)
+
+// ✅ Caller builds args from ctx
+const msgs = chat_loadMessages(id, (id) => ctx.db.getSession(id), (id) => ctx.db.getMessages(id), cache)
+
+// ❌ Function reaches into ctx internally
+function loadMessages(sessionId) { const db = getDb(); ... }
+
+// ❌ Closure over module state
+const db = chat_db(); function loadMessages(id) { db.getSession(id) }
+```
+
 ### FORBIDDEN
 - Singletons (`getDb()`, module-level `let`)
 - `process.cwd()` / `process.env` inside functions (read once into Ctx at startup)
 - Closures over mutable global state
-- Tool execute: always `(ctx, session, params, signal?)`
+- Functions that fetch their own dependencies — caller provides everything
 
 ## File Naming
 
@@ -171,15 +198,26 @@ Agent calls `subagent({ task: "..." })` → forks session (parent link, no data 
 ## Testing
 
 ```sh
-bun test *.test.ts    # all tests
+# run ALL project tests (root only, not docs/)
+bun test --preload ./test_preload.ts $(ls *.test.ts *.test.tsx)
+
+# run specific test file
+bun test --preload ./test_preload.ts chat_db.test.ts
+
+# show only failures (filter out passing tests)
+bun test --preload ./test_preload.ts $(ls *.test.ts *.test.tsx) 2>&1 | grep -E '(✗|fail|FAIL|error:|Ran )'
+
+# typecheck
 bun run typecheck     # tsc --noEmit
 ```
 
+**IMPORTANT**: always use `--preload ./test_preload.ts` and explicit file list. Never `bun test` bare — it recurses into `docs/` and `node_modules/`.
+
 - `test_preload.ts` sets `HYPER_SESSION_DIR=/tmp/hyper-test-sessions`
 - Tests use `:memory:` DB or temp directory — never touch production `.hyper/`
-- `chat_db.test.ts` — 19 DB tests (sessions, messages, search, fork, unread)
 - Views tested as functions: `(data) → string` → assert HTML
 - Tools tested by calling `execute(ctx, session, params)` directly
+- Known pre-existing failures: `agent.test.ts` (needs LM Studio running), `pi-mono/` (old submodule)
 
 ## Server
 

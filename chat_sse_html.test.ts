@@ -51,4 +51,38 @@ describe("SSE HTML content rendering", () => {
     // Should NOT have escaped HTML
     expect(html).not.toContain("&lt;h1&gt;");
   });
+
+  test("syntax-highlighted tool output is rendered as HTML, not escaped", async () => {
+    const res = chat_createSSEStream(mockSession(), async (onEvent) => {
+      onEvent({ type: "agent_start" });
+      onEvent({
+        type: "tool_execution_start",
+        toolCallId: "tc1",
+        toolName: "read",
+        args: { path: "foo.ts" },
+      });
+      onEvent({
+        type: "tool_execution_end",
+        toolCallId: "tc1",
+        toolName: "read",
+        result: {
+          content: [{ type: "text", text: "1\tconst x = 1;" }],
+        },
+        isError: false,
+      });
+      onEvent({ type: "text_delta", delta: "Done." });
+      onEvent({ type: "turn_end", message: {
+        role: "assistant", content: [{ type: "text", text: "Done." }],
+        provider: "t", model: "t",
+        usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } },
+        stopReason: "stop", timestamp: 1,
+      }});
+      onEvent({ type: "agent_end", messages: [] });
+    });
+
+    const html = await collectSSE(res);
+    // Highlighted code should be inserted as real <pre> HTML, not escaped text
+    expect(html).toContain("<pre");
+    expect(html).not.toContain("&lt;pre");
+  });
 });

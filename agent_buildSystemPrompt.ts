@@ -1,8 +1,25 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 
 const CONTEXT_FILES = ["AGENTS.md", "CLAUDE.md"];
+
+function listDirectory(cwd: string): string {
+  try {
+    const entries = readdirSync(cwd, { withFileTypes: true });
+    const lines: string[] = [];
+    for (const e of entries) {
+      if (e.name.startsWith(".")) continue;
+      if (e.name === "node_modules") continue;
+      if (e.isDirectory()) lines.push(`${e.name}/`);
+      else lines.push(e.name);
+    }
+    lines.sort();
+    return lines.join("\n");
+  } catch {
+    return "";
+  }
+}
 
 function loadContextFiles(cwd: string): string[] {
   const seen = new Set<string>();
@@ -35,11 +52,18 @@ export function agent_buildSystemPrompt(cwd: string, tools: AgentTool[], session
     ? `\n\n## Project Instructions\n\n${contextFiles.join("\n\n---\n\n")}`
     : "";
 
+  const dirListing = listDirectory(cwd);
+
   return `You are a coding assistant with access to the local filesystem.
 
 Working directory: ${cwd}
 Session: ${sessionFilename || "default"}
 Model: ${modelName || "unknown"}
+
+## Directory
+\`\`\`
+${dirListing}
+\`\`\`
 
 ## Available tools
 ${toolList}

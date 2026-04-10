@@ -30,6 +30,17 @@ export function ai_getEnvApiKey(provider: string): string | undefined {
     return process.env.COPILOT_GITHUB_TOKEN || process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
   }
 
+  // Codex: read OAuth JWT from ~/.codex/auth.json
+  if (provider === "openai-codex") {
+    try {
+      const home = process.env.HOME || process.env.USERPROFILE || "";
+      const auth = JSON.parse(require("node:fs").readFileSync(`${home}/.codex/auth.json`, "utf-8"));
+      const token = auth.tokens?.access_token;
+      if (token && token.split(".").length === 3) return token;
+    } catch {}
+    return undefined;
+  }
+
   // Kimi: read from CLI credentials file
   if (provider === "kimi-coding") {
     if (process.env.KIMI_API_KEY) return process.env.KIMI_API_KEY;

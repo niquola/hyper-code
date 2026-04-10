@@ -8,6 +8,12 @@ describe("agent_buildSystemPrompt", () => {
     expect(prompt).toContain("/tmp/project");
   });
 
+  test("includes directory listing", () => {
+    const prompt = agent_buildSystemPrompt(".", []);
+    expect(prompt).toContain("## Directory");
+    expect(prompt).toContain("server.ts");
+  });
+
   test("lists available tools", () => {
     const tools: AgentTool[] = [
       { name: "read", description: "Read a file", parameters: {}, execute: async () => ({ content: [] }) },

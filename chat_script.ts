@@ -7,11 +7,59 @@ var textarea = document.querySelector('#chat-form textarea');
 var messages = document.getElementById('messages');
 var streamDiv = document.getElementById('stream');
 var queueInd = document.getElementById('queue-indicator');
+var sessionCache = null;  // Cache for session list
+
+// Get current session ID from page
+function getCurrentSessionId() {
+  var page = document.querySelector('[data-page=chat]');
+  return page?.dataset.session || null;
+}
+
+// Fetch and cache session list
+async function fetchSessions() {
+  if (sessionCache) return sessionCache;
+  try {
+    var res = await fetch('/api/sessions');
+    var data = await res.json();
+    sessionCache = data.sessions || [];
+    return sessionCache;
+  } catch (e) {
+    return [];
+  }
+}
+
+// Clear session cache (call when sessions change)
+function clearSessionCache() {
+  sessionCache = null;
+}
+
+// Navigate to previous/next session
+async function navigateSession(direction) {
+  var sessions = await fetchSessions();
+  if (sessions.length === 0) return;
+  
+  var currentId = getCurrentSessionId();
+  if (!currentId) return;
+  
+  var currentIndex = sessions.findIndex(function(s) { return s.id === currentId; });
+  if (currentIndex === -1) return;
+  
+  var newIndex;
+  if (direction === 'prev') {
+    newIndex = currentIndex > 0 ? currentIndex - 1 : sessions.length - 1;
+  } else {
+    newIndex = currentIndex < sessions.length - 1 ? currentIndex + 1 : 0;
+  }
+  
+  var targetSession = sessions[newIndex];
+  if (targetSession && targetSession.id !== currentId) {
+    window.location.href = '/session/' + encodeURIComponent(targetSession.id) + '/';
+  }
+}
 
 // Session-scoped URL helper
 function sessionUrl(path) {
-  var page = document.querySelector('[data-page=chat]');
-  var s = page?.dataset.session;
+  var s = getCurrentSessionId();
   return s ? '/session/' + encodeURIComponent(s) + '/' + path : '/' + path;
 }
 
@@ -50,10 +98,29 @@ function showQueue(text) {
 }
 
 function handleKey(e) {
+  // Global hotkeys (work anywhere)
   if (e.key === 'Escape') {
     if (streaming) fetch(sessionUrl('abort'), { method: 'POST' }).then(function() { location.reload(); });
     return;
   }
+  
+  // Ctrl+Shift+[ — previous session
+  if (e.key === '{' && e.ctrlKey && e.shiftKey) {
+    e.preventDefault();
+    navigateSession('prev');
+    return;
+  }
+  
+  // Ctrl+Shift+] — next session
+  if (e.key === '}' && e.ctrlKey && e.shiftKey) {
+    e.preventDefault();
+    navigateSession('next');
+    return;
+  }
+  
+  // Textarea-specific hotkeys
+  if (e.target !== textarea) return;
+  
   if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
     e.preventDefault();
     document.getElementById('chat-form').requestSubmit();
@@ -199,6 +266,9 @@ function connectStream() {
   updateStats();
   var page = document.querySelector('[data-page=chat]');
   if (page && page.dataset.streaming === 'true') connectStream();
+  
+  // Global keyboard handler for hotkeys
+  document.addEventListener('keydown', handleKey);
 })();
 
 // Reconnect when dispatch triggers agent

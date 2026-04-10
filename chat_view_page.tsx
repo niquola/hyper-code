@@ -76,10 +76,9 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
             rows="3"
             placeholder="Type a message..."
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
-            onkeydown="handleKey(event)"
           ></textarea>
           <div className="flex items-center justify-between mt-1">
-            <div className="text-xs text-gray-400">Enter — send · Ctrl+Enter — steer · Esc — stop</div>
+            <div className="text-xs text-gray-400">Enter — send · Ctrl+Enter — steer · Esc — stop · Ctrl+Shift+[ — prev session · Ctrl+Shift+] — next session</div>
             <div id="queue-indicator" className="text-xs text-blue-500 hidden"></div>
           </div>
         </form>

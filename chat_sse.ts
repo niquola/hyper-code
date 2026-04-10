@@ -28,8 +28,16 @@ function renderToolBlock(t: ToolBlock, highlighted?: string, sessionFilename?: s
   } catch {}
 
   // Use shared component for consistent rendering
-  const result = highlighted || t.result;
-  return chat_view_toolCall(t.name, argsDisplay, result ?? undefined, t.isError, t.resultHtml);
+  // When we have a highlighted snippet, treat it as HTML content; otherwise use
+  // plain text result and any HTML provided directly by the tool.
+  let textResult = t.result;
+  let htmlContent = t.resultHtml;
+  if (highlighted) {
+    htmlContent = highlighted;
+    textResult = undefined;
+  }
+
+  return chat_view_toolCall(t.name, argsDisplay, textResult ?? undefined, t.isError, htmlContent);
 }
 
 
