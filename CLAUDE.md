@@ -16,6 +16,28 @@ Web-based coding agent with htmx SSR UI. Multi-session, multi-model, multi-provi
 4. **Strict TDD** — write test FIRST. Bug found? Failing test FIRST, then fix.
 5. **Light theme** — github-light shiki, no dark backgrounds.
 
+## Agent Style & Behavior
+
+- Each function and each type lives in its own file. Filenames should be self‑describing so you can understand what it does without opening the file.
+- Functions take everything they need as parameters — **no hidden internal state**, no singletons, no closures over mutable variables. Prefer explicit data flow: pass dependencies in, return results out.
+- **Don’t do extra.** Don’t add features, abstractions, or "improvements" beyond what was asked. If something feels like a nice extra, ask first.
+- **Interview before building.** When a new feature is requested, first gather minimal requirements and use cases. Ask: what exactly should it do, who uses it, what’s the simplest version that works. Don’t jump into coding before the scope is clear.
+
+## Testing Conventions
+
+- Follow strict TDD: Red → Green → Refactor. Always write a failing test before changing behavior.
+- Test file naming:
+  - **Module tests:** `'<module>.test.ts'` — tests for a whole module.
+  - **Function/unit tests:** `'<module>_<function>.test.ts'` — tests for a single function.
+  - **View tests:** `'<module>_view.test.tsx'` or `'<module>_view_<name>.test.tsx'` — tests for rendered HTML.
+
+## Docs & Navigation
+
+- Use `ls` as the primary navigation tool — read the app structure from filenames (see **Navigating with `ls`** below).
+- When using the large docs in `docs/`:
+  - Start with the index files (e.g. `docs/bun.md`, `docs/htmx.md`) to understand the shape.
+  - Then grep or open the corresponding reference directories (`docs/bun_reference/`, `docs/htmx_reference/`, etc.) when you need specific API details.
+
 ## Architecture
 
 ```
