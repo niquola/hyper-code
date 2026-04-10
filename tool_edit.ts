@@ -50,7 +50,16 @@ export function tool_edit(cwd: string): AgentTool {
       }
 
       await Bun.write(abs, content);
-      return { content: [{ type: "text", text: `Applied ${params.edits.length} edit(s) to ${params.path}` }] };
+
+      // Build diff summary
+      const diffLines = params.edits.map((e, i) => {
+        const label = params.edits.length > 1 ? `Edit ${i + 1}:\n` : "";
+        const oldLines = e.oldText.split("\n").map(l => `- ${l}`).join("\n");
+        const newLines = e.newText.split("\n").map(l => `+ ${l}`).join("\n");
+        return `${label}${oldLines}\n${newLines}`;
+      }).join("\n\n");
+
+      return { content: [{ type: "text", text: `Applied ${params.edits.length} edit(s) to ${params.path}\n\n${diffLines}` }] };
     },
   };
 }
