@@ -1,7 +1,9 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 import { tool_truncateOutput } from "./tool_truncate.ts";
 
-export function tool_websearch(): AgentTool {
+export function tool_websearch(tavilyApiKey?: string): AgentTool {
   return {
     name: "websearch",
     description: "Search or extract the web using Tavily (app.tavily.com). Use search when you have a query. Use extract when you have a specific URL or URLs (provide url or urls to trigger extract). Search params: query, max_results, search_depth, include_domains, exclude_domains, include_answer, include_raw_content. Extract params: url or urls, query (intent), extract_depth, timeout, format. Returns a text summary.",
@@ -22,7 +24,7 @@ export function tool_websearch(): AgentTool {
         format: { type: "string", description: "Extracted content format (e.g. markdown, text)" },
       },
     },
-    execute: async (_ctx: any, _session: any, params: {
+    execute: async (ctx: Ctx, session: Session, params: {
       query?: string;
       url?: string;
       urls?: string[];
@@ -36,7 +38,7 @@ export function tool_websearch(): AgentTool {
       timeout?: number;
       format?: string;
     }, signal) => {
-      const apiKey = process.env.TAVILY_API_KEY;
+      const apiKey = tavilyApiKey || process.env.TAVILY_API_KEY;
       if (!apiKey) {
         return { content: [{ type: "text", text: "Missing TAVILY_API_KEY environment variable." }] };
       }

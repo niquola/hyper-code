@@ -7,6 +7,20 @@ import { detectToolLang, getToolCode } from "./chat_toolCode.ts";
 
 type ToolBlock = { id: string; name: string; args: string; result?: string; resultHtml?: string; isError?: boolean };
 
+function renderError(msg: string): string {
+  let extra = "";
+  if (msg.includes("CODEX_AUTH_EXPIRED")) {
+    const clean = msg.replace("CODEX_AUTH_EXPIRED: ", "");
+    extra = ` <a href="/settings" class="underline font-medium text-red-800 hover:text-red-900">Settings</a>`;
+    return `<div data-entity="message" data-status="error" class="mb-4"><div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm" data-role="content">${escapeHtml(clean)}${extra}</div></div>`;
+  }
+  if (msg.includes("CODEX_AUTH_REFRESHED")) {
+    const clean = msg.replace("CODEX_AUTH_REFRESHED: ", "");
+    return `<div data-entity="message" data-status="error" class="mb-4"><div class="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 text-yellow-700 text-sm" data-role="content">${escapeHtml(clean)}</div></div>`;
+  }
+  return `<div data-entity="message" data-status="error" class="mb-4"><div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm" data-role="content">${escapeHtml(msg)}</div></div>`;
+}
+
 function renderToolBlock(t: ToolBlock, highlighted?: string, sessionFilename?: string): string {
   // html_message / html_dialog: just show the HTML, no tool chrome
   if ((t.name === "html_message" || t.name === "html_dialog") && t.resultHtml) {
@@ -185,7 +199,7 @@ export function chat_createSSEStream(
             break;
 
           case "error":
-            send(`<div data-entity="message" data-status="error" class="mb-4"><div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm" data-role="content">${escapeHtml(event.error)}</div></div>`);
+            send(renderError(event.error));
             break;
 
           case "agent_end":
@@ -197,7 +211,7 @@ export function chat_createSSEStream(
             break;
         }
       }).catch((err) => {
-        send(`<div data-entity="message" data-status="error" class="mb-4"><div class="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-red-700 text-sm" data-role="content">${escapeHtml(String(err))}</div></div>`);
+        send(renderError(String(err)));
         closed = true;
         try { controller.close(); } catch {}
       });

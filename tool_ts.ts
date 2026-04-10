@@ -4,19 +4,18 @@ import type { Session } from "./chat_type_Session.ts";
 import { Project, SyntaxKind } from "ts-morph";
 import { resolve } from "node:path";
 
-let _project: Project | null = null;
-
-function getProject(cwd: string): Project {
-  if (!_project) {
-    _project = new Project({
-      tsConfigFilePath: resolve(cwd, "tsconfig.json"),
-      skipAddingFilesFromTsConfig: false,
-    });
-  }
-  return _project;
-}
-
 export function tool_ts(cwd: string): AgentTool {
+  let cachedProject: Project | null = null;
+
+  function getProject(): Project {
+    if (!cachedProject) {
+      cachedProject = new Project({
+        tsConfigFilePath: resolve(cwd, "tsconfig.json"),
+        skipAddingFilesFromTsConfig: false,
+      });
+    }
+    return cachedProject;
+  }
   return {
     name: "ts",
     description: "TypeScript AST tool — analyze and refactor code. Actions: symbols, type, references, rename, diagnostics, imports, exports.",
@@ -39,7 +38,7 @@ export function tool_ts(cwd: string): AgentTool {
       action: string; path?: string; name?: string; new_name?: string; dry_run?: boolean;
     }) => {
       try {
-        const project = getProject(cwd);
+        const project = getProject();
         const result = runAction(project, cwd, params);
         return { content: [{ type: "text", text: result }] };
       } catch (err: any) {

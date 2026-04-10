@@ -1,6 +1,8 @@
 import { resolve } from "node:path";
 import { homedir } from "node:os";
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 
 function resolvePath(path: string, cwd: string): string {
   if (path.startsWith("~/")) return resolve(homedir(), path.slice(2));
@@ -31,7 +33,7 @@ export function tool_edit(cwd: string): AgentTool {
       },
       required: ["path", "edits"],
     },
-    execute: async (_ctx: any, _session: any, params: { path: string; edits: { oldText: string; newText: string }[] }) => {
+    execute: async (ctx: Ctx, session: Session, params: { path: string; edits: { oldText: string; newText: string }[] }) => {
       const abs = resolvePath(params.path, cwd);
       let content = await Bun.file(abs).text();
 

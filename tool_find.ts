@@ -1,5 +1,7 @@
 import { resolve } from "node:path";
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 
 export function tool_find(cwd: string): AgentTool {
   return {
@@ -13,7 +15,7 @@ export function tool_find(cwd: string): AgentTool {
       },
       required: ["pattern"],
     },
-    execute: async (_ctx: any, _session: any, params: { pattern: string; path?: string }) => {
+    execute: async (ctx: Ctx, session: Session, params: { pattern: string; path?: string }) => {
       const searchDir = params.path ? resolve(cwd, params.path) : cwd;
       const glob = new Bun.Glob(params.pattern);
       const matches: string[] = [];

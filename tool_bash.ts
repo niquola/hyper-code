@@ -15,7 +15,7 @@ export function tool_bash(cwd: string): AgentTool {
       },
       required: ["command"],
     },
-    execute: async (_ctx: Ctx, _session: Session, params: { command: string; timeout?: number }, signal) => {
+    execute: async (ctx: Ctx, session: Session, params: { command: string; timeout?: number }, signal) => {
       const timeout = (params.timeout || 30) * 1000;
 
       const proc = Bun.spawn(["bash", "-c", params.command], {

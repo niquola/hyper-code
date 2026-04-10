@@ -1,4 +1,6 @@
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 
 export function tool_html_message(): AgentTool {
   return {
@@ -11,7 +13,7 @@ export function tool_html_message(): AgentTool {
       },
       required: ["html"],
     },
-    execute: async (_ctx: any, _session: any, params: { html: string }) => {
+    execute: async (ctx: Ctx, session: Session, params: { html: string }) => {
       return { content: [{ type: "html", html: params.html }] };
     },
   };

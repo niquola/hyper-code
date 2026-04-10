@@ -10,7 +10,7 @@ Web-based coding agent with htmx SSR UI. Multi-session, multi-model, multi-provi
 
 ## Core Principles
 
-1. **Procedural** — functions and types, no classes. One function/type per file.
+1. **Procedural, not OOP** — `function(object, ...)` not `object.method()`. No classes, no `this`. Data is plain types, logic is free functions. One function/type per file.
 2. **Ctx holds all state** — db, cwd, model, tools. No singletons, no `process.env` reads inside functions.
 3. **URL determines screen** — session ID in URL, all actions scoped to URL session. Refresh = same state.
 4. **Strict TDD** — write test FIRST. Bug found? Failing test FIRST, then fix.
@@ -51,6 +51,27 @@ Browser ←→ Bun.serve (server.ts)
 
 **Ctx** = `{ db, cwd, model, apiKey, systemPrompt, tools }` — created once at startup, passed everywhere.
 **Session** = `{ session_id, messages, model, apiKey, systemPrompt, steerQueue, followUpQueue, ... }` — per-conversation, mutable.
+
+### Procedural accessors — `module_getX(ctx, ...)` not `ctx.getX()`
+
+No methods on objects. For complex derived data, define getter/setter **free functions**:
+```ts
+// ✅ Procedural getter/setter
+chat_getApiKey(provider)                    // resolve key from ENV / keys.json / auto-detect
+chat_saveApiKey(provider, key)              // persist key
+chat_loadMessages(id, sessions, msgs, cache) // build full message chain
+chat_getSession(db, id)                     // read from DB
+chat_setSessionTitle(db, id, title)         // write to DB
+
+// ❌ OOP
+ctx.getApiKey(provider)     // method = hidden dispatch
+session.loadMessages()      // method on mutable object
+db.getSession(id)           // this one is OK — db is a module-level factory, not a class instance
+```
+
+Name pattern: `<module>_get<Thing>`, `<module>_set<Thing>`, `<module>_load<Thing>`, `<module>_save<Thing>`.
+
+API keys resolve fresh each call — never cache credentials in Session. After re-login, all sessions immediately pick up the new key.
 
 ### Function Signatures
 

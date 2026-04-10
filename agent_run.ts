@@ -4,6 +4,7 @@ import type { Session } from "./chat_type_Session.ts";
 import type { AgentEvent } from "./agent_type_Event.ts";
 import { ai_stream } from "./ai_stream.ts";
 import { agent_executeTools } from "./agent_executeTools.ts";
+import { chat_getApiKey } from "./chat_apiKeys.ts";
 
 export async function agent_run(
   ctx: Ctx,
@@ -43,6 +44,9 @@ export async function agent_run(
         parameters: t.parameters,
       }));
 
+      // Resolve API key fresh each turn (picks up re-login tokens)
+      const freshApiKey = await chat_getApiKey(session.model.provider) || session.apiKey;
+
       const stream = ai_stream(
         session.model,
         {
@@ -51,7 +55,7 @@ export async function agent_run(
           tools: llmTools.length > 0 ? llmTools : undefined,
         },
         {
-          apiKey: session.apiKey,
+          apiKey: freshApiKey,
           sessionId: session.session_id,
           signal: session.abortController.signal,
         },
@@ -123,7 +127,8 @@ export async function agent_run(
         }
         onEvent({ type: "turn_start" });
         const llmTools: Tool[] = ctx.tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters }));
-        const stream = ai_stream(ctx.model, { systemPrompt: ctx.systemPrompt, messages: session.messages, tools: llmTools.length > 0 ? llmTools : undefined }, { apiKey: ctx.apiKey, signal: session.abortController.signal });
+        const followUpApiKey = await chat_getApiKey(session.model.provider) || session.apiKey;
+        const stream = ai_stream(session.model, { systemPrompt: session.systemPrompt, messages: session.messages, tools: llmTools.length > 0 ? llmTools : undefined }, { apiKey: followUpApiKey, signal: session.abortController.signal });
         let assistantMessage: AssistantMessage | null = null;
         for await (const event of stream) {
           if (event.type === "text_delta") onEvent({ type: "text_delta", delta: event.delta });

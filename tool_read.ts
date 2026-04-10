@@ -24,7 +24,7 @@ export function tool_read(cwd: string): AgentTool {
       },
       required: ["path"],
     },
-    execute: async (_ctx: Ctx, _session: Session, params: { path: string; offset?: number; limit?: number }, signal) => {
+    execute: async (ctx: Ctx, session: Session, params: { path: string; offset?: number; limit?: number }, signal) => {
       const abs = resolvePath(params.path, cwd);
       const file = Bun.file(abs);
       if (!await file.exists()) throw new Error(`File not found: ${params.path}`);

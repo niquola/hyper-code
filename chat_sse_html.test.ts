@@ -85,4 +85,42 @@ describe("SSE HTML content rendering", () => {
     expect(html).toContain("<pre");
     expect(html).not.toContain("&lt;pre");
   });
+
+  test("CODEX_AUTH_EXPIRED error shows re-login button", async () => {
+    const res = chat_createSSEStream(mockSession(), async (onEvent) => {
+      onEvent({ type: "agent_start" });
+      onEvent({ type: "error", error: "CODEX_AUTH_EXPIRED: Codex token expired. Please re-login." });
+      onEvent({ type: "agent_end", messages: [] });
+    });
+
+    const html = await collectSSE(res);
+    expect(html).toContain("Settings");
+    expect(html).toContain("/settings");
+    expect(html).not.toContain("CODEX_AUTH_EXPIRED:");
+  });
+
+  test("CODEX_AUTH_REFRESHED shows yellow notice", async () => {
+    const res = chat_createSSEStream(mockSession(), async (onEvent) => {
+      onEvent({ type: "agent_start" });
+      onEvent({ type: "error", error: "CODEX_AUTH_REFRESHED: Token refreshed. Please retry your message." });
+      onEvent({ type: "agent_end", messages: [] });
+    });
+
+    const html = await collectSSE(res);
+    expect(html).toContain("Token refreshed");
+    expect(html).toContain("bg-yellow-50");
+    expect(html).not.toContain("CODEX_AUTH_REFRESHED:");
+  });
+
+  test("regular error renders without re-login button", async () => {
+    const res = chat_createSSEStream(mockSession(), async (onEvent) => {
+      onEvent({ type: "agent_start" });
+      onEvent({ type: "error", error: "Something went wrong" });
+      onEvent({ type: "agent_end", messages: [] });
+    });
+
+    const html = await collectSSE(res);
+    expect(html).toContain("Something went wrong");
+    expect(html).not.toContain("Re-login");
+  });
 });

@@ -8,6 +8,8 @@ import type { Model } from "./ai_type_Model.ts";
 import type { StreamOptions } from "./ai_type_StreamOptions.ts";
 import { AssistantMessageEventStream } from "./ai_EventStream.ts";
 import { ai_getEnvApiKey } from "./ai_getEnvApiKey.ts";
+import { auth_codexRefresh } from "./auth_codex.ts";
+import { chat_saveApiKey } from "./chat_apiKeys.ts";
 import { ai_calculateCost } from "./ai_calculateCost.ts";
 import { ai_parseStreamingJson } from "./ai_parseStreamingJson.ts";
 import { ai_sanitizeSurrogates } from "./ai_sanitizeSurrogates.ts";
@@ -187,7 +189,30 @@ export function ai_streamCodex(model: Model, context: Context, options?: StreamO
             const err = parsed?.error;
             if (err) {
               const code = err.code || err.type || "";
-              if (/usage_limit|rate_limit/i.test(code)) {
+              if (/missing_scope|insufficient_permissions/i.test(code) || /missing scopes/i.test(err.message || "")) {
+                // Try auto-refresh from ~/.codex/auth.json refresh_token
+                try {
+                  const home = process.env.HOME || "";
+                  const authFile = `${home}/.codex/auth.json`;
+                  const auth = JSON.parse(require("node:fs").readFileSync(authFile, "utf-8"));
+                  const refreshToken = auth.tokens?.refresh_token;
+                  if (refreshToken) {
+                    const creds = await auth_codexRefresh(refreshToken);
+                    // Save refreshed token
+                    auth.tokens.access_token = creds.access;
+                    auth.tokens.refresh_token = creds.refresh;
+                    auth.tokens.account_id = creds.accountId;
+                    auth.last_refresh = new Date().toISOString();
+                    require("node:fs").writeFileSync(authFile, JSON.stringify(auth, null, 2));
+                    await chat_saveApiKey("openai-codex", creds.access);
+                    message = `CODEX_AUTH_REFRESHED: Token refreshed. Please retry your message.`;
+                  } else {
+                    message = `CODEX_AUTH_EXPIRED: Codex token expired. Please re-login.`;
+                  }
+                } catch (refreshErr) {
+                  message = `CODEX_AUTH_EXPIRED: Codex token expired and auto-refresh failed. Please re-login.`;
+                }
+              } else if (/usage_limit|rate_limit/i.test(code)) {
                 const plan = err.plan_type ? ` (${err.plan_type} plan)` : "";
                 const mins = err.resets_at ? Math.max(0, Math.round((err.resets_at * 1000 - Date.now()) / 60000)) : undefined;
                 const when = mins !== undefined ? ` Try again in ~${mins} min.` : "";

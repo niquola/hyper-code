@@ -2,6 +2,8 @@ import { resolve, dirname } from "node:path";
 import { homedir } from "node:os";
 import { mkdir } from "node:fs/promises";
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 
 function resolvePath(path: string, cwd: string): string {
   if (path.startsWith("~/")) return resolve(homedir(), path.slice(2));
@@ -21,7 +23,7 @@ export function tool_write(cwd: string): AgentTool {
       },
       required: ["path", "content"],
     },
-    execute: async (_ctx: any, _session: any, params: { path: string; content: string }) => {
+    execute: async (ctx: Ctx, session: Session, params: { path: string; content: string }) => {
       const abs = resolvePath(params.path, cwd);
       await mkdir(dirname(abs), { recursive: true });
       await Bun.write(abs, params.content);

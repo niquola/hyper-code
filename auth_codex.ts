@@ -106,7 +106,7 @@ export async function auth_codexRefresh(refreshToken: string): Promise<CodexCred
 
 // --- OAuth flow ---
 
-export async function auth_codexLogin(returnPort?: number): Promise<{ authUrl: string; waitForCredentials: () => Promise<CodexCredentials> }> {
+export async function auth_codexLogin(returnPort?: number, organizationId?: string): Promise<{ authUrl: string; waitForCredentials: () => Promise<CodexCredentials> }> {
   const { verifier, challenge } = await generatePKCE();
   const state = randomBytes(16).toString("hex");
 
@@ -120,6 +120,9 @@ export async function auth_codexLogin(returnPort?: number): Promise<{ authUrl: s
   url.searchParams.set("state", state);
   url.searchParams.set("codex_cli_simplified_flow", "true");
   url.searchParams.set("originator", "hyper-code");
+  if (organizationId) {
+    url.searchParams.set("organization", organizationId);
+  }
 
   // Start local callback server
   const { promise, resolve, reject } = Promise.withResolvers<CodexCredentials>();

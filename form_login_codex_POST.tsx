@@ -6,9 +6,10 @@ import { chat_saveApiKey } from "./chat_apiKeys.ts";
 
 export default async function (ctx: Ctx, req: Request) {
   try {
-    // Pass our server port so callback page can redirect back
+    const form = await req.formData().catch(() => null);
+    const orgId = form?.get("org") as string | null;
     const port = Number(await Bun.file(".port").text().catch(() => "3000"));
-    const { authUrl, waitForCredentials } = await auth_codexLogin(port);
+    const { authUrl, waitForCredentials } = await auth_codexLogin(port, orgId || undefined);
 
     // Wait for OAuth callback in background, save credentials when done
     waitForCredentials()

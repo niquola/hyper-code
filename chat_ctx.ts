@@ -44,7 +44,7 @@ export async function chat_getCtx(): Promise<Ctx> {
         }
         return null;
       }),
-      tool_websearch(),
+      tool_websearch(process.env.TAVILY_API_KEY),
       tool_memory_search(),
       tool_ts(cwd),
     ];
@@ -129,9 +129,12 @@ export function chat_getSessionFile(): string | null {
 }
 
 export function chat_resetCtx(): void {
-  // noop — sessions in SQLite
+  sessions.clear();
+  messageCache.clear();
 }
 
 export function chat_resetConfig(): void {
   ctx = null;
+  sessions.clear();
+  messageCache.clear();
 }

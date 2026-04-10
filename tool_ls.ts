@@ -1,6 +1,8 @@
 import { resolve } from "node:path";
 import { readdirSync, statSync } from "node:fs";
 import type { AgentTool } from "./agent_type_Tool.ts";
+import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Session } from "./chat_type_Session.ts";
 
 export function tool_ls(cwd: string): AgentTool {
   return {
@@ -12,7 +14,7 @@ export function tool_ls(cwd: string): AgentTool {
         path: { type: "string", description: "Directory path (default: working directory)" },
       },
     },
-    execute: async (_ctx: any, _session: any, params: { path?: string }) => {
+    execute: async (ctx: Ctx, session: Session, params: { path?: string }) => {
       const dir = params.path ? resolve(cwd, params.path) : cwd;
 
       try {
