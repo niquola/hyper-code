@@ -5,4 +5,5 @@ export type StreamOptions = {
   apiKey?: string;
   headers?: Record<string, string>;
   reasoningEffort?: "low" | "medium" | "high";
+  sessionId?: string; // For prompt caching (Codex prompt_cache_key)
 };

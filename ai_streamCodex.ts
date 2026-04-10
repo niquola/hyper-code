@@ -131,6 +131,7 @@ export function ai_streamCodex(model: Model, context: Context, options?: StreamO
         instructions: context.systemPrompt,
         input,
         text: { verbosity: "medium" },
+        prompt_cache_key: options?.sessionId || undefined,
         include: ["reasoning.encrypted_content"],
         tool_choice: "auto",
         parallel_tool_calls: true,

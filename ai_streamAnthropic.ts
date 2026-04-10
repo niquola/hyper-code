@@ -52,7 +52,7 @@ export function ai_streamAnthropic(model: Model, context: Context, options?: Str
       };
 
       if (context.systemPrompt) {
-        params.system = ai_sanitizeSurrogates(context.systemPrompt);
+        params.system = [{ type: "text", text: ai_sanitizeSurrogates(context.systemPrompt), cache_control: { type: "ephemeral" } }];
       }
 
       if (context.tools && context.tools.length > 0) {
@@ -214,6 +214,16 @@ function convertMessages(context: Context): any[] {
         return { type: "text", text: "[html widget]" };
       });
       messages.push({ role: "user", content: [{ type: "tool_result", tool_use_id: msg.toolCallId, content, is_error: msg.isError }] });
+    }
+  }
+
+  // Add cache_control to last message for prompt caching
+  if (messages.length > 0) {
+    const last = messages[messages.length - 1];
+    if (Array.isArray(last.content) && last.content.length > 0) {
+      last.content[last.content.length - 1].cache_control = { type: "ephemeral" };
+    } else if (typeof last.content === "string") {
+      messages[messages.length - 1] = { ...last, content: [{ type: "text", text: last.content, cache_control: { type: "ephemeral" } }] };
     }
   }
 

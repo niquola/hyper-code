@@ -52,6 +52,7 @@ export async function agent_run(
         },
         {
           apiKey: session.apiKey,
+          sessionId: session.session_id,
           signal: session.abortController.signal,
         },
       );
