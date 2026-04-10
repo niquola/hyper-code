@@ -101,15 +101,11 @@ describe("ai_calculateCost", () => {
 
 describe("ai_getEnvApiKey", () => {
   test("returns undefined for unknown provider", () => {
-    expect(ai_getEnvApiKey("unknown-provider")).toBeUndefined();
+    expect(ai_getEnvApiKey("/tmp", "unknown-provider", {})).toBeUndefined();
   });
 
   test("reads OPENAI_API_KEY for openai", () => {
-    const original = process.env.OPENAI_API_KEY;
-    process.env.OPENAI_API_KEY = "test-key-123";
-    expect(ai_getEnvApiKey("openai")).toBe("test-key-123");
-    if (original) process.env.OPENAI_API_KEY = original;
-    else delete process.env.OPENAI_API_KEY;
+    expect(ai_getEnvApiKey("/tmp", "openai", { OPENAI_API_KEY: "test-key-123" })).toBe("test-key-123");
   });
 });
 

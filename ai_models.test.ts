@@ -90,35 +90,22 @@ describe("ai_getProviders", () => {
 });
 
 describe("ai_getEnvApiKey", () => {
+  const HOME = "/tmp";
+
   test("maps openai to OPENAI_API_KEY", () => {
-    const orig = process.env.OPENAI_API_KEY;
-    process.env.OPENAI_API_KEY = "sk-test";
-    expect(ai_getEnvApiKey("openai")).toBe("sk-test");
-    if (orig) process.env.OPENAI_API_KEY = orig;
-    else delete process.env.OPENAI_API_KEY;
+    expect(ai_getEnvApiKey(HOME, "openai", { OPENAI_API_KEY: "sk-test" })).toBe("sk-test");
   });
 
   test("maps anthropic with OAuth precedence", () => {
-    const origKey = process.env.ANTHROPIC_API_KEY;
-    const origOauth = process.env.ANTHROPIC_OAUTH_TOKEN;
-    process.env.ANTHROPIC_API_KEY = "key";
-    process.env.ANTHROPIC_OAUTH_TOKEN = "oauth";
-    expect(ai_getEnvApiKey("anthropic")).toBe("oauth");
-    delete process.env.ANTHROPIC_OAUTH_TOKEN;
-    expect(ai_getEnvApiKey("anthropic")).toBe("key");
-    if (origKey) process.env.ANTHROPIC_API_KEY = origKey; else delete process.env.ANTHROPIC_API_KEY;
-    if (origOauth) process.env.ANTHROPIC_OAUTH_TOKEN = origOauth;
+    expect(ai_getEnvApiKey(HOME, "anthropic", { ANTHROPIC_OAUTH_TOKEN: "oauth", ANTHROPIC_API_KEY: "key" })).toBe("oauth");
+    expect(ai_getEnvApiKey(HOME, "anthropic", { ANTHROPIC_API_KEY: "key" })).toBe("key");
   });
 
   test("maps groq to GROQ_API_KEY", () => {
-    const orig = process.env.GROQ_API_KEY;
-    process.env.GROQ_API_KEY = "gsk-test";
-    expect(ai_getEnvApiKey("groq")).toBe("gsk-test");
-    if (orig) process.env.GROQ_API_KEY = orig;
-    else delete process.env.GROQ_API_KEY;
+    expect(ai_getEnvApiKey(HOME, "groq", { GROQ_API_KEY: "gsk-test" })).toBe("gsk-test");
   });
 
   test("returns undefined for unknown provider", () => {
-    expect(ai_getEnvApiKey("random")).toBeUndefined();
+    expect(ai_getEnvApiKey(HOME, "random", {})).toBeUndefined();
   });
 });

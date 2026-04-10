@@ -100,9 +100,28 @@ function loadMessages(sessionId) { const db = getDb(); ... }
 const db = chat_db(); function loadMessages(id) { db.getSession(id) }
 ```
 
+### Environment: only Ctx reads env
+
+`process.env`, `process.cwd()`, `os.homedir()` — read **once** at startup in `chat_getCtx()`, stored in `ctx.cwd`, `ctx.home`, `ctx.env`. All other code receives these from ctx/params.
+
+```ts
+// ✅ Startup (chat_ctx.ts) — the ONE place that reads env
+const cwd = process.cwd();
+const home = process.env.HOME;
+const env = { ...process.env };
+ctx = agent_createCtx({ cwd, home, env, ... });
+
+// ✅ Functions receive from ctx
+chat_getApiKey(ctx.home, provider)
+chat_resolveApiKey(ctx.home, settings)
+
+// ❌ Reading env inside functions
+const home = process.env.HOME;  // FORBIDDEN
+```
+
 ### FORBIDDEN
 - Singletons (`getDb()`, module-level `let`)
-- `process.cwd()` / `process.env` inside functions (read once into Ctx at startup)
+- `process.cwd()` / `process.env` / `os.homedir()` inside functions
 - Closures over mutable global state
 - Functions that fetch their own dependencies — caller provides everything
 

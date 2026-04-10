@@ -51,6 +51,26 @@ test("dialog HTML has correct structure", async () => {
   await resultPromise;
 });
 
+test("dialog id is session-scoped and unique", async () => {
+  const session = mockSession();
+  const t = tool_html_dialog();
+
+  const p1 = t.execute({} as any, session, { title: "A", html: '<input name="a" />' });
+  const p2 = t.execute({} as any, session, { title: "B", html: '<input name="b" />' });
+  await Bun.sleep(10);
+
+  const ids = [...session.pendingDialogs.keys()];
+  expect(ids.length).toBe(2);
+  expect(ids[0]!.startsWith("dlg-test.jsonl-")).toBe(true);
+  expect(ids[1]!.startsWith("dlg-test.jsonl-")).toBe(true);
+  expect(ids[0]).not.toBe(ids[1]);
+
+  session.pendingDialogs.get(ids[0]!)!("ok1");
+  session.pendingDialogs.get(ids[1]!)!("ok2");
+  await p1;
+  await p2;
+});
+
 test("has correct metadata", () => {
   const t = tool_html_dialog();
   expect(t.name).toBe("html_dialog");

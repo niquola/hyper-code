@@ -66,7 +66,7 @@ export default async function (ctx: Ctx, req: Request) {
 
   const keys: KeyInfo[] = [];
   for (const p of PROVIDERS) {
-    const key = await chat_getApiKey(p.provider);
+    const key = await chat_getApiKey(ctx.home, p.provider);
     keys.push({
       provider: p.provider,
       label: p.label,

@@ -34,7 +34,7 @@ export function ai_streamResponses(model: Model, context: Context, options?: Str
     };
 
     try {
-      const apiKey = options?.apiKey || ai_getEnvApiKey(model.provider);
+      const apiKey = options?.apiKey || ai_getEnvApiKey(options?.home || "/tmp", model.provider);
       if (!apiKey) throw new Error(`No API key for provider: ${model.provider}`);
 
       const client = new OpenAI({

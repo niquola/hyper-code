@@ -52,7 +52,7 @@ export function ai_stream(model: Model, context: Context, options?: StreamOption
     };
 
     try {
-      const apiKey = options?.apiKey || ai_getEnvApiKey(model.provider);
+      const apiKey = options?.apiKey || ai_getEnvApiKey(options?.home || "/tmp", model.provider);
       if (!apiKey) throw new Error(`No API key for provider: ${model.provider}. Set ${model.provider.toUpperCase().replace(/-/g, "_")}_API_KEY`);
 
       const client = new OpenAI({

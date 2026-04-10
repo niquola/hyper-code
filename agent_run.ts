@@ -45,7 +45,7 @@ export async function agent_run(
       }));
 
       // Resolve API key fresh each turn (picks up re-login tokens)
-      const freshApiKey = await chat_getApiKey(session.model.provider) || session.apiKey;
+      const freshApiKey = await chat_getApiKey(ctx.home, session.model.provider) || session.apiKey;
 
       const stream = ai_stream(
         session.model,
@@ -58,6 +58,7 @@ export async function agent_run(
           apiKey: freshApiKey,
           sessionId: session.session_id,
           signal: session.abortController.signal,
+          home: ctx.home,
         },
       );
 
@@ -127,7 +128,7 @@ export async function agent_run(
         }
         onEvent({ type: "turn_start" });
         const llmTools: Tool[] = ctx.tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters }));
-        const followUpApiKey = await chat_getApiKey(session.model.provider) || session.apiKey;
+        const followUpApiKey = await chat_getApiKey(ctx.home, session.model.provider) || session.apiKey;
         const stream = ai_stream(session.model, { systemPrompt: session.systemPrompt, messages: session.messages, tools: llmTools.length > 0 ? llmTools : undefined }, { apiKey: followUpApiKey, signal: session.abortController.signal });
         let assistantMessage: AssistantMessage | null = null;
         for await (const event of stream) {

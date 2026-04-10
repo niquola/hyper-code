@@ -19,7 +19,7 @@ export default async function (ctx: Ctx, req: Request) {
         settings.modelId = settings.modelId.startsWith("gpt-5") ? settings.modelId : "gpt-5.2-codex";
         settings.apiKey = ""; // Keys stored per-provider now
         await chat_saveSettings(settings);
-        await chat_saveApiKey("openai-codex", creds.access);
+        await chat_saveApiKey(ctx.home, "openai-codex", creds.access);
         chat_resetCtx();
         chat_resetConfig();
         console.log("[codex] Login successful, account:", creds.accountId);

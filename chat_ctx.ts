@@ -32,7 +32,11 @@ const messageCache = new Map<string, Message[]>();
 
 export async function chat_getCtx(): Promise<Ctx> {
   if (!ctx) {
+    // Read ALL env once at startup — nowhere else
     const cwd = process.cwd();
+    const home = process.env.HOME || process.env.USERPROFILE || "/tmp";
+    const env = { ...process.env } as Record<string, string | undefined>;
+
     const tools = [
       tool_read(cwd), tool_write(cwd), tool_edit(cwd), tool_bash(cwd),
       tool_grep(cwd), tool_find(cwd), tool_ls(cwd), tool_hyper_ui(cwd),
@@ -45,7 +49,7 @@ export async function chat_getCtx(): Promise<Ctx> {
         }
         return null;
       }),
-      tool_websearch(process.env.TAVILY_API_KEY),
+      tool_websearch(env.TAVILY_API_KEY),
       tool_memory_search(),
       tool_ts(cwd),
     ];
@@ -53,7 +57,7 @@ export async function chat_getCtx(): Promise<Ctx> {
     const { chat_loadSettings, chat_resolveModel, chat_resolveApiKey } = await import("./chat_settings.ts");
     const settings = await chat_loadSettings();
     const model = await chat_resolveModel(cwd, settings);
-    const apiKey = chat_resolveApiKey(settings);
+    const apiKey = chat_resolveApiKey(home, settings);
     const modelIndex = await ai_models_loadIndex(cwd);
 
     ctx = agent_createCtx({
@@ -61,7 +65,7 @@ export async function chat_getCtx(): Promise<Ctx> {
       systemPrompt: agent_buildSystemPrompt(cwd, tools),
       tools,
       db: chat_db(),
-      cwd,
+      cwd, home, env,
       modelIndex,
     });
   }
@@ -95,7 +99,7 @@ async function loadSession(filename: string): Promise<Session> {
   );
 
   // Resolve model per session
-  const { model: sessionModel, apiKey: sessionApiKey } = await chat_resolveSessionModel(ctx!.cwd, db, filename);
+  const { model: sessionModel, apiKey: sessionApiKey } = await chat_resolveSessionModel(ctx!.home, ctx!.cwd, db, filename);
   const sessionCtx = await chat_getCtx();
   const systemPrompt = agent_buildSystemPrompt(ctx!.cwd, sessionCtx.tools, filename, sessionModel.name || sessionModel.id);
 

@@ -53,7 +53,7 @@ export async function chat_resolveModel(cwd: string, settings: ChatSettings): Pr
   };
 }
 
-export function chat_resolveApiKey(settings: ChatSettings): string {
+export function chat_resolveApiKey(home: string, settings: ChatSettings): string {
   if (settings.apiKey) return settings.apiKey;
-  return ai_getEnvApiKey(settings.provider) || "";
+  return ai_getEnvApiKey(home, settings.provider) || "";
 }

@@ -70,13 +70,16 @@ describe("form_keys_POST", () => {
     const { chat_saveApiKey, chat_getApiKey } = await import("./chat_apiKeys.ts");
 
     // Save a key
-    await chat_saveApiKey("test-provider", "test-key-123");
-    const key = await chat_getApiKey("test-provider");
+    const home = "/tmp/hyper-keys-test-flow";
+    const { mkdirSync } = require("node:fs");
+    mkdirSync(`${home}/.hyper`, { recursive: true });
+
+    await chat_saveApiKey(home, "test-provider", "test-key-123");
+    const key = await chat_getApiKey(home, "test-provider");
     expect(key).toBe("test-key-123");
 
-    // Overwrite
-    await chat_saveApiKey("test-provider", "new-key-456");
-    const key2 = await chat_getApiKey("test-provider");
+    await chat_saveApiKey(home, "test-provider", "new-key-456");
+    const key2 = await chat_getApiKey(home, "test-provider");
     expect(key2).toBe("new-key-456");
   });
 });

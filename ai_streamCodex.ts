@@ -119,7 +119,7 @@ export function ai_streamCodex(model: Model, context: Context, options?: StreamO
     };
 
     try {
-      const apiKey = options?.apiKey || ai_getEnvApiKey(model.provider);
+      const apiKey = options?.apiKey || ai_getEnvApiKey(options?.home || "/tmp", model.provider);
       if (!apiKey) throw new Error(`No API key for provider: ${model.provider}`);
 
       const accountId = extractAccountId(apiKey);
@@ -192,7 +192,7 @@ export function ai_streamCodex(model: Model, context: Context, options?: StreamO
               if (/missing_scope|insufficient_permissions/i.test(code) || /missing scopes/i.test(err.message || "")) {
                 // Try auto-refresh from ~/.codex/auth.json refresh_token
                 try {
-                  const home = process.env.HOME || "";
+                  const home = options?.home || "/tmp";
                   const authFile = `${home}/.codex/auth.json`;
                   const auth = JSON.parse(require("node:fs").readFileSync(authFile, "utf-8"));
                   const refreshToken = auth.tokens?.refresh_token;
@@ -204,7 +204,7 @@ export function ai_streamCodex(model: Model, context: Context, options?: StreamO
                     auth.tokens.account_id = creds.accountId;
                     auth.last_refresh = new Date().toISOString();
                     require("node:fs").writeFileSync(authFile, JSON.stringify(auth, null, 2));
-                    await chat_saveApiKey("openai-codex", creds.access);
+                    await chat_saveApiKey(home, "openai-codex", creds.access);
                     message = `CODEX_AUTH_REFRESHED: Token refreshed. Please retry your message.`;
                   } else {
                     message = `CODEX_AUTH_EXPIRED: Codex token expired. Please re-login.`;

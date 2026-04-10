@@ -1,3 +1,5 @@
+import type { Env } from "./agent_type_Ctx.ts";
+
 const ENV_MAP: Record<string, string> = {
   openai: "OPENAI_API_KEY",
   "azure-openai-responses": "AZURE_OPENAI_API_KEY",
@@ -19,21 +21,22 @@ const ENV_MAP: Record<string, string> = {
   "github-copilot": "GITHUB_TOKEN",
 };
 
-export function ai_getEnvApiKey(provider: string): string | undefined {
+export function ai_getEnvApiKey(home: string, provider: string, env?: Env): string | undefined {
+  const e = env ?? (process.env as Env);
+
   // Anthropic: OAuth token takes precedence
   if (provider === "anthropic") {
-    return process.env.ANTHROPIC_OAUTH_TOKEN || process.env.ANTHROPIC_API_KEY;
+    return e.ANTHROPIC_OAUTH_TOKEN || e.ANTHROPIC_API_KEY;
   }
 
   // GitHub Copilot: multiple env vars
   if (provider === "github-copilot") {
-    return process.env.COPILOT_GITHUB_TOKEN || process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
+    return e.COPILOT_GITHUB_TOKEN || e.GH_TOKEN || e.GITHUB_TOKEN;
   }
 
   // Codex: read OAuth JWT from ~/.codex/auth.json
   if (provider === "openai-codex") {
     try {
-      const home = process.env.HOME || process.env.USERPROFILE || "";
       const auth = JSON.parse(require("node:fs").readFileSync(`${home}/.codex/auth.json`, "utf-8"));
       const token = auth.tokens?.access_token;
       if (token && token.split(".").length === 3) return token;
@@ -43,9 +46,8 @@ export function ai_getEnvApiKey(provider: string): string | undefined {
 
   // Kimi: read from CLI credentials file
   if (provider === "kimi-coding") {
-    if (process.env.KIMI_API_KEY) return process.env.KIMI_API_KEY;
+    if (e.KIMI_API_KEY) return e.KIMI_API_KEY;
     try {
-      const home = process.env.HOME || process.env.USERPROFILE || "";
       const creds = JSON.parse(require("node:fs").readFileSync(`${home}/.kimi/credentials/kimi-code.json`, "utf-8"));
       if (creds.access_token && creds.expires_at > Date.now() / 1000) return creds.access_token;
     } catch {}
@@ -53,5 +55,5 @@ export function ai_getEnvApiKey(provider: string): string | undefined {
   }
 
   const envVar = ENV_MAP[provider];
-  return envVar ? process.env[envVar] : undefined;
+  return envVar ? e[envVar] : undefined;
 }

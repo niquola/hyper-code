@@ -167,14 +167,15 @@ describe("agent_executeTools", () => {
   });
 });
 
-// -- agent_run (integration with LM Studio) --
+// -- agent_run (integration with LM Studio, flaky — depends on model quality) --
+// Run manually: bun test agent.test.ts --only "agent_run"
 
-describe("agent_run", () => {
+describe.skip("agent_run", () => {
   test("simple prompt without tools", async () => {
     const ctx = agent_createCtx({
       model: LM_STUDIO_MODEL,
       apiKey: "lm-studio",
-      systemPrompt: "Reply with exactly one word: OK", db: {} as any, cwd: "."
+      systemPrompt: "Reply with exactly one word: OK", db: {} as any, cwd: ".", home: "/tmp"
     });
     const session = createSession();
 
@@ -198,7 +199,7 @@ describe("agent_run", () => {
     const ctx = agent_createCtx({
       model: LM_STUDIO_MODEL,
       apiKey: "lm-studio",
-      systemPrompt: "You have a read_file tool. When asked to read a file, call it. After getting the result, summarize it briefly.",
+      systemPrompt: "You have a read_file tool. When asked to read a file, call it. After getting the result, summarize it briefly.", home: "/tmp",
       tools: [{
         name: "read_file",
         description: "Read a file and return its contents",

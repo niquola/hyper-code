@@ -14,6 +14,8 @@ function createTestCtx(): Ctx {
     modelIndex: { providers: [] },
     modelProviders: new Map(),
     modelAll: null,
+    home: "/tmp",
+    env: {},
   };
 }
 

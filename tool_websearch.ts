@@ -38,7 +38,7 @@ export function tool_websearch(tavilyApiKey?: string): AgentTool {
       timeout?: number;
       format?: string;
     }, signal) => {
-      const apiKey = tavilyApiKey || process.env.TAVILY_API_KEY;
+      const apiKey = tavilyApiKey;
       if (!apiKey) {
         return { content: [{ type: "text", text: "Missing TAVILY_API_KEY environment variable." }] };
       }

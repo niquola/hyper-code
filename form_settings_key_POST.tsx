@@ -7,7 +7,7 @@ export default async function (ctx: Ctx, req: Request) {
   const apiKey = (form.get("apiKey") as string)?.trim();
 
   if (provider && apiKey) {
-    await chat_saveApiKey(provider, apiKey);
+    await chat_saveApiKey(ctx.home, provider, apiKey);
   }
 
   return new Response(null, { status: 302, headers: { Location: "/settings" } });

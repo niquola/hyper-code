@@ -23,12 +23,12 @@ test("resolveModel codex baseUrl", async () => {
 });
 
 test("resolveApiKey returns settings key", () => {
-  expect(chat_resolveApiKey({ provider: "test", modelId: "t", apiKey: "my-key" })).toBe("my-key");
+  expect(chat_resolveApiKey("/tmp", { provider: "test", modelId: "t", apiKey: "my-key" })).toBe("my-key");
 });
 
 test("resolveApiKey falls back to env", () => {
   const old = process.env.OPENAI_API_KEY;
   process.env.OPENAI_API_KEY = "env-key";
-  expect(chat_resolveApiKey({ provider: "openai", modelId: "t", apiKey: "" })).toBe("env-key");
+  expect(chat_resolveApiKey("/tmp", { provider: "openai", modelId: "t", apiKey: "" })).toBe("env-key");
   if (old) process.env.OPENAI_API_KEY = old; else delete process.env.OPENAI_API_KEY;
 });

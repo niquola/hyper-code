@@ -2,8 +2,6 @@ import type { AgentTool } from "./agent_type_Tool.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
 import type { Session } from "./chat_type_Session.ts";
 
-let dialogCounter = 0;
-
 export function tool_html_dialog(): AgentTool {
   return {
     name: "html_dialog",
@@ -18,7 +16,7 @@ export function tool_html_dialog(): AgentTool {
       required: ["title", "html"],
     },
     execute: async (ctx: Ctx, session: Session, params: { title: string; html: string; submit_label?: string }) => {
-      const id = `dlg-${Date.now()}-${++dialogCounter}`;
+      const id = `dlg-${session.session_id}-${crypto.randomUUID()}`;
       const submitLabel = params.submit_label || "Submit";
 
       const dialogHtml = `<dialog id="${id}" data-widget-id="${id}" class="rounded-lg shadow-xl border border-gray-200 p-0 max-w-md w-full backdrop:bg-black/30">
