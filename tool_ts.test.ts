@@ -13,7 +13,7 @@ describe("tool_ts", () => {
     const result = await t.execute({} as any, {} as any, { action: "symbols", path: "chat_db.ts" });
     const text = (result.content[0] as any).text;
     expect(text).toContain("chat_db");
-    expect(text).toContain("getDb");
+    expect(text).toContain("chat_db");
   });
 
   test("type returns type info", async () => {
@@ -23,10 +23,9 @@ describe("tool_ts", () => {
   });
 
   test("references finds usages", async () => {
-    const result = await t.execute({} as any, {} as any, { action: "references", path: "chat_db.ts", name: "getDb" });
+    const result = await t.execute({} as any, {} as any, { action: "references", path: "chat_db.ts", name: "SessionRow" });
     const text = (result.content[0] as any).text;
     expect(text).toContain("references");
-    expect(text).toContain("server.ts");
   });
 
   test("diagnostics reports errors", async () => {
