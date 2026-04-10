@@ -74,11 +74,14 @@ export async function chat_view_page(messages: Message[], sessionFilename?: stri
           <textarea
             name="prompt"
             rows="3"
-            placeholder="Enter — send · Ctrl+Enter — steer · Esc — stop"
+            placeholder="Type a message..."
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none"
             onkeydown="handleKey(event)"
           ></textarea>
-          <div id="queue-indicator" className="text-xs text-blue-500 mt-1 hidden"></div>
+          <div className="flex items-center justify-between mt-1">
+            <div className="text-xs text-gray-400">Enter — send · Ctrl+Enter — steer · Esc — stop</div>
+            <div id="queue-indicator" className="text-xs text-blue-500 hidden"></div>
+          </div>
         </form>
         </div>
       </div>
