@@ -224,7 +224,141 @@ Prefer `pageState` over screenshots.
 | `docs/tailwind.md` | `docs/tailwind_reference/` | Tailwind CSS utilities |
 | `docs/datastar.md` | `docs/datastar_reference/` | Datastar — reactive SSE UI |
 
-**htmx** for simple request/response. **Datastar** for reactive client state, real-time SSE, two-way binding.
+### htmx vs Datastar
+
+| Use case | Pick |
+|----------|------|
+| Form submit → redirect | htmx |
+| Click → swap HTML fragment | htmx |
+| Live search with debounce | Datastar |
+| Show/hide without server | Datastar |
+| Real-time updates (SSE) | Datastar |
+| Loading spinners | Datastar (`data-indicator`) |
+| Two-way form binding | Datastar (`data-bind`) |
+| Streaming agent output | Datastar (SSE) |
+
+## Modules
+
+**ai** — LLM streaming via OpenAI-compatible APIs
+- `ai_stream(model, context, opts)` → `AssistantMessageEventStream` (async iterable)
+- Auto-routes: Codex → `ai_streamCodex`, OpenAI/GitHub → `ai_streamResponses`, others → Completions API
+- `ai_renderMarkdown(text)` → HTML with shiki syntax highlighting (github-light theme)
+- `ai_models_generated.ts` — 856 models across 23 providers
+
+**agent** — Agent loop: prompt → LLM → tool execution → repeat
+- `agent_run(ctx, session, prompt, onEvent)` — main loop, emits `AgentEvent`s
+- `agent_executeTools(ctx, session, toolCalls, onEvent, signal?)` — sequential tool execution
+- `agent_abort(session)` — abort running agent
+- `agent_reset(session)` — clear session state
+
+**tools** — Coding tools
+- Each tool: `tool_<name>(cwd): AgentTool` → `{ name, description, parameters, execute }`
+- Execute signature: `(ctx, session, params, signal?) → Promise<Result>`
+- Content types: `{ type: "text", text }`, `{ type: "image", data, mimeType }`, `{ type: "html", html }`
+
+**chat** — Web UI with SSE streaming
+- `chat_createSSEStream(runAgent)` — agent events → SSE HTML fragments
+- `chat_settings.ts` — persistent provider/model/API key config
+- `chat_db.ts` — SQLite storage: sessions, messages, api_keys, unread
+
+**hyper_ui** — Interactive HTML widgets (CGI style)
+- `hyper_ui_run(cwd, name, req)` — CGI runner
+- `hyper_ui_list(cwd)` — list available widgets
+- `hyper_ui_route.ts` — HTTP handler for `/ui/*`
+
+## Navigating with `ls`
+
+```sh
+ls *.ts *.tsx                  # everything
+ls ai_*.ts                     # LLM streaming layer
+ls agent_*.ts                  # agent loop
+ls tool_*.ts                   # coding tools
+ls chat_*.ts chat_*.tsx        # chat web UI
+ls *_view_*.tsx                # all views
+ls *_type_*.ts                 # all types
+ls page_*.tsx                  # all pages (layout wrapped)
+ls frag_*.tsx                  # all htmx fragments
+ls form_*.tsx                  # all form handlers
+ls api_*.tsx                   # all REST JSON endpoints
+ls *.test.ts                   # all tests
+ls UI_*.tsx                    # all UI components
+ls cdp*.ts                     # CDP browser testing
+```
+
+## UI Components (`UI_*.tsx`)
+
+Reusable SSR components. PascalCase so they work as JSX tags:
+
+```tsx
+<UI_Button action="send" type="submit" variant="primary">Send</UI_Button>
+<UI_Input name="prompt" placeholder="Ask something..." />
+<UI_Textarea name="body" label="Message" rows={4} />
+<UI_Alert message="Error text" variant="error" />
+```
+
+**Button variants:** `primary` (dark), `success` (green), `danger` (red), `outline` (bordered), `ghost` (text only)
+
+## Views (SSR)
+
+Components are pure functions: `(props) → string`. **Split logic and rendering** — handler wires logic + view:
+
+```tsx
+// page_chat.tsx
+export default async function(ctx: Ctx, req: Request) {
+  const messages = ctx.db.getMessages(id);
+  return layout_view_page("Chat", chat_view_page(messages));
+}
+```
+
+## Route Types
+
+Four kinds of route files. `$param` in filename becomes `:param` in route.
+
+| Kind | File pattern | Maps to | Returns |
+|------|-------------|---------|---------|
+| Page | `page_*.tsx` | `GET /...` | Full HTML with layout |
+| Fragment | `frag_*.tsx` | `GET /...` | HTML fragment (htmx swap) |
+| Form | `form_*_POST.tsx` | `POST /...` | Redirect |
+| REST API | `api_*_GET.tsx` | `GET /api/...` | JSON |
+
+```
+page_index.tsx           → GET /
+page_chat_$id.tsx        → GET /chat/:id
+frag_chat_messages.tsx   → GET /chat/messages
+form_chat_POST.tsx       → POST /chat
+api_status_GET.tsx       → GET /api/status
+```
+
+## Error Handling
+
+- **Validation errors** — re-render with error message
+- **Not found** — return `null` (router sends 404)
+- **Redirect** — `new Response(null, { status: 302, headers: { Location: "/path" } })`
+
+## Testing HTTP Handlers
+
+Handlers are functions `(ctx, req, params) → string | Response | null`. Call directly in tests:
+
+```ts
+import page_index from "./page_index.tsx";
+test("GET / renders", async () => {
+  const result = await page_index(testCtx, new Request("http://localhost/"));
+  expect(typeof result).toBe("string");
+});
+```
+
+## Calling Functions with `bun -e`
+
+Every function is pure — call directly from CLI:
+
+```sh
+# stream from LLM
+bun -e "import { ai_stream } from './ai.ts';
+const s = ai_stream(model, { messages: [{role:'user',content:'Hi',timestamp:Date.now()}] }, { apiKey: process.env.OPENAI_API_KEY });
+for await (const e of s) { if (e.type === 'text_delta') process.stdout.write(e.delta); }"
+```
+
+Prefer `bun -e` for quick validation during development.
 
 ## hyper_ui — CGI Widgets
 
@@ -239,3 +373,13 @@ Served at `/ui/{name}/*`. Built-in: `editor` (CodeMirror at `/w/editor/`).
 3. Register in `chat_ctx.ts` tools array
 4. Add to system prompt in `agent_buildSystemPrompt.ts`
 5. Run tests, typecheck, restart server
+
+## Adding a hyper_ui Widget
+
+1. Create `hyper_ui_<name>.ts` (or `.py`, `.sh`) in workspace
+2. Script reads `REQUEST_METHOD`, `PATH_INFO`, `QUERY_STRING` from env vars
+3. POST body comes via stdin
+4. Write HTML to stdout — htmx attributes work for interactivity
+5. Use `hx-target="#hyper-ui-<name>"` for self-updating
+6. Use `hx-post="/session/:id/dispatch"` to send message back to agent
+7. Agent shows widget via `tool_hyper_ui` with `action=show`
