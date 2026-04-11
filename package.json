@@ -4,8 +4,10 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "bun test ./*.test.ts ./*.test.tsx",
-    "typecheck": "bun tsc --noEmit"
+    "test": "bun test --preload ./test_preload.ts ./*.test.ts ./*.test.tsx",
+    "typecheck": "bun tsc --noEmit",
+    "lint": "bun lint.ts",
+    "quality": "bun run lint && bun run typecheck && bun run test"
   },
   "devDependencies": {
     "@types/bun": "latest"

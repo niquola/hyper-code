@@ -235,29 +235,36 @@ Agent calls `subagent({ task: "..." })` → forks session (parent link, no data 
 - Sidebar shows tree with `↳` indent
 - Blocking: parent waits for report
 
-## Testing
+## Quality Checks
 
+**Run after every completed task:**
 ```sh
-# run ALL project tests (root only, not docs/)
-bun test --preload ./test_preload.ts $(ls *.test.ts *.test.tsx)
-
-# run specific test file
-bun test --preload ./test_preload.ts chat_db.test.ts
-
-# show only failures (filter out passing tests)
-bun test --preload ./test_preload.ts $(ls *.test.ts *.test.tsx) 2>&1 | grep -E '(✗|fail|FAIL|error:|Ran )'
-
-# typecheck
-bun run typecheck     # tsc --noEmit
+bun run quality       # lint + typecheck + tests — must all pass
 ```
 
-**IMPORTANT**: always use `--preload ./test_preload.ts` and explicit file list. Never `bun test` bare — it recurses into `docs/` and `node_modules/`.
+Individual commands:
+```sh
+bun run lint          # bun lint.ts — project conventions
+bun run typecheck     # tsc --noEmit
+bun run test          # all tests (preload + root only)
+bun test --preload ./test_preload.ts chat_db.test.ts   # single file
+```
 
+### Lint rules (`bun lint.ts`)
+- **no-class** — no `class X` declarations
+- **no-this** — no `this` keyword
+- **no-process-env** — `process.env` only in startup files
+- **no-process-cwd** — `process.cwd()` only in startup
+- **no-module-let** — no module-level `let`/`var` (singletons)
+- **tool-sig** — all tool execute: `(ctx: Ctx, session: Session, ...)`
+- **route-sig** — all handlers: `(ctx: Ctx, req: Request, ...)`
+
+### Testing notes
 - `test_preload.ts` sets `HYPER_SESSION_DIR=/tmp/hyper-test-sessions`
 - Tests use `:memory:` DB or temp directory — never touch production `.hyper/`
 - Views tested as functions: `(data) → string` → assert HTML
 - Tools tested by calling `execute(ctx, session, params)` directly
-- Known pre-existing failures: `agent.test.ts` (needs LM Studio running), `pi-mono/` (old submodule)
+- `agent.test.ts` integration tests: `describe.skip` (flaky, depends on LM Studio model)
 
 ## Server
 
