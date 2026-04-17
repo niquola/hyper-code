@@ -7,21 +7,8 @@ import { chat_db } from "./chat_db.ts";
 import { chat_resolveSessionModel } from "./chat_resolveSessionModel.ts";
 import { ai_models_loadIndex } from "./ai_models_loadIndex.ts";
 import { chat_loadMessages } from "./chat_loadMessages.ts";
-import { tool_read } from "./tool_read.ts";
-import { tool_write } from "./tool_write.ts";
-import { tool_edit } from "./tool_edit.ts";
-import { tool_bash } from "./tool_bash.ts";
-import { tool_grep } from "./tool_grep.ts";
-import { tool_find } from "./tool_find.ts";
-import { tool_ls } from "./tool_ls.ts";
-import { tool_hyper_ui } from "./tool_hyper_ui.ts";
-import { tool_html_message } from "./tool_html_message.ts";
-import { tool_html_dialog } from "./tool_html_dialog.ts";
-import { tool_subagent } from "./tool_subagent.ts";
-import { tool_subagent_report } from "./tool_subagent_report.ts";
-import { tool_websearch } from "./tool_websearch.ts";
-import { tool_memory_search } from "./tool_memory_search.ts";
-import { tool_ts } from "./tool_ts.ts";
+import { loader_loadAll } from "./loader.ts";
+import build_tools from "./tool/build_tools.ts";
 
 let ctx: Ctx | null = null;
 
@@ -37,22 +24,12 @@ export async function chat_getCtx(): Promise<Ctx> {
     const home = process.env.HOME || process.env.USERPROFILE || "/tmp";
     const env = { ...process.env } as Record<string, string | undefined>;
 
-    const tools = [
-      tool_read(cwd), tool_write(cwd), tool_edit(cwd), tool_bash(cwd),
-      tool_grep(cwd), tool_find(cwd), tool_ls(cwd), tool_hyper_ui(cwd),
-      tool_html_message(),
-      tool_html_dialog(),
-      tool_subagent(loadSession),
-      tool_subagent_report((childFilename) => {
-        for (const [, sess] of sessions) {
-          if (sess.pendingDialogs.has(`subagent:${childFilename}`)) return sess;
-        }
-        return null;
-      }),
-      tool_websearch(env.TAVILY_API_KEY),
-      tool_memory_search(),
-      tool_ts(cwd),
-    ];
+    // Load all namespaces (tool/, etc.) into a temporary ctx
+    const tempCtx: any = { cwd, home, env, db: chat_db() };
+    await loader_loadAll(tempCtx, cwd);
+
+    // Build AgentTool[] from loaded tool/ namespace
+    const tools = build_tools(tempCtx);
 
     const { chat_loadSettings, chat_resolveModel, chat_resolveApiKey } = await import("./chat_settings.ts");
     const settings = await chat_loadSettings();
@@ -64,7 +41,7 @@ export async function chat_getCtx(): Promise<Ctx> {
       model, apiKey,
       systemPrompt: agent_buildSystemPrompt(cwd, tools),
       tools,
-      db: chat_db(),
+      db: tempCtx.db,
       cwd, home, env,
       modelIndex,
     });
