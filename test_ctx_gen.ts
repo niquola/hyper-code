@@ -9,11 +9,56 @@ import _tool_ts from "./tool/ts";
 import _tool_memory_search from "./tool/memory_search";
 import _tool_ls from "./tool/ls";
 import _tool_grep from "./tool/grep";
+import _tool_build_tools from "./tool/build_tools";
 import _tool_edit from "./tool/edit";
 import _tool_bash from "./tool/bash";
 import _tool_hyper_ui from "./tool/hyper_ui";
 import _tool_write from "./tool/write";
 import _tool_subagent from "./tool/subagent";
+import _ai_getModel from "./ai/getModel";
+import _ai_convertMessages from "./ai/convertMessages";
+import _ai_streamAnthropic from "./ai/streamAnthropic";
+import _ai_getEnvApiKey from "./ai/getEnvApiKey";
+import _ai_models_readProvider from "./ai/models_readProvider";
+import _ai_renderMarkdown from "./ai/renderMarkdown";
+import _ai_calculateCost from "./ai/calculateCost";
+import _ai_EventStream from "./ai/EventStream";
+import _ai_transformMessages from "./ai/transformMessages";
+import _ai_getModels from "./ai/getModels";
+import _ai_stream from "./ai/stream";
+import _ai_models_loadProvider from "./ai/models_loadProvider";
+import _ai_streamResponses from "./ai/streamResponses";
+import _ai_parseStreamingJson from "./ai/parseStreamingJson";
+import _ai_shortHash from "./ai/shortHash";
+import _ai_getProviders from "./ai/getProviders";
+import _ai_models_getAll from "./ai/models_getAll";
+import _ai_streamCodex from "./ai/streamCodex";
+import _ai_convertTools from "./ai/convertTools";
+import _ai_sanitizeSurrogates from "./ai/sanitizeSurrogates";
+import _ai_models_loadIndex from "./ai/models_loadIndex";
+import _agent_reset from "./agent/reset";
+import _agent_abort from "./agent/abort";
+import _agent_createCtx from "./agent/createCtx";
+import _agent_executeTools from "./agent/executeTools";
+import _agent_buildSystemPrompt from "./agent/buildSystemPrompt";
+import _agent_run from "./agent/run";
+import _chat_view_stats from "./chat/view_stats";
+import _chat_view_error from "./chat/view_error";
+import _chat_toolCode from "./chat/toolCode";
+import _chat_ctx from "./chat/ctx";
+import _chat_script from "./chat/script";
+import _chat_view_assistantMessage from "./chat/view_assistantMessage";
+import _chat_loadMessages from "./chat/loadMessages";
+import _chat_settings from "./chat/settings";
+import _chat_view_page from "./chat/view_page";
+import _chat_sse from "./chat/sse";
+import _chat_view_message from "./chat/view_message";
+import _chat_apiKeys from "./chat/apiKeys";
+import _chat_view_toolCall from "./chat/view_toolCall";
+import _chat_view_userMessage from "./chat/view_userMessage";
+import _chat_view_spinner from "./chat/view_spinner";
+import _chat_db from "./chat/db";
+import _chat_resolveSessionModel from "./chat/resolveSessionModel";
 
 export default function test_ctx(overrides?: Partial<any>) {
   return {
@@ -22,6 +67,56 @@ export default function test_ctx(overrides?: Partial<any>) {
     env: process.env,
     home: process.env.HOME || "/tmp",
     cwd: process.cwd(),
+    agent: {
+      reset: _agent_reset,
+      abort: _agent_abort,
+      createCtx: _agent_createCtx,
+      executeTools: _agent_executeTools,
+      buildSystemPrompt: _agent_buildSystemPrompt,
+      run: _agent_run,
+    },
+    ai: {
+      getModel: _ai_getModel,
+      convertMessages: _ai_convertMessages,
+      streamAnthropic: _ai_streamAnthropic,
+      getEnvApiKey: _ai_getEnvApiKey,
+      models_readProvider: _ai_models_readProvider,
+      renderMarkdown: _ai_renderMarkdown,
+      calculateCost: _ai_calculateCost,
+      EventStream: _ai_EventStream,
+      transformMessages: _ai_transformMessages,
+      getModels: _ai_getModels,
+      stream: _ai_stream,
+      models_loadProvider: _ai_models_loadProvider,
+      streamResponses: _ai_streamResponses,
+      parseStreamingJson: _ai_parseStreamingJson,
+      shortHash: _ai_shortHash,
+      getProviders: _ai_getProviders,
+      models_getAll: _ai_models_getAll,
+      streamCodex: _ai_streamCodex,
+      convertTools: _ai_convertTools,
+      sanitizeSurrogates: _ai_sanitizeSurrogates,
+      models_loadIndex: _ai_models_loadIndex,
+    },
+    chat: {
+      view_stats: _chat_view_stats,
+      view_error: _chat_view_error,
+      toolCode: _chat_toolCode,
+      ctx: _chat_ctx,
+      script: _chat_script,
+      view_assistantMessage: _chat_view_assistantMessage,
+      loadMessages: _chat_loadMessages,
+      settings: _chat_settings,
+      view_page: _chat_view_page,
+      sse: _chat_sse,
+      view_message: _chat_view_message,
+      apiKeys: _chat_apiKeys,
+      view_toolCall: _chat_view_toolCall,
+      view_userMessage: _chat_view_userMessage,
+      view_spinner: _chat_view_spinner,
+      db: _chat_db,
+      resolveSessionModel: _chat_resolveSessionModel,
+    },
     tool: {
       read: _tool_read,
       subagent_report: _tool_subagent_report,
@@ -33,6 +128,7 @@ export default function test_ctx(overrides?: Partial<any>) {
       memory_search: _tool_memory_search,
       ls: _tool_ls,
       grep: _tool_grep,
+      build_tools: _tool_build_tools,
       edit: _tool_edit,
       bash: _tool_bash,
       hyper_ui: _tool_hyper_ui,
