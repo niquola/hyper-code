@@ -1,2 +1,4 @@
-import { auth_codexLogin } from "./codex.ts";
-export default auth_codexLogin;
+export default async function auth_codexLogin(...args: any[]) {
+  const { auth_codexLogin } = await import("./codex.ts");
+  return auth_codexLogin(...args);
+}

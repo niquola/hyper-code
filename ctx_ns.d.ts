@@ -35,6 +35,11 @@ export default interface CtxNs {
     codexLogin: typeof import("./auth/codexLogin").default;
     codexRefresh: typeof import("./auth/codexRefresh").default;
   };
+  cdp: {
+    createCtx: typeof import("./cdp/createCtx").default;
+    nextId: typeof import("./cdp/nextId").default;
+    start: typeof import("./cdp/start").default;
+  };
   chat: {
     db: typeof import("./chat/db").default;
     detectToolLang: typeof import("./chat/detectToolLang").default;

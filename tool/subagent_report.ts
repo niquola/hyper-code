@@ -12,7 +12,7 @@ export default async function subagent_report(ctx: Ctx, session: any, params: { 
   // Find parent session that has a pending dialog for this child
   // This requires access to all sessions — use ctx.state.sessions or dynamic import
   // via ctx
-  const parentSession = ctx.chat.findParentSession(session.session_id);
+  const parentSession = ctx.chat.findParentSession(ctx, session.session_id);
   if (parentSession) {
     const resolve = parentSession.pendingDialogs.get(`subagent:${session.session_id}`);
     if (resolve) resolve(params.result);

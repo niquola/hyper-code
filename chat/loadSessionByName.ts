@@ -1,8 +1,7 @@
 import type { Session } from "./type_Session.ts";
-import { sessions, messageCache, getCtx } from "./state.ts";
 
-export default async function chat_loadSessionByName(filename: string): Promise<Session> {
-  const ctx = getCtx();
+export default async function chat_loadSessionByName(ctx: any, filename: string): Promise<Session> {
+  const { sessions, messageCache } = ctx.state.chat;
   const cached = sessions.get(filename);
   if (cached) return cached;
 

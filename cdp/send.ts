@@ -1,5 +1,4 @@
 import type { CdpCtx, CdpSession } from "./type_Ctx.ts";
-import { cdp_nextId } from "./nextId.ts";
 
 async function cdp_getSession(ctx: CdpCtx, name: string): Promise<CdpSession> {
   const existing = ctx.sessions.get(name);

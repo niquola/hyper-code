@@ -21,7 +21,7 @@ export default async function subagent(ctx: Ctx, session: any, params: { task: s
 
   // loadSession must be available on ctx or passed in — for now use dynamic import
   // via ctx
-  const childSession = await ctx.chat.loadSessionByName(childFilename);
+  const childSession = await ctx.chat.loadSessionByName(ctx, childFilename);
   const taskWithInstructions = `[SUB-AGENT TASK] ${params.task}\n\nWhen done, call subagent_report({ result: "..." }).`;
 
   const msgsBefore = childSession.messages.length;

@@ -16,7 +16,7 @@ export default async function (ctx: Ctx, req: Request) {
         settings.apiKey = ""; // Keys stored per-provider now
         await ctx.chat.saveSettings(settings);
         await ctx.chat.saveApiKey(ctx.home, "openai-codex", creds.access);
-        ctx.chat.resetSessions();
+        ctx.chat.resetSessions(ctx);
         
         console.log("[codex] Login successful, account:", creds.accountId);
       })

@@ -28,7 +28,7 @@ async function waitForChrome(chromePort: number, maxWait = 10_000): Promise<void
   throw new Error("Chrome did not start");
 }
 
-export async function cdp_start(ctx: CdpCtx): Promise<{ chrome: Bun.Subprocess }> {
+export default async function cdp_start(ctx: CdpCtx): Promise<{ chrome: Bun.Subprocess }> {
   if (!existsSync(ctx.profileDir)) mkdirSync(ctx.profileDir, { recursive: true });
 
   const chrome = Bun.spawn([

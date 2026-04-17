@@ -53,7 +53,7 @@ export default async function start(appCtx: Ctx) {
       if (actionMatch) {
         const sessionFilename = decodeURIComponent(actionMatch[1]!);
         const action = actionMatch[2]!;
-        const session = await appCtx.chat.loadSessionByName(sessionFilename);
+        const session = await appCtx.chat.loadSessionByName(appCtx, sessionFilename);
 
         // GET /session/:id/stream — SSE reconnect
         if (action === "stream" && req.method === "GET") {
@@ -176,7 +176,7 @@ export default async function start(appCtx: Ctx) {
       if (sessionMatch && req.method === "GET") {
         const filename = decodeURIComponent(sessionMatch[1]!);
         const ctx = appCtx;
-        const session = await appCtx.chat.loadSessionByName(filename);
+        const session = await appCtx.chat.loadSessionByName(appCtx, filename);
         appCtx.db.markRead(session.session_id, session.messages.length);
         const db = appCtx.db;
         const visibleMessages = db.getMessages(filename).map((r) => {
