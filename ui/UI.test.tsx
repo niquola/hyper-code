@@ -1,9 +1,9 @@
 import { test, expect, describe } from "bun:test";
-import { UI_Button } from "./UI_Button.tsx";
-import { UI_Input } from "./UI_Input.tsx";
-import { UI_Textarea } from "./UI_Textarea.tsx";
+import { UI_Button } from "./button.tsx";
+import { UI_Input } from "./input.tsx";
+import { UI_Textarea } from "./textarea.tsx";
 import { UI_Select } from "./UI_Select.tsx";
-import { UI_Alert } from "./UI_Alert.tsx";
+import { UI_Alert } from "./alert.tsx";
 import { UI_TopBar } from "./UI_TopBar.tsx";
 import { queryExists, queryTexts, queryAttrs } from "./test_html.ts";
 

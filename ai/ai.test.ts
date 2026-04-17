@@ -7,7 +7,7 @@ import { ai_transformMessages } from "./transformMessages.ts";
 import { ai_convertMessages } from "./convertMessages.ts";
 import { ai_convertTools } from "./convertTools.ts";
 import { ai_stream } from "./stream.ts";
-import { ai_models_getAll } from "../ai_models.ts";
+import { ai_models_getAll } from "./models_getAll.ts";
 import { ai_models_loadIndex } from "./models_loadIndex.ts";
 import { agent_createCtx } from "../agent/createCtx.ts";
 import { ai_stream_createAssistantMessageEventStream } from "./EventStream.ts";

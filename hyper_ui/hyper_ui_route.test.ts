@@ -1,5 +1,5 @@
 import { test, expect, describe, beforeAll, afterAll } from "bun:test";
-import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
+import { hyper_ui_handleRequest } from "./route.ts";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
