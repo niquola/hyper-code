@@ -1,7 +1,7 @@
 import type { Ctx } from "../agent/type_Ctx.ts";
 import layout_view_page from "./layout_view_page.tsx";
-import { chat_getApiKey } from "../chat/apiKeys.ts";
-import { chat_loadSettings } from "../chat/settings.ts";
+import chat_getApiKey from "../chat/getApiKey.ts";
+import chat_loadSettings from "../chat/loadSettings.ts";
 import ai_getProviders from "../ai/getProviders.ts";
 import ai_getModels from "../ai/getModels.ts";
 import { escapeHtml } from "../jsx.ts";

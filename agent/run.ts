@@ -4,7 +4,7 @@ import type { Session } from "../chat/type_Session.ts";
 import type { AgentEvent } from "../agent/type_Event.ts";
 import ai_stream from "../ai/stream.ts";
 import agent_executeTools from "./executeTools.ts";
-import { chat_getApiKey } from "../chat/apiKeys.ts";
+import chat_getApiKey from "../chat/getApiKey.ts";
 
 export default async function agent_run(
   ctx: Ctx,

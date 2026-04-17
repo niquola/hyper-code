@@ -24,7 +24,9 @@ console.log(`[loader] ${loaded.length} modules loaded`);
 const tools = build_tools(tempCtx);
 
 // Resolve default model + api key
-const { chat_loadSettings, chat_resolveModel, chat_resolveApiKey } = await import("./chat/settings.ts");
+const chat_loadSettings = (await import("./chat/loadSettings.ts")).default;
+const chat_resolveModel = (await import("./chat/resolveModel.ts")).default;
+const chat_resolveApiKey = (await import("./chat/resolveApiKey.ts")).default;
 const settings = await chat_loadSettings();
 const model = await chat_resolveModel(projectDir, settings);
 const apiKey = chat_resolveApiKey(home, settings);

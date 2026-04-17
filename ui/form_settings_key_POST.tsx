@@ -1,5 +1,5 @@
 import type { Ctx } from "../agent/type_Ctx.ts";
-import { chat_saveApiKey } from "../chat/apiKeys.ts";
+import chat_saveApiKey from "../chat/saveApiKey.ts";
 
 export default async function (ctx: Ctx, req: Request) {
   const form = await req.formData();
