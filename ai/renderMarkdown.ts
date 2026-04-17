@@ -1,4 +1,3 @@
-import { getHighlighter } from "./highlightCode.ts";
 
 const LANG_ALIASES: Record<string, string> = {
   js: "javascript", ts: "typescript", sh: "bash", zsh: "bash",
@@ -13,7 +12,7 @@ function normalizeLang(lang: string): string {
 export default async function ai_renderMarkdown(text: string): Promise<string> {
   if (!text.trim()) return "";
   const rawHtml: string = (Bun as any).markdown.html(text);
-  const hl = await getHighlighter();
+  const hl = await (await import("./highlightCode.ts")).getHighlighter();
   const loadedLangs = new Set(hl.getLoadedLanguages());
 
   return rawHtml.replace(

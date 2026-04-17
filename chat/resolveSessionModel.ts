@@ -1,22 +1,19 @@
 import type { Model } from "../ai/type_Model.ts";
 import type chat_db from "./db.ts";
-import chat_loadSettings from "./loadSettings.ts";
-import chat_resolveModel from "./resolveModel.ts";
-import chat_getApiKey from "./getApiKey.ts";
 
-export default async function chat_resolveSessionModel(home: string, cwd: string, db: ReturnType<typeof chat_db>, sessionId: string): Promise<{ model: Model; apiKey: string }> {
+export default async function chat_resolveSessionModel(ctx: any, home: string, cwd: string, db: ReturnType<typeof chat_db>, sessionId: string): Promise<{ model: Model; apiKey: string }> {
   const session = db.getSession(sessionId);
   const modelStr = session?.model || null;
-  const settings = await chat_loadSettings();
+  const settings = await ctx.chat.loadSettings();
 
   if (modelStr && modelStr.includes("/")) {
     const [provider, modelId] = modelStr.split("/");
-    const model = await chat_resolveModel(cwd, { ...settings, provider: provider!, modelId: modelId! });
-    const apiKey = await chat_getApiKey(home, provider!);
+    const model = await ctx.chat.resolveModel(cwd, { ...settings, provider: provider!, modelId: modelId! });
+    const apiKey = await ctx.chat.getApiKey(home, provider!);
     return { model, apiKey };
   }
 
-  const model = await chat_resolveModel(cwd, settings);
-  const apiKey = await chat_getApiKey(home, settings.provider);
+  const model = await ctx.chat.resolveModel(cwd, settings);
+  const apiKey = await ctx.chat.getApiKey(home, settings.provider);
   return { model, apiKey };
 }

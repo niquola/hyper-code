@@ -7,16 +7,14 @@ import type {
 } from "openai/resources/chat/completions.js";
 import type { Context, Message, TextContent, ThinkingContent, ToolCall, ToolResultMessage } from "../ai/type_Message.ts";
 import type { Model } from "../ai/type_Model.ts";
-import ai_sanitizeSurrogates from "./sanitizeSurrogates.ts";
-import ai_transformMessages from "./transformMessages.ts";
 
-export default function ai_convertMessages(model: Model, context: Context): ChatCompletionMessageParam[] {
+export default function ai_convertMessages(ctx: any, model: Model, context: Context): ChatCompletionMessageParam[] {
   const params: ChatCompletionMessageParam[] = [];
-  const transformed = ai_transformMessages(context.messages);
+  const transformed = ctx.ai.transformMessages(context.messages);
 
   if (context.systemPrompt) {
     const role = model.reasoning ? "developer" : "system";
-    params.push({ role: role as any, content: ai_sanitizeSurrogates(context.systemPrompt) });
+    params.push({ role: role as any, content: ctx.ai.sanitizeSurrogates(context.systemPrompt) });
   }
 
   for (let i = 0; i < transformed.length; i++) {
@@ -24,11 +22,11 @@ export default function ai_convertMessages(model: Model, context: Context): Chat
 
     if (msg.role === "user") {
       if (typeof msg.content === "string") {
-        params.push({ role: "user", content: ai_sanitizeSurrogates(msg.content) });
+        params.push({ role: "user", content: ctx.ai.sanitizeSurrogates(msg.content) });
       } else {
         const content: ChatCompletionContentPart[] = msg.content.map((item) => {
           if (item.type === "text") {
-            return { type: "text" as const, text: ai_sanitizeSurrogates(item.text) };
+            return { type: "text" as const, text: ctx.ai.sanitizeSurrogates(item.text) };
           }
           return {
             type: "image_url" as const,
@@ -50,7 +48,7 @@ export default function ai_convertMessages(model: Model, context: Context): Chat
       const textBlocks = msg.content.filter((b) => b.type === "text") as TextContent[];
       const nonEmpty = textBlocks.filter((b) => b.text && b.text.trim().length > 0);
       if (nonEmpty.length > 0) {
-        assistantMsg.content = nonEmpty.map((b) => ai_sanitizeSurrogates(b.text)).join("");
+        assistantMsg.content = nonEmpty.map((b) => ctx.ai.sanitizeSurrogates(b.text)).join("");
       }
 
       const toolCalls = msg.content.filter((b) => b.type === "toolCall") as ToolCall[];
@@ -80,7 +78,7 @@ export default function ai_convertMessages(model: Model, context: Context): Chat
 
         const toolResultMsg: ChatCompletionToolMessageParam = {
           role: "tool",
-          content: ai_sanitizeSurrogates(textResult || "(empty)"),
+          content: ctx.ai.sanitizeSurrogates(textResult || "(empty)"),
           tool_call_id: toolMsg.toolCallId,
         };
         params.push(toolResultMsg);

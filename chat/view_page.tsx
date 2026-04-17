@@ -1,8 +1,6 @@
 import type { Message, ToolCall, AssistantMessage, ToolResultMessage, TextContent, ThinkingContent, HtmlContent } from "../ai/type_Message.ts";
 import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall } from "./view_message.tsx";
 import { escapeHtml } from "../jsx.ts";
-import detectToolLang from "./detectToolLang.ts";
-import getToolCode from "./getToolCode.ts";
 import { CHAT_SCRIPT } from "./script.ts";
 
 export default async function chat_view_page(ctx: any, messages: Message[], sessionFilename?: string, isStreaming?: boolean): Promise<string> {
@@ -43,9 +41,9 @@ export default async function chat_view_page(ctx: any, messages: Message[], sess
         const argsJson = JSON.stringify(tc.arguments);
 
         let highlightedHtml = htmlResult;
-        const lang = detectToolLang(tc.name, argsJson);
+        const lang = ctx.chat.detectToolLang(tc.name, argsJson);
         if (lang && textResult && !htmlResult) {
-          const code = getToolCode(tc.name, argsJson, textResult);
+          const code = ctx.chat.getToolCode(tc.name, argsJson, textResult);
           if (code) {
             const hl = await ctx.ai.highlightCode(code, lang);
             if (hl) highlightedHtml = hl;

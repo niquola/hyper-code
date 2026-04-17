@@ -3,15 +3,9 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { AssistantMessage, Context, StopReason, TextContent, ThinkingContent, ToolCall, Tool } from "../ai/type_Message.ts";
 import type { Model } from "../ai/type_Model.ts";
 import type { StreamOptions } from "../ai/type_StreamOptions.ts";
-import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./EventStream.ts";
-import ai_getEnvApiKey from "./getEnvApiKey.ts";
-import ai_calculateCost from "./calculateCost.ts";
-import ai_parseStreamingJson from "./parseStreamingJson.ts";
-import ai_sanitizeSurrogates from "./sanitizeSurrogates.ts";
-import ai_transformMessages from "./transformMessages.ts";
 
-export default function ai_streamAnthropic(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
-  const stream = ai_stream_createAssistantMessageEventStream();
+export default function ai_streamAnthropic(ctx: any, model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
+  const stream = ctx.ai.EventStream();
 
   (async () => {
     const output: AssistantMessage = {
@@ -28,7 +22,7 @@ export default function ai_streamAnthropic(model: Model, context: Context, optio
     };
 
     try {
-      const apiKey = options?.apiKey || ai_getEnvApiKey(options?.home || "/tmp", model.provider);
+      const apiKey = options?.apiKey || ctx.ai.getEnvApiKey(options?.home || "/tmp", model.provider);
       if (!apiKey) throw new Error(`No API key for provider: ${model.provider}`);
 
       const client = new Anthropic({
@@ -52,7 +46,7 @@ export default function ai_streamAnthropic(model: Model, context: Context, optio
       };
 
       if (context.systemPrompt) {
-        params.system = [{ type: "text", text: ai_sanitizeSurrogates(context.systemPrompt), cache_control: { type: "ephemeral" } }];
+        params.system = [{ type: "text", text: ctx.ai.sanitizeSurrogates(context.systemPrompt), cache_control: { type: "ephemeral" } }];
       }
 
       if (context.tools && context.tools.length > 0) {
@@ -88,7 +82,7 @@ export default function ai_streamAnthropic(model: Model, context: Context, optio
             output.usage.cacheRead = u.cache_read_input_tokens || 0;
             output.usage.cacheWrite = u.cache_creation_input_tokens || 0;
             output.usage.totalTokens = output.usage.input + output.usage.output + output.usage.cacheRead + output.usage.cacheWrite;
-            ai_calculateCost(model, output.usage);
+            ctx.ai.calculateCost(model, output.usage);
           }
           output.responseId = (event as any).message?.id;
         } else if (event.type === "content_block_start") {
@@ -124,7 +118,7 @@ export default function ai_streamAnthropic(model: Model, context: Context, optio
             stream.push({ type: "thinking_delta", contentIndex: idx, delta: delta.thinking, partial: output });
           } else if (delta.type === "input_json_delta" && block.type === "toolCall") {
             block.partialJson += delta.partial_json;
-            block.arguments = ai_parseStreamingJson(block.partialJson);
+            block.arguments = ctx.ai.parseStreamingJson(block.partialJson);
             stream.push({ type: "toolcall_delta", contentIndex: idx, delta: delta.partial_json, partial: output });
           } else if (delta.type === "signature_delta" && block.type === "thinking") {
             block.thinkingSignature = (block.thinkingSignature || "") + delta.signature;
@@ -140,7 +134,7 @@ export default function ai_streamAnthropic(model: Model, context: Context, optio
           } else if (block.type === "thinking") {
             stream.push({ type: "thinking_end", contentIndex: idx, content: block.thinking, partial: output });
           } else if (block.type === "toolCall") {
-            block.arguments = ai_parseStreamingJson(block.partialJson);
+            block.arguments = ctx.ai.parseStreamingJson(block.partialJson);
             delete (block as any).partialJson;
             stream.push({ type: "toolcall_end", contentIndex: idx, toolCall: block, partial: output });
           }
@@ -151,7 +145,7 @@ export default function ai_streamAnthropic(model: Model, context: Context, optio
           if (u) {
             if (u.output_tokens != null) output.usage.output = u.output_tokens;
             output.usage.totalTokens = output.usage.input + output.usage.output + output.usage.cacheRead + output.usage.cacheWrite;
-            ai_calculateCost(model, output.usage);
+            ctx.ai.calculateCost(model, output.usage);
           }
         }
       }
@@ -178,15 +172,15 @@ export default function ai_streamAnthropic(model: Model, context: Context, optio
 
 function convertMessages(context: Context): any[] {
   const messages: any[] = [];
-  const transformed = ai_transformMessages(context.messages);
+  const transformed = ctx.ai.transformMessages(context.messages);
 
   for (const msg of transformed) {
     if (msg.role === "user") {
       if (typeof msg.content === "string") {
-        messages.push({ role: "user", content: ai_sanitizeSurrogates(msg.content) });
+        messages.push({ role: "user", content: ctx.ai.sanitizeSurrogates(msg.content) });
       } else {
         const blocks = msg.content.map((item) => {
-          if (item.type === "text") return { type: "text", text: ai_sanitizeSurrogates(item.text) };
+          if (item.type === "text") return { type: "text", text: ctx.ai.sanitizeSurrogates(item.text) };
           return { type: "image", source: { type: "base64", media_type: item.mimeType, data: item.data } };
         });
         messages.push({ role: "user", content: blocks });
@@ -195,12 +189,12 @@ function convertMessages(context: Context): any[] {
       const blocks: any[] = [];
       for (const block of msg.content) {
         if (block.type === "text") {
-          blocks.push({ type: "text", text: ai_sanitizeSurrogates(block.text) });
+          blocks.push({ type: "text", text: ctx.ai.sanitizeSurrogates(block.text) });
         } else if (block.type === "thinking") {
           if (block.thinkingSignature) {
-            blocks.push({ type: "thinking", thinking: ai_sanitizeSurrogates(block.thinking), signature: block.thinkingSignature });
+            blocks.push({ type: "thinking", thinking: ctx.ai.sanitizeSurrogates(block.thinking), signature: block.thinkingSignature });
           } else {
-            blocks.push({ type: "text", text: ai_sanitizeSurrogates(block.thinking) });
+            blocks.push({ type: "text", text: ctx.ai.sanitizeSurrogates(block.thinking) });
           }
         } else if (block.type === "toolCall") {
           blocks.push({ type: "tool_use", id: block.id, name: block.name, input: block.arguments ?? {} });
@@ -209,7 +203,7 @@ function convertMessages(context: Context): any[] {
       if (blocks.length > 0) messages.push({ role: "assistant", content: blocks });
     } else if (msg.role === "toolResult") {
       const content = msg.content.map((c) => {
-        if (c.type === "text") return { type: "text", text: ai_sanitizeSurrogates(c.text) };
+        if (c.type === "text") return { type: "text", text: ctx.ai.sanitizeSurrogates(c.text) };
         if (c.type === "image") return { type: "image", source: { type: "base64", media_type: c.mimeType, data: c.data } };
         return { type: "text", text: "[html widget]" };
       });

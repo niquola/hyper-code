@@ -2,7 +2,6 @@ import type { AssistantMessage, ToolCall, Tool } from "../ai/type_Message.ts";
 import type { Ctx } from "../agent/type_Ctx.ts";
 import type { Session } from "../chat/type_Session.ts";
 import type { AgentEvent } from "../agent/type_Event.ts";
-import agent_executeTools from "./executeTools.ts";
 
 export default async function agent_run(
   ctx: Ctx,
@@ -45,7 +44,7 @@ export default async function agent_run(
       // Resolve API key fresh each turn (picks up re-login tokens)
       const freshApiKey = await ctx.chat.getApiKey(ctx.home, session.model.provider) || session.apiKey;
 
-      const stream = ctx.ai.stream(
+      const stream = ctx.ai.stream(ctx, 
         session.model,
         {
           systemPrompt: session.systemPrompt,
@@ -94,7 +93,7 @@ export default async function agent_run(
       if (toolCalls.length === 0) break;
 
       // Execute tools and add results to messages
-      const toolResults = await agent_executeTools(ctx, session, toolCalls, onEvent, session.abortController?.signal);
+      const toolResults = await ctx.agent.executeTools(ctx, session, toolCalls, onEvent, session.abortController?.signal);
       session.messages.push(...toolResults);
 
       // Loop back for next LLM turn
@@ -127,7 +126,7 @@ export default async function agent_run(
         onEvent({ type: "turn_start" });
         const llmTools: Tool[] = ctx.tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters }));
         const followUpApiKey = await ctx.chat.getApiKey(ctx.home, session.model.provider) || session.apiKey;
-        const stream = ctx.ai.stream(session.model, { systemPrompt: session.systemPrompt, messages: session.messages, tools: llmTools.length > 0 ? llmTools : undefined }, { apiKey: followUpApiKey, signal: session.abortController.signal });
+        const stream = ctx.ai.stream(ctx, session.model, { systemPrompt: session.systemPrompt, messages: session.messages, tools: llmTools.length > 0 ? llmTools : undefined }, { apiKey: followUpApiKey, signal: session.abortController.signal });
         let assistantMessage: AssistantMessage | null = null;
         for await (const event of stream) {
           if (event.type === "text_delta") onEvent({ type: "text_delta", delta: event.delta });
@@ -144,7 +143,7 @@ export default async function agent_run(
         onEvent({ type: "turn_end", message: assistantMessage });
         const toolCalls = assistantMessage.content.filter((b) => b.type === "toolCall") as ToolCall[];
         if (toolCalls.length === 0) break;
-        const toolResults = await agent_executeTools(ctx, session, toolCalls, onEvent, session.abortController?.signal);
+        const toolResults = await ctx.agent.executeTools(ctx, session, toolCalls, onEvent, session.abortController?.signal);
         session.messages.push(...toolResults);
       }
       onEvent({ type: "agent_end", messages: session.messages });

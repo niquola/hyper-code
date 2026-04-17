@@ -3,39 +3,30 @@ import type { ChatCompletionChunk } from "openai/resources/chat/completions.js";
 import type { AssistantMessage, Context, StopReason, TextContent, ThinkingContent, ToolCall } from "../ai/type_Message.ts";
 import type { Model } from "../ai/type_Model.ts";
 import type { StreamOptions } from "../ai/type_StreamOptions.ts";
-import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./EventStream.ts";
-import ai_convertMessages from "./convertMessages.ts";
-import ai_convertTools from "./convertTools.ts";
-import ai_getEnvApiKey from "./getEnvApiKey.ts";
-import ai_calculateCost from "./calculateCost.ts";
-import ai_parseStreamingJson from "./parseStreamingJson.ts";
-import ai_streamResponses from "./streamResponses.ts";
-import ai_streamCodex from "./streamCodex.ts";
-import ai_streamAnthropic from "./streamAnthropic.ts";
 
 // Providers that use OpenAI Responses API instead of Completions
 const RESPONSES_API_PROVIDERS = new Set(["openai", "azure-openai-responses", "github-copilot"]);
 // Providers that use Anthropic Messages API
 const ANTHROPIC_API_PROVIDERS = new Set(["anthropic", "kimi-coding"]);
 
-export default function ai_stream(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
+export default function ai_stream(ctx: any, model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
   // Route Codex to dedicated codex stream (raw fetch, custom headers)
   if (model.provider === "openai-codex") {
-    return ai_streamCodex(model, context, options);
+    return ctx.ai.streamCodex(ctx, model, context, options);
   }
 
   // Route Anthropic Messages API providers (Anthropic, Kimi)
   if (ANTHROPIC_API_PROVIDERS.has(model.provider)) {
-    return ai_streamAnthropic(model, context, options);
+    return ctx.ai.streamAnthropic(ctx, model, context, options);
   }
 
   // Route to Responses API for providers that use it
   if (RESPONSES_API_PROVIDERS.has(model.provider)) {
-    return ai_streamResponses(model, context, options);
+    return ctx.ai.streamResponses(ctx, model, context, options);
   }
 
   // Default: OpenAI Completions API (works with LM Studio, Groq, OpenRouter, etc.)
-  const stream = ai_stream_createAssistantMessageEventStream();
+  const stream = ctx.ai.EventStream();
 
   (async () => {
     const output: AssistantMessage = {
@@ -52,7 +43,7 @@ export default function ai_stream(model: Model, context: Context, options?: Stre
     };
 
     try {
-      const apiKey = options?.apiKey || ai_getEnvApiKey(options?.home || "/tmp", model.provider);
+      const apiKey = options?.apiKey || ctx.ai.getEnvApiKey(options?.home || "/tmp", model.provider);
       if (!apiKey) throw new Error(`No API key for provider: ${model.provider}. Set ${model.provider.toUpperCase().replace(/-/g, "_")}_API_KEY`);
 
       const client = new OpenAI({
@@ -62,7 +53,7 @@ export default function ai_stream(model: Model, context: Context, options?: Stre
         defaultHeaders: { ...model.headers, ...options?.headers },
       });
 
-      const messages = ai_convertMessages(model, context);
+      const messages = ctx.ai.convertMessages(model, context);
       const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
         model: model.id,
         messages,
@@ -82,7 +73,7 @@ export default function ai_stream(model: Model, context: Context, options?: Stre
       }
 
       if (context.tools && context.tools.length > 0) {
-        params.tools = ai_convertTools(context.tools);
+        params.tools = ctx.ai.convertTools(context.tools);
       }
 
       if (options?.reasoningEffort && model.reasoning) {
@@ -103,7 +94,7 @@ export default function ai_stream(model: Model, context: Context, options?: Stre
         } else if (block.type === "thinking") {
           stream.push({ type: "thinking_end", contentIndex: blockIndex(), content: block.thinking, partial: output });
         } else if (block.type === "toolCall") {
-          block.arguments = ai_parseStreamingJson(block.partialArgs);
+          block.arguments = ctx.ai.parseStreamingJson(block.partialArgs);
           delete block.partialArgs;
           stream.push({ type: "toolcall_end", contentIndex: blockIndex(), toolCall: block, partial: output });
         }
@@ -170,7 +161,7 @@ export default function ai_stream(model: Model, context: Context, options?: Stre
                 if (toolCall.function?.arguments) {
                   delta = toolCall.function.arguments;
                   currentBlock.partialArgs += toolCall.function.arguments;
-                  currentBlock.arguments = ai_parseStreamingJson(currentBlock.partialArgs);
+                  currentBlock.arguments = ctx.ai.parseStreamingJson(currentBlock.partialArgs);
                 }
                 stream.push({ type: "toolcall_delta", contentIndex: blockIndex(), delta, partial: output });
               }
@@ -214,7 +205,7 @@ function parseChunkUsage(
     totalTokens: input + outputTokens + cacheReadTokens,
     cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
   };
-  ai_calculateCost(model, usage);
+  ctx.ai.calculateCost(model, usage);
   return usage;
 }
 

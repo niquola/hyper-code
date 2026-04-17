@@ -2,8 +2,6 @@ import type { AgentEvent } from "../agent/type_Event.ts";
 import type { HtmlContent } from "../ai/type_Message.ts";
 import { escapeHtml } from "../jsx.ts";
 import { chat_view_toolCall } from "./view_toolCall.tsx";
-import detectToolLang from "./detectToolLang.ts";
-import getToolCode from "./getToolCode.ts";
 
 type ToolBlock = { id: string; name: string; args: string; result?: string; resultHtml?: string; isError?: boolean };
 
@@ -123,10 +121,10 @@ export default function chat_createSSEStream(
       }
 
       for (const t of allTools) {
-        const lang = detectToolLang(t.name, t.args);
+        const lang = ctx.chat.detectToolLang(t.name, t.args);
         let highlighted: string | undefined;
         if (lang) {
-          const code = getToolCode(t.name, t.args, t.result);
+          const code = ctx.chat.getToolCode(t.name, t.args, t.result);
           if (code) highlighted = await ctx.ai.highlightCode(code, lang);
         }
         html += renderToolBlock(t, highlighted, session.session_id);

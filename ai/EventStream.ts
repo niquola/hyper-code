@@ -83,7 +83,7 @@ export type AssistantMessageEventStream = EventStream<AssistantMessageEvent, Ass
   [Symbol.asyncIterator]: () => AsyncIterableIterator<AssistantMessageEvent>;
 };
 
-export function ai_stream_createAssistantMessageEventStream(): AssistantMessageEventStream {
+export default function ai_stream_createAssistantMessageEventStream(): AssistantMessageEventStream {
   const stream = ai_stream_create<AssistantMessageEvent, AssistantMessage>(
     (event) => event.type === "done" || event.type === "error",
     (event) => {

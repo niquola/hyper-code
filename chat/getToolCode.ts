@@ -1,7 +1,9 @@
-import stripLineNumbers from "./stripLineNumbers.ts";
+function stripLines(text: string): string {
+  return text.split("\n").map(l => { const m = l.match(/^\d+\t(.*)/); return m ? m[1]! : l; }).join("\n");
+}
 
 export default function getToolCode(toolName: string, argsJson: string, result?: string): string | null {
-  if (toolName === "read" && result) return stripLineNumbers(result);
+  if (toolName === "read" && result) return stripLines(result);
   if (toolName === "write") { try { return JSON.parse(argsJson).content; } catch { return null; } }
   if (toolName === "edit" && result) {
     const lines = result.split("\n");

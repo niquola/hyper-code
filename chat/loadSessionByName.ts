@@ -19,7 +19,7 @@ export default async function chat_loadSessionByName(filename: string): Promise<
     messageCache,
   );
 
-  const { model: sessionModel, apiKey: sessionApiKey } = await ctx.chat.resolveSessionModel(ctx.home, ctx.cwd, db, filename);
+  const { model: sessionModel, apiKey: sessionApiKey } = await ctx.chat.resolveSessionModel(ctx, ctx.home, ctx.cwd, db, filename);
   const systemPrompt = ctx.agent.buildSystemPrompt(ctx.cwd, ctx.tools, filename, sessionModel.name || sessionModel.id);
 
   const session: Session = {

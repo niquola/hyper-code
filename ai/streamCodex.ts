@@ -6,13 +6,6 @@ import type { ResponseStreamEvent } from "openai/resources/responses/responses.j
 import type { AssistantMessage, Context, StopReason, TextContent, ThinkingContent, ToolCall } from "../ai/type_Message.ts";
 import type { Model } from "../ai/type_Model.ts";
 import type { StreamOptions } from "../ai/type_StreamOptions.ts";
-import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./EventStream.ts";
-import ai_getEnvApiKey from "./getEnvApiKey.ts";
-import ai_calculateCost from "./calculateCost.ts";
-import ai_parseStreamingJson from "./parseStreamingJson.ts";
-import ai_sanitizeSurrogates from "./sanitizeSurrogates.ts";
-import ai_transformMessages from "./transformMessages.ts";
-import ai_shortHash from "./shortHash.ts";
 import type { ResponseInput, ResponseInputContent } from "openai/resources/responses/responses.js";
 
 const DEFAULT_CODEX_BASE_URL = "https://chatgpt.com/backend-api";
@@ -99,8 +92,8 @@ function isRetryableError(status: number, text: string): boolean {
 
 // --- Main stream function ---
 
-export default function ai_streamCodex(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
-  const stream = ai_stream_createAssistantMessageEventStream();
+export default function ai_streamCodex(ctx: any, model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
+  const stream = ctx.ai.EventStream();
 
   (async () => {
     const output: AssistantMessage = {
@@ -117,7 +110,7 @@ export default function ai_streamCodex(model: Model, context: Context, options?:
     };
 
     try {
-      const apiKey = options?.apiKey || ai_getEnvApiKey(options?.home || "/tmp", model.provider);
+      const apiKey = options?.apiKey || ctx.ai.getEnvApiKey(options?.home || "/tmp", model.provider);
       if (!apiKey) throw new Error(`No API key for provider: ${model.provider}`);
 
       const accountId = extractAccountId(apiKey);
@@ -272,7 +265,7 @@ export default function ai_streamCodex(model: Model, context: Context, options?:
                 totalTokens: resp.usage.total_tokens || 0,
                 cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
               };
-              ai_calculateCost(model, output.usage);
+              ctx.ai.calculateCost(model, output.usage);
             }
             const status = typeof resp.status === "string" ? resp.status : "completed";
             output.stopReason = mapStopReason(status);
@@ -322,7 +315,7 @@ export default function ai_streamCodex(model: Model, context: Context, options?:
         } else if (type === "response.function_call_arguments.delta") {
           if (currentBlock?.type === "toolCall") {
             currentBlock.partialJson += event.delta;
-            currentBlock.arguments = ai_parseStreamingJson(currentBlock.partialJson);
+            currentBlock.arguments = ctx.ai.parseStreamingJson(currentBlock.partialJson);
             stream.push({ type: "toolcall_delta", contentIndex: blockIndex(), delta: event.delta, partial: output });
           }
         } else if (type === "response.output_item.done") {
@@ -338,8 +331,8 @@ export default function ai_streamCodex(model: Model, context: Context, options?:
             currentBlock = null;
           } else if (item.type === "function_call") {
             const args = currentBlock?.type === "toolCall" && currentBlock.partialJson
-              ? ai_parseStreamingJson(currentBlock.partialJson)
-              : ai_parseStreamingJson(item.arguments || "{}");
+              ? ctx.ai.parseStreamingJson(currentBlock.partialJson)
+              : ctx.ai.parseStreamingJson(item.arguments || "{}");
             const toolCall: ToolCall = {
               type: "toolCall", id: `${item.call_id}|${item.id}`,
               name: item.name, arguments: args,
@@ -369,15 +362,15 @@ export default function ai_streamCodex(model: Model, context: Context, options?:
 
 function convertMessages(model: Model, context: Context): ResponseInput {
   const messages: ResponseInput = [];
-  const transformed = ai_transformMessages(context.messages);
+  const transformed = ctx.ai.transformMessages(context.messages);
 
   for (const msg of transformed) {
     if (msg.role === "user") {
       if (typeof msg.content === "string") {
-        messages.push({ role: "user", content: [{ type: "input_text", text: ai_sanitizeSurrogates(msg.content) }] });
+        messages.push({ role: "user", content: [{ type: "input_text", text: ctx.ai.sanitizeSurrogates(msg.content) }] });
       } else {
         const content: ResponseInputContent[] = msg.content.map((item) => {
-          if (item.type === "text") return { type: "input_text" as const, text: ai_sanitizeSurrogates(item.text) };
+          if (item.type === "text") return { type: "input_text" as const, text: ctx.ai.sanitizeSurrogates(item.text) };
           return { type: "input_image" as const, detail: "auto" as const, image_url: `data:${item.mimeType};base64,${item.data}` };
         });
         const filtered = !model.input.includes("image") ? content.filter((c) => c.type !== "input_image") : content;
@@ -391,8 +384,8 @@ function convertMessages(model: Model, context: Context): ResponseInput {
         } else if (block.type === "text") {
           messages.push({
             type: "message", role: "assistant",
-            content: [{ type: "output_text", text: ai_sanitizeSurrogates(block.text), annotations: [] }],
-            status: "completed", id: `msg_${ai_shortHash(block.text)}`,
+            content: [{ type: "output_text", text: ctx.ai.sanitizeSurrogates(block.text), annotations: [] }],
+            status: "completed", id: `msg_${ctx.ai.shortHash(block.text)}`,
           } as any);
         } else if (block.type === "toolCall") {
           const [callId, itemId] = block.id.split("|");
@@ -405,7 +398,7 @@ function convertMessages(model: Model, context: Context): ResponseInput {
     } else if (msg.role === "toolResult") {
       const textResult = msg.content.filter((c) => c.type === "text").map((c) => (c as TextContent).text).join("\n");
       const [callId] = msg.toolCallId.split("|");
-      messages.push({ type: "function_call_output", call_id: callId!, output: ai_sanitizeSurrogates(textResult || "(empty)") } as any);
+      messages.push({ type: "function_call_output", call_id: callId!, output: ctx.ai.sanitizeSurrogates(textResult || "(empty)") } as any);
     }
   }
 

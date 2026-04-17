@@ -9,6 +9,7 @@ export default interface CtxNs {
     run: typeof import("./agent/run").default;
   };
   ai: {
+    EventStream: typeof import("./ai/EventStream").default;
     calculateCost: typeof import("./ai/calculateCost").default;
     convertMessages: typeof import("./ai/convertMessages").default;
     convertTools: typeof import("./ai/convertTools").default;
