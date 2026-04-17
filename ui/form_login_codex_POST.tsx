@@ -1,7 +1,7 @@
 import type { Ctx } from "../agent/type_Ctx.ts";
 import { auth_codexLogin } from "../auth/codex.ts";
 import { chat_loadSettings, chat_saveSettings } from "../chat/settings.ts";
-import { chat_resetCtx, chat_resetConfig } from "../chat/ctx.ts";
+import { chat_resetSessions } from "../chat/start.ts";
 import { chat_saveApiKey } from "../chat/apiKeys.ts";
 
 export default async function (ctx: Ctx, req: Request) {
@@ -20,8 +20,8 @@ export default async function (ctx: Ctx, req: Request) {
         settings.apiKey = ""; // Keys stored per-provider now
         await chat_saveSettings(settings);
         await chat_saveApiKey(ctx.home, "openai-codex", creds.access);
-        chat_resetCtx();
-        chat_resetConfig();
+        chat_resetSessions();
+        
         console.log("[codex] Login successful, account:", creds.accountId);
       })
       .catch((err) => console.error("[codex] Login failed:", err));

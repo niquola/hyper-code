@@ -21,7 +21,7 @@ export default async function subagent(ctx: Ctx, session: any, params: { task: s
   session.emitHtml?.(`<div class="text-xs text-blue-500 border border-blue-200 rounded px-3 py-2 bg-blue-50 mb-2">Sub-agent started: ${Bun.escapeHTML(params.task.slice(0, 80))}</div>`);
 
   // loadSession must be available on ctx or passed in — for now use dynamic import
-  const { chat_loadSessionByName } = await import("../chat_ctx.ts");
+  const { chat_loadSessionByName } = await import("../chat/start.ts");
   const childSession = await chat_loadSessionByName(childFilename);
   const taskWithInstructions = `[SUB-AGENT TASK] ${params.task}\n\nWhen done, call subagent_report({ result: "..." }).`;
 
