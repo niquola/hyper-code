@@ -8,7 +8,7 @@ import type { Model } from "../ai/type_Model.ts";
 import type { StreamOptions } from "../ai/type_StreamOptions.ts";
 import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./EventStream.ts";
 import { ai_getEnvApiKey } from "./getEnvApiKey.ts";
-import { auth_codexRefresh } from "../auth_codex.ts";
+import { auth_codexRefresh } from "../auth/codex.ts";
 import { chat_saveApiKey } from "../chat/apiKeys.ts";
 import { ai_calculateCost } from "./calculateCost.ts";
 import { ai_parseStreamingJson } from "./parseStreamingJson.ts";

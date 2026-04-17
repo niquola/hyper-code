@@ -1,25 +1,16 @@
 import { test, expect } from "bun:test";
-import memory_search, { name, parameters } from "./memory_search.ts";
-import { chat_db } from "../chat/db.ts";
-
-test("metadata", () => {
-  expect(name).toBe("memory_search");
-  expect(parameters.required).toContain("query");
-});
+import test_ctx from "../test_ctx_gen.ts";
 
 test("searches messages", async () => {
-  const db = chat_db(":memory:");
-  const sid = db.createSession({ title: "Test" });
-  db.addMessage(sid, { role: "user", content: "hello world search test", timestamp: Date.now() });
-
-  const ctx = { db } as any;
-  const r = await memory_search(ctx, {}, { query: "hello" });
+  const ctx = test_ctx();
+  const sid = ctx.db.createSession({ title: "Test" });
+  ctx.db.addMessage(sid, { role: "user", content: "hello world search test", timestamp: Date.now() });
+  const r = await ctx.tool.memory_search(ctx, {}, { query: "hello" });
   expect(r.content[0].text).toContain("hello");
 });
 
 test("returns empty for no matches", async () => {
-  const db = chat_db(":memory:");
-  const ctx = { db } as any;
-  const r = await memory_search(ctx, {}, { query: "ZZZNONEXISTENT" });
+  const ctx = test_ctx();
+  const r = await ctx.tool.memory_search(ctx, {}, { query: "ZZZNONEXISTENT" });
   expect(r.content[0].text).toContain("No messages");
 });

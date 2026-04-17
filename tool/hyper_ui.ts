@@ -1,6 +1,6 @@
-import { hyper_ui_run } from "../hyper_ui_run.ts";
-import { hyper_ui_list } from "../hyper_ui_list.ts";
-import { widget_editor } from "../widget_editor.ts";
+import { hyper_ui_run } from "../hyper_ui/run.ts";
+import { hyper_ui_list } from "../hyper_ui/list.ts";
+import { widget_editor } from "../ui/widget_editor.ts";
 
 const BUILTIN_WIDGETS = ["editor"];
 

@@ -1,9 +1,8 @@
 import { test, expect } from "bun:test";
-import html_message, { name } from "./html_message.ts";
-
-test("metadata", () => { expect(name).toBe("html_message"); });
+import test_ctx from "../test_ctx_gen.ts";
 
 test("returns html content", async () => {
-  const r = await html_message({} as any, {}, { html: "<h1>Hi</h1>" });
+  const ctx = test_ctx();
+  const r = await ctx.tool.html_message(ctx, {}, { html: "<h1>Hi</h1>" });
   expect(r.content[0]).toEqual({ type: "html", html: "<h1>Hi</h1>" });
 });

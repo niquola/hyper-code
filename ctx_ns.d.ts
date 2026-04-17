@@ -31,6 +31,16 @@ export default interface CtxNs {
     streamResponses: typeof import("./ai/streamResponses").default;
     transformMessages: typeof import("./ai/transformMessages").default;
   };
+  auth: {
+    codex: typeof import("./auth/codex").default;
+  };
+  cdp: {
+    cdp: typeof import("./cdp/cdp").default;
+    createCtx: typeof import("./cdp/createCtx").default;
+    pageState: typeof import("./cdp/pageState").default;
+    server: typeof import("./cdp/server").default;
+    start: typeof import("./cdp/start").default;
+  };
   chat: {
     apiKeys: typeof import("./chat/apiKeys").default;
     ctx: typeof import("./chat/ctx").default;
@@ -50,6 +60,12 @@ export default interface CtxNs {
     view_toolCall: typeof import("./chat/view_toolCall").default;
     view_userMessage: typeof import("./chat/view_userMessage").default;
   };
+  hyper_ui: {
+    list: typeof import("./hyper_ui/list").default;
+    route: typeof import("./hyper_ui/route").default;
+    run: typeof import("./hyper_ui/run").default;
+    styles: typeof import("./hyper_ui/styles").default;
+  };
   tool: {
     bash: typeof import("./tool/bash").default;
     build_tools: typeof import("./tool/build_tools").default;
@@ -64,8 +80,32 @@ export default interface CtxNs {
     read: typeof import("./tool/read").default;
     subagent: typeof import("./tool/subagent").default;
     subagent_report: typeof import("./tool/subagent_report").default;
+    truncate: typeof import("./tool/truncate").default;
     ts: typeof import("./tool/ts").default;
     websearch: typeof import("./tool/websearch").default;
     write: typeof import("./tool/write").default;
+  };
+  ui: {
+    alert: typeof import("./ui/alert").default;
+    button: typeof import("./ui/button").default;
+    form_login_codex_POST: typeof import("./ui/form_login_codex_POST").default;
+    form_session_create_POST: typeof import("./ui/form_session_create_POST").default;
+    form_session_delete_POST: typeof import("./ui/form_session_delete_POST").default;
+    form_session_rename_POST: typeof import("./ui/form_session_rename_POST").default;
+    form_settings_POST: typeof import("./ui/form_settings_POST").default;
+    form_settings_key_POST: typeof import("./ui/form_settings_key_POST").default;
+    frag_models: typeof import("./ui/frag_models").default;
+    frag_sessions: typeof import("./ui/frag_sessions").default;
+    input: typeof import("./ui/input").default;
+    layout_view_page: typeof import("./ui/layout_view_page").default;
+    pageState_script: typeof import("./ui/pageState_script").default;
+    page_index: typeof import("./ui/page_index").default;
+    page_session_new: typeof import("./ui/page_session_new").default;
+    page_settings: typeof import("./ui/page_settings").default;
+    router_buildRoutes: typeof import("./ui/router_buildRoutes").default;
+    select: typeof import("./ui/select").default;
+    textarea: typeof import("./ui/textarea").default;
+    topbar: typeof import("./ui/topbar").default;
+    widget_editor: typeof import("./ui/widget_editor").default;
   };
 }
