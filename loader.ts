@@ -25,6 +25,17 @@ export async function loader_loadFile(ctx: any, projectDir: string, filePath: st
   if (!ctx[ns]) ctx[ns] = {};
   ctx[ns][name] = mod.default;
 
+  // Store module metadata (name, description, parameters) for tool registration
+  if (mod.description || mod.parameters) {
+    if (!ctx._meta) ctx._meta = {};
+    if (!ctx._meta[ns]) ctx._meta[ns] = {};
+    ctx._meta[ns][name] = {
+      name: mod.name || name,
+      description: mod.description || "",
+      parameters: mod.parameters || {},
+    };
+  }
+
   return { ns, name };
 }
 

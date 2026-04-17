@@ -135,6 +135,13 @@ export function chat_getSessionFile(): string | null {
   return null; // deprecated — use URL
 }
 
+export function chat_findParentSession(childFilename: string): Session | null {
+  for (const [, sess] of sessions) {
+    if (sess.pendingDialogs.has(`subagent:${childFilename}`)) return sess;
+  }
+  return null;
+}
+
 export function chat_resetCtx(): void {
   sessions.clear();
   messageCache.clear();
