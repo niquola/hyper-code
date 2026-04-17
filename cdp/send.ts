@@ -25,14 +25,14 @@ async function cdp_getSession(ctx: CdpCtx, name: string): Promise<CdpSession> {
   return session;
 }
 
-export async function cdp_send(
+export default async function cdp_send(
   ctx: CdpCtx,
   sessionName: string,
   method: string,
   params: any = {},
 ): Promise<any> {
   const { ws } = await cdp_getSession(ctx, sessionName);
-  const id = cdp_nextId(ctx);
+  const id = ctx.nextId++;
 
   return new Promise((resolve, reject) => {
     const timeout = setTimeout(() => reject(new Error("CDP timeout")), 30_000);
