@@ -1,4 +1,3 @@
-import { tool_truncateOutput } from "./truncate.ts";
 
 export const name = "bash";
 export const description = "Execute a bash command. Returns stdout+stderr and exit code.";
@@ -32,7 +31,7 @@ export default async function bash(ctx: Ctx, session: any, params: { command: st
 
   clearTimeout(timer);
 
-  const { text: output } = tool_truncateOutput(stdout + stderr, 2000, 50_000, "tail");
+  const { text: output } = ctx.tool.truncate(stdout + stderr, 2000, 50_000, "tail");
   const text = output + (exitCode !== 0 ? `\n\nExit code: ${exitCode}` : "");
   return { content: [{ type: "text" as const, text }] };
 }

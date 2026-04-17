@@ -1,4 +1,3 @@
-import { PAGE_STATE_SCRIPT } from "./pageState_script.ts";
 
 type SessionMeta = {
   sessionId?: string;
@@ -18,7 +17,7 @@ export default function layout_view_page(ctx: any, title: string, body: string, 
         <script src="https://unpkg.com/htmx-ext-sse@2.2.2/sse.js"></script>
         <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
         <style dangerouslySetInnerHTML={{ __html: HYPER_UI_STYLES }} />
-        <script dangerouslySetInnerHTML={{ __html: PAGE_STATE_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: ctx.ui.pageState_script }} />
       </head>
       <body className="bg-gray-50 h-screen flex overflow-hidden">
 

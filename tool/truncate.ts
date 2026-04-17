@@ -1,7 +1,7 @@
 import type { TruncateResult } from "./tool_type_TruncateResult.ts";
 export type { TruncateResult } from "./tool_type_TruncateResult.ts";
 
-export function tool_truncateOutput(
+export default function tool_truncateOutput(
   text: string,
   maxLines: number = 2000,
   maxBytes: number = 50_000,

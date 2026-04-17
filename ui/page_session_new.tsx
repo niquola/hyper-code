@@ -1,4 +1,3 @@
-import layout_view_page from "./layout_view_page.tsx";
 import type { Ctx } from "../agent/type_Ctx.ts";
 
 export default async function (ctx: Ctx, req: Request) {
@@ -41,7 +40,7 @@ export default async function (ctx: Ctx, req: Request) {
     </div>
   );
 
-  return layout_view_page("New Session", body, ctx.model.name || ctx.model.id);
+  return ctx.ui.layout_view_page(ctx, "New Session", body, ctx.model.name || ctx.model.id);
 }
 
 async function renderModelOptions(ctx: Ctx, provider: string, selectedId?: string): Promise<string> {

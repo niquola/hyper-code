@@ -1,11 +1,9 @@
-import hyper_ui_run from "./run.ts";
-import hyper_ui_list from "./list.ts";
 
 /**
  * Handle requests to /ui/{name}/{path...}
  * Runs the corresponding .hyper_ui.* CGI script
  */
-export default async function hyper_ui_handleRequest(cwd: string, req: Request): Promise<Response> {
+export default async function hyper_ui_handleRequest(ctx: any, cwd: string, req: Request): Promise<Response> {
   const url = new URL(req.url);
   const match = url.pathname.match(/^\/ui\/([^/]+)(\/.*)?$/);
   if (!match) {
@@ -16,7 +14,7 @@ export default async function hyper_ui_handleRequest(cwd: string, req: Request):
   const pathInfo = match[2] || "/";
 
   // Check widget exists
-  const widgets = await hyper_ui_list(cwd);
+  const widgets = await ctx.hyper_ui.list(cwd);
   const widget = widgets.find((w) => w.name === name);
   if (!widget) {
     return new Response(`Widget "${name}" not found`, { status: 404 });
@@ -24,7 +22,7 @@ export default async function hyper_ui_handleRequest(cwd: string, req: Request):
 
   const body = req.method === "POST" ? await req.text() : "";
 
-  const html = await hyper_ui_run(cwd, name, {
+  const html = await ctx.hyper_ui.run(cwd, name, {
     method: req.method,
     path: pathInfo,
     query: url.search.slice(1),

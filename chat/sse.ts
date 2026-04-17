@@ -1,7 +1,6 @@
 import type { AgentEvent } from "../agent/type_Event.ts";
 import type { HtmlContent } from "../ai/type_Message.ts";
 import { escapeHtml } from "../jsx.ts";
-import { chat_view_toolCall } from "./view_toolCall.tsx";
 
 type ToolBlock = { id: string; name: string; args: string; result?: string; resultHtml?: string; isError?: boolean };
 
@@ -49,7 +48,7 @@ function renderToolBlock(t: ToolBlock, highlighted?: string, sessionFilename?: s
     textResult = undefined;
   }
 
-  return chat_view_toolCall(t.name, argsDisplay, textResult ?? undefined, t.isError, htmlContent);
+  return ctx.chat.view_toolCall(t.name, argsDisplay, textResult ?? undefined, t.isError, htmlContent);
 }
 
 

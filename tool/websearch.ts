@@ -1,4 +1,3 @@
-import { tool_truncateOutput } from "./truncate.ts";
 
 export const name = "websearch";
 export const description = "Search or extract the web using Tavily. Use search for queries. Use extract for specific URLs (provide url or urls).";
@@ -58,6 +57,6 @@ export default async function websearch(ctx: Ctx, session: any, params: any, sig
     }
   }
 
-  const { text } = tool_truncateOutput(lines.join("\n").trim(), 2000, 50_000, "head");
+  const { text } = ctx.tool.truncate(lines.join("\n").trim(), 2000, 50_000, "head");
   return { content: [{ type: "text" as const, text }] };
 }

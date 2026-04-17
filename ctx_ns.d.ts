@@ -51,6 +51,7 @@ export default interface CtxNs {
     resolveSessionModel: typeof import("./chat/resolveSessionModel").default;
     saveApiKey: typeof import("./chat/saveApiKey").default;
     saveSettings: typeof import("./chat/saveSettings").default;
+    script: typeof import("./chat/script").default;
     sse: typeof import("./chat/sse").default;
     start: typeof import("./chat/start").default;
     stripLineNumbers: typeof import("./chat/stripLineNumbers").default;
@@ -80,6 +81,7 @@ export default interface CtxNs {
     read: typeof import("./tool/read").default;
     subagent: typeof import("./tool/subagent").default;
     subagent_report: typeof import("./tool/subagent_report").default;
+    truncate: typeof import("./tool/truncate").default;
     ts: typeof import("./tool/ts").default;
     websearch: typeof import("./tool/websearch").default;
     write: typeof import("./tool/write").default;
@@ -96,6 +98,7 @@ export default interface CtxNs {
     frag_models: typeof import("./ui/frag_models").default;
     frag_sessions: typeof import("./ui/frag_sessions").default;
     layout_view_page: typeof import("./ui/layout_view_page").default;
+    pageState_script: typeof import("./ui/pageState_script").default;
     page_index: typeof import("./ui/page_index").default;
     page_session_new: typeof import("./ui/page_session_new").default;
     page_settings: typeof import("./ui/page_settings").default;

@@ -1,5 +1,4 @@
 import type { Ctx } from "../agent/type_Ctx.ts";
-import layout_view_page from "./layout_view_page.tsx";
 import { escapeHtml } from "../jsx.ts";
 
 type KeyInfo = {
@@ -150,5 +149,5 @@ export default async function (ctx: Ctx, req: Request) {
     </div>
   );
 
-  return layout_view_page("Settings — Hyper Code", body);
+  return ctx.ui.layout_view_page(ctx, "Settings — Hyper Code", body);
 }

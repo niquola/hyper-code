@@ -1,7 +1,7 @@
 // Inline <script> for layout — exposes window.__pageState() for CDP and testing.
 // Import in layout_view_page.tsx and inject as <script>.
 
-export const PAGE_STATE_SCRIPT = `window.__pageState = function() {
+const PAGE_STATE_SCRIPT = `window.__pageState = function() {
   return {
     page: document.querySelector("[data-page]")?.dataset.page || null,
     url: location.pathname,
@@ -38,3 +38,4 @@ export const PAGE_STATE_SCRIPT = `window.__pageState = function() {
     nav: [...new Set([...document.querySelectorAll("a[href^='/']")].map(a => a.getAttribute("href")))]
   };
 };`;
+export default PAGE_STATE_SCRIPT;

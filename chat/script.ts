@@ -1,7 +1,7 @@
 // Client-side JS for chat page — SSE streaming, keyboard shortcuts, dialog dispatch
 // Injected as <script> in chat_view_page.tsx
 
-export const CHAT_SCRIPT = `
+const CHAT_SCRIPT = `
 var streaming = false;
 var textarea = document.querySelector('#chat-form textarea');
 var messages = document.getElementById('messages');
@@ -276,3 +276,4 @@ document.body.addEventListener('dispatch-sent', function() {
   setTimeout(connectStream, 100);
 });
 `;
+export default CHAT_SCRIPT;

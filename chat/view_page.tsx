@@ -1,7 +1,5 @@
 import type { Message, ToolCall, AssistantMessage, ToolResultMessage, TextContent, ThinkingContent, HtmlContent } from "../ai/type_Message.ts";
-import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall } from "./view_message.tsx";
 import { escapeHtml } from "../jsx.ts";
-import { CHAT_SCRIPT } from "./script.ts";
 
 export default async function chat_view_page(ctx: any, messages: Message[], sessionFilename?: string, isStreaming?: boolean): Promise<string> {
   // Index toolResults by toolCallId for lookup
@@ -15,7 +13,7 @@ export default async function chat_view_page(ctx: any, messages: Message[], sess
     const msg = messages[i]!;
     if (msg.role === "user") {
       const content = typeof msg.content === "string" ? msg.content : msg.content.map((c) => c.type === "text" ? c.text : "[image]").join("");
-      rendered.push(chat_view_userMessage(content, i, sessionFilename));
+      rendered.push(ctx.chat.view_userMessage(content, i, sessionFilename));
     } else if (msg.role === "assistant") {
       const text = msg.content.filter((c): c is TextContent => c.type === "text").map((c) => c.text).join("");
       const thinking = msg.content.filter((c): c is ThinkingContent => c.type === "thinking").map((c) => c.thinking).join("");
@@ -50,7 +48,7 @@ export default async function chat_view_page(ctx: any, messages: Message[], sess
           }
         }
 
-        rendered.push(chat_view_toolCall(tc.name, args, highlightedHtml ? undefined : textResult, tr?.isError, highlightedHtml || undefined));
+        rendered.push(ctx.chat.view_toolCall(tc.name, args, highlightedHtml ? undefined : textResult, tr?.isError, highlightedHtml || undefined));
       }
 
       if (text) {
@@ -82,7 +80,7 @@ export default async function chat_view_page(ctx: any, messages: Message[], sess
         </form>
         </div>
       </div>
-      <script dangerouslySetInnerHTML={{ __html: CHAT_SCRIPT }} />
+      <script dangerouslySetInnerHTML={{ __html: ctx.chat.script }} />
     </div>
   );
 }

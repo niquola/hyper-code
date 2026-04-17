@@ -1,5 +1,4 @@
 import { resolve } from "node:path";
-import { tool_truncateOutput } from "./truncate.ts";
 
 function resolvePath(path: string, home: string, cwd: string): string {
   if (path.startsWith("~/")) return resolve(home, path.slice(2));
@@ -35,7 +34,7 @@ export default async function read(ctx: Ctx, session: any, params: { path: strin
 
   const startLine = params.offset || 1;
   const numbered = lines.map((l, i) => `${startLine + i}\t${l}`).join("\n");
-  const { text } = tool_truncateOutput(numbered, 2000, 50_000, "head");
+  const { text } = ctx.tool.truncate(numbered, 2000, 50_000, "head");
 
   return { content: [{ type: "text" as const, text }] };
 }

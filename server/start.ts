@@ -22,7 +22,7 @@ export default async function start(appCtx: Ctx) {
 
       // /ui/{name}/* — user CGI widgets from workspace
       if (url.pathname.startsWith("/ui/")) {
-        return appCtx.hyper_ui.route(cwd, req);
+        return appCtx.hyper_ui.route(appCtx, cwd, req);
       }
 
       // POST /session/:id/fork
