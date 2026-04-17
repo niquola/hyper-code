@@ -1,5 +1,5 @@
-import type { Ctx } from "../agent_type_Ctx.ts";
-import type { Model } from "../ai_type_Model.ts";
+import type { Ctx } from "../agent/type_Ctx.ts";
+import type { Model } from "../ai/type_Model.ts";
 import { ai_models_readProvider } from "./models_readProvider.ts";
 
 export async function ai_models_loadProvider(ctx: Ctx, provider: string): Promise<Record<string, Model> | null> {

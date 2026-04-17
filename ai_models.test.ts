@@ -1,6 +1,6 @@
 import { test, expect, describe } from "bun:test";
-import type { Ctx } from "./agent_type_Ctx.ts";
-import type { Model } from "./ai_type_Model.ts";
+import type { Ctx } from "./agent/type_Ctx.ts";
+import type { Model } from "./ai/type_Model.ts";
 import { agent_createCtx } from "./agent/createCtx.ts";
 import { ai_models_getAll, ai_getModel, ai_getModels, ai_getProviders } from "./ai_models.ts";
 import { ai_models_loadIndex } from "./ai/models_loadIndex.ts";

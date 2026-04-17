@@ -1,4 +1,4 @@
-import type { Message } from "../ai_type_Message.ts";
+import type { Message } from "../ai/type_Message.ts";
 
 export type MessageRow = { role: string; content: string; timestamp: number };
 

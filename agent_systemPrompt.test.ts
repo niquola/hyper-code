@@ -1,6 +1,6 @@
 import { test, expect, describe } from "bun:test";
 import { agent_buildSystemPrompt } from "./agent/buildSystemPrompt.ts";
-import type { AgentTool } from "./agent_type_Tool.ts";
+import type { AgentTool } from "./agent/type_Tool.ts";
 
 describe("agent_buildSystemPrompt", () => {
   test("includes cwd", () => {

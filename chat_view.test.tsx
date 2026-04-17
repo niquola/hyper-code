@@ -3,7 +3,7 @@ import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall, 
 import { chat_view_page } from "./chat/view_page.tsx";
 import { pageState } from "./cdp_pageState.ts";
 import { queryExists, queryTexts, queryAttrs } from "./test_html.ts";
-import type { Message } from "./ai_type_Message.ts";
+import type { Message } from "./ai/type_Message.ts";
 
 // -- chat_view_userMessage --
 

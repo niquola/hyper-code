@@ -1,4 +1,4 @@
-import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Ctx } from "./agent/type_Ctx.ts";
 import { auth_codexLogin } from "./auth_codex.ts";
 import { chat_loadSettings, chat_saveSettings } from "./chat/settings.ts";
 import { chat_resetCtx, chat_resetConfig } from "./chat/ctx.ts";

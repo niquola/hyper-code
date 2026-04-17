@@ -1,4 +1,4 @@
-import type { Session } from "../chat_type_Session.ts";
+import type { Session } from "../chat/type_Session.ts";
 
 export function agent_reset(session: Session): void {
   session.abortController?.abort();

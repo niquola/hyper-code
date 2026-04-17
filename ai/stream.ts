@@ -1,8 +1,8 @@
 import OpenAI from "openai";
 import type { ChatCompletionChunk } from "openai/resources/chat/completions.js";
-import type { AssistantMessage, Context, StopReason, TextContent, ThinkingContent, ToolCall } from "../ai_type_Message.ts";
-import type { Model } from "../ai_type_Model.ts";
-import type { StreamOptions } from "../ai_type_StreamOptions.ts";
+import type { AssistantMessage, Context, StopReason, TextContent, ThinkingContent, ToolCall } from "../ai/type_Message.ts";
+import type { Model } from "../ai/type_Model.ts";
+import type { StreamOptions } from "../ai/type_StreamOptions.ts";
 import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./EventStream.ts";
 import { ai_convertMessages } from "./convertMessages.ts";
 import { ai_convertTools } from "./convertTools.ts";

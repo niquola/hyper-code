@@ -1,4 +1,4 @@
-import type { AgentTool } from "../agent_type_Tool.ts";
+import type { AgentTool } from "../agent/type_Tool.ts";
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 

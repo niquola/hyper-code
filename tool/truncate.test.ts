@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { tool_truncateOutput } from "./tool_truncate.ts";
+import { tool_truncateOutput } from "./truncate.ts";
 
 describe("tool_truncateOutput", () => {
   test("returns short text unchanged", () => {

@@ -1,5 +1,5 @@
 import type OpenAI from "openai";
-import type { Tool } from "../ai_type_Message.ts";
+import type { Tool } from "../ai/type_Message.ts";
 
 export function ai_convertTools(tools: Tool[]): OpenAI.Chat.Completions.ChatCompletionTool[] {
   return tools.map((tool) => ({

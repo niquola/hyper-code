@@ -5,4 +5,4 @@ export { chat_loadSettings, chat_saveSettings, chat_resolveModel, chat_resolveAp
 export { chat_db } from "./chat/db.ts";
 export { chat_saveApiKey, chat_getApiKey } from "./chat/apiKeys.ts";
 export type { ChatSettings } from "./chat/settings.ts";
-export type { Session, SSEListener } from "./chat_type_Session.ts";
+export type { Session, SSEListener } from "./chat/type_Session.ts";

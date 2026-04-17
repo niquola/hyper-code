@@ -1,4 +1,4 @@
-import type { HtmlContent } from "./ai_type_Message.ts";
+import type { HtmlContent } from "./ai/type_Message.ts";
 import { router_buildRoutes } from "./router_buildRoutes.ts";
 import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";

@@ -1,6 +1,6 @@
 import { test, expect, describe } from "bun:test";
 import { chat_loadMessages, rowToMessage, type SessionInfo, type MessageRow } from "./chat/loadMessages.ts";
-import type { Message } from "./ai_type_Message.ts";
+import type { Message } from "./ai/type_Message.ts";
 
 function mkRow(content: string, role = "user"): MessageRow {
   return { role, content, timestamp: Date.now() };

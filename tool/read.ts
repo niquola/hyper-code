@@ -1,5 +1,5 @@
 import { resolve } from "node:path";
-import { tool_truncateOutput } from "../tool_truncate.ts";
+import { tool_truncateOutput } from "./truncate.ts";
 
 function resolvePath(path: string, home: string, cwd: string): string {
   if (path.startsWith("~/")) return resolve(home, path.slice(2));

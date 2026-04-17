@@ -1,4 +1,4 @@
-import { tool_truncateOutput } from "../tool_truncate.ts";
+import { tool_truncateOutput } from "./truncate.ts";
 
 export const name = "websearch";
 export const description = "Search or extract the web using Tavily. Use search for queries. Use extract for specific URLs (provide url or urls).";

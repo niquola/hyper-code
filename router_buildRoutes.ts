@@ -1,4 +1,4 @@
-import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Ctx } from "./agent/type_Ctx.ts";
 
 type Handler = (ctx: Ctx, req: Request, params: Record<string, string>) => Promise<string | Response | null>;
 

@@ -1,5 +1,5 @@
 // GET /api/sessions — возвращает список сессий как JSON
-import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Ctx } from "./agent/type_Ctx.ts";
 
 export default async function (ctx: Ctx, _req: Request): Promise<Response> {
   const sessions = ctx.db.listSessions();

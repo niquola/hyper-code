@@ -1,4 +1,4 @@
-import type { Env } from "../agent_type_Ctx.ts";
+import type { Env } from "../agent/type_Ctx.ts";
 
 const ENV_MAP: Record<string, string> = {
   openai: "OPENAI_API_KEY",

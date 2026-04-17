@@ -1,4 +1,4 @@
-import type { AssistantMessage, Message } from "../ai_type_Message.ts";
+import type { AssistantMessage, Message } from "../ai/type_Message.ts";
 
 export function chat_view_stats(messages: Message[]): string {
   const assistantMessages = messages.filter((m) => m.role === "assistant") as AssistantMessage[];

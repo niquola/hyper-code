@@ -1,5 +1,5 @@
-import type { AgentEvent } from "../agent_type_Event.ts";
-import type { HtmlContent } from "../ai_type_Message.ts";
+import type { AgentEvent } from "../agent/type_Event.ts";
+import type { HtmlContent } from "../ai/type_Message.ts";
 import { escapeHtml } from "../jsx.ts";
 import { ai_renderMarkdown, ai_highlightCode } from "../ai/renderMarkdown.ts";
 import { chat_view_toolCall } from "./view_toolCall.tsx";
@@ -55,7 +55,7 @@ function renderToolBlock(t: ToolBlock, highlighted?: string, sessionFilename?: s
 }
 
 
-import type { Session } from "../chat_type_Session.ts";
+import type { Session } from "../chat/type_Session.ts";
 
 function sendSSE(controller: ReadableStreamDefaultController<Uint8Array>, encoder: TextEncoder, html: string): boolean {
   try {

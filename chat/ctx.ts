@@ -1,11 +1,11 @@
 import { agent_createCtx } from "../agent/createCtx.ts";
 import { agent_buildSystemPrompt } from "../agent/buildSystemPrompt.ts";
-import type { Ctx } from "../agent_type_Ctx.ts";
-import type { Session } from "../chat_type_Session.ts";
-import type { Message } from "../ai_type_Message.ts";
+import type { Ctx } from "../agent/type_Ctx.ts";
+import type { Session } from "../chat/type_Session.ts";
+import type { Message } from "../ai/type_Message.ts";
 import { chat_db } from "./db.ts";
 import { chat_resolveSessionModel } from "./resolveSessionModel.ts";
-import { ai_models_loadIndex } from "../ai_models_loadIndex.ts";
+import { ai_models_loadIndex } from "../ai/models_loadIndex.ts";
 import { chat_loadMessages } from "./loadMessages.ts";
 import { loader_loadAll } from "../loader.ts";
 import build_tools from "../tool/build_tools.ts";

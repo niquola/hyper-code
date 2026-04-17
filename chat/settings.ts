@@ -1,9 +1,9 @@
-import type { ChatSettings } from "../chat_type_ChatSettings.ts";
+import type { ChatSettings } from "../chat/type_ChatSettings.ts";
 import { ai_models_readProvider } from "../ai/models_readProvider.ts";
 import { ai_getEnvApiKey } from "../ai/getEnvApiKey.ts";
-import type { Model } from "../ai_type_Model.ts";
+import type { Model } from "../ai/type_Model.ts";
 
-export type { ChatSettings } from "../chat_type_ChatSettings.ts";
+export type { ChatSettings } from "../chat/type_ChatSettings.ts";
 
 const SETTINGS_PATH = ".settings.json";
 

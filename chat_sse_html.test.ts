@@ -1,7 +1,7 @@
 import { test, expect, describe } from "bun:test";
 import { chat_createSSEStream } from "./chat/sse.ts";
-import type { AgentEvent } from "./agent_type_Event.ts";
-import type { Session } from "./chat_type_Session.ts";
+import type { AgentEvent } from "./agent/type_Event.ts";
+import type { Session } from "./chat/type_Session.ts";
 
 function mockSession(): Session {
   return { session_id: "test.jsonl", messages: [], steerQueue: [], followUpQueue: [], abortController: null, model: { id: "test", name: "Test", provider: "test", baseUrl: "", reasoning: false, input: ["text"], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 32000 }, apiKey: "test", systemPrompt: "", isStreaming: false, sseListeners: new Set(), pendingDialogs: new Map() };

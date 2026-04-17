@@ -1,7 +1,7 @@
 import { test, expect, describe } from "bun:test";
 import { chat_view_stats } from "./chat/view_stats.tsx";
 import { queryExists, queryTexts } from "./test_html.ts";
-import type { Message, AssistantMessage } from "./ai_type_Message.ts";
+import type { Message, AssistantMessage } from "./ai/type_Message.ts";
 
 describe("chat_view_stats", () => {
   test("returns empty for no messages", () => {

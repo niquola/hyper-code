@@ -1,4 +1,4 @@
-import type { Model } from "../ai_type_Model.ts";
+import type { Model } from "../ai/type_Model.ts";
 import type { chat_db } from "./db.ts";
 import { chat_loadSettings, chat_resolveModel } from "./settings.ts";
 import { chat_getApiKey } from "./apiKeys.ts";

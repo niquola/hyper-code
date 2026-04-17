@@ -1,6 +1,6 @@
 // Build AgentTool[] from ctx.tool namespace + ctx._meta.tool metadata
 
-import type { AgentTool } from "../agent_type_Tool.ts";
+import type { AgentTool } from "../agent/type_Tool.ts";
 
 export default function build_tools(ctx: any): AgentTool[] {
   const tools: AgentTool[] = [];

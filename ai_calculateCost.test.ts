@@ -1,7 +1,7 @@
 import { test, expect } from "bun:test";
 import { ai_calculateCost } from "./ai/calculateCost.ts";
-import type { Model } from "./ai_type_Model.ts";
-import type { Usage } from "./ai_type_Message.ts";
+import type { Model } from "./ai/type_Model.ts";
+import type { Usage } from "./ai/type_Message.ts";
 
 const M: Model = { id: "t", name: "T", provider: "test", baseUrl: "", reasoning: false, input: ["text"], cost: { input: 3, output: 15, cacheRead: 0.3, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 32000 };
 

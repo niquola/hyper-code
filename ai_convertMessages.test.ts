@@ -1,7 +1,7 @@
 import { test, expect, describe } from "bun:test";
 import { ai_convertMessages } from "./ai/convertMessages.ts";
-import type { Model } from "./ai_type_Model.ts";
-import type { AssistantMessage, Context } from "./ai_type_Message.ts";
+import type { Model } from "./ai/type_Model.ts";
+import type { AssistantMessage, Context } from "./ai/type_Message.ts";
 
 const model: Model = {
   id: "gpt-4o", name: "GPT-4o", provider: "openai", baseUrl: "https://api.openai.com/v1",

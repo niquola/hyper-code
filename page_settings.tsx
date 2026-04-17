@@ -1,4 +1,4 @@
-import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Ctx } from "./agent/type_Ctx.ts";
 import { layout_view_page } from "./layout_view_page.tsx";
 import { chat_getApiKey } from "./chat/apiKeys.ts";
 import { chat_loadSettings } from "./chat/settings.ts";

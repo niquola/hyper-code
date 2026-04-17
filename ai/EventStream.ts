@@ -1,5 +1,5 @@
-import type { AssistantMessage } from "../ai_type_Message.ts";
-import type { AssistantMessageEvent } from "../ai_type_Event.ts";
+import type { AssistantMessage } from "../ai/type_Message.ts";
+import type { AssistantMessageEvent } from "../ai/type_Event.ts";
 
 export type EventStream<T, R> = {
   queue: T[];

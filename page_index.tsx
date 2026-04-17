@@ -1,4 +1,4 @@
-import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Ctx } from "./agent/type_Ctx.ts";
 
 export default async function (ctx: Ctx, req: Request) {
   const db = ctx.db;

@@ -1,4 +1,4 @@
-import type { ModelIndex } from "../ai_type_ModelIndex.ts";
+import type { ModelIndex } from "../ai/type_ModelIndex.ts";
 
 export async function ai_models_loadIndex(cwd: string): Promise<ModelIndex> {
   const indexPath = `${cwd}/ai_models/index.json`;

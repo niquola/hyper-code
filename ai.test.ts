@@ -11,8 +11,8 @@ import { ai_models_getAll } from "./ai_models.ts";
 import { ai_models_loadIndex } from "./ai/models_loadIndex.ts";
 import { agent_createCtx } from "./agent/createCtx.ts";
 import { ai_stream_createAssistantMessageEventStream } from "./ai/EventStream.ts";
-import type { AssistantMessage, Message, ToolCall, Usage } from "./ai_type_Message.ts";
-import type { Model } from "./ai_type_Model.ts";
+import type { AssistantMessage, Message, ToolCall, Usage } from "./ai/type_Message.ts";
+import type { Model } from "./ai/type_Model.ts";
 
 const lmStudioModel: Model = {
   id: "qwen3-coder-next",

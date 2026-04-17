@@ -1,7 +1,7 @@
-import type { ToolCall, ToolResultMessage } from "../ai_type_Message.ts";
-import type { Ctx } from "../agent_type_Ctx.ts";
-import type { Session } from "../chat_type_Session.ts";
-import type { AgentEvent } from "../agent_type_Event.ts";
+import type { ToolCall, ToolResultMessage } from "../ai/type_Message.ts";
+import type { Ctx } from "../agent/type_Ctx.ts";
+import type { Session } from "../chat/type_Session.ts";
+import type { AgentEvent } from "../agent/type_Event.ts";
 
 export async function agent_executeTools(
   ctx: Ctx,

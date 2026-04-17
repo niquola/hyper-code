@@ -5,8 +5,8 @@ import type {
   ChatCompletionMessageParam,
   ChatCompletionToolMessageParam,
 } from "openai/resources/chat/completions.js";
-import type { Context, Message, TextContent, ThinkingContent, ToolCall, ToolResultMessage } from "../ai_type_Message.ts";
-import type { Model } from "../ai_type_Model.ts";
+import type { Context, Message, TextContent, ThinkingContent, ToolCall, ToolResultMessage } from "../ai/type_Message.ts";
+import type { Model } from "../ai/type_Model.ts";
 import { ai_sanitizeSurrogates } from "./sanitizeSurrogates.ts";
 import { ai_transformMessages } from "./transformMessages.ts";
 

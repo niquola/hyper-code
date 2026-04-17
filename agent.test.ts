@@ -3,12 +3,12 @@ import { agent_createCtx } from "./agent/createCtx.ts";
 import { agent_run } from "./agent/run.ts";
 import { agent_abort } from "./agent/abort.ts";
 import { agent_executeTools } from "./agent/executeTools.ts";
-import type { Ctx } from "./agent_type_Ctx.ts";
-import type { Session } from "./chat_type_Session.ts";
-import type { AgentEvent } from "./agent_type_Event.ts";
-import type { AgentTool } from "./agent_type_Tool.ts";
-import type { ToolCall } from "./ai_type_Message.ts";
-import type { Model } from "./ai_type_Model.ts";
+import type { Ctx } from "./agent/type_Ctx.ts";
+import type { Session } from "./chat/type_Session.ts";
+import type { AgentEvent } from "./agent/type_Event.ts";
+import type { AgentTool } from "./agent/type_Tool.ts";
+import type { ToolCall } from "./ai/type_Message.ts";
+import type { Model } from "./ai/type_Model.ts";
 
 const LM_STUDIO_MODEL: Model = {
   id: "qwen3-coder-next",

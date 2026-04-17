@@ -1,8 +1,8 @@
 // Anthropic Messages API streaming — used for Kimi, Anthropic, and compatible providers
 import Anthropic from "@anthropic-ai/sdk";
-import type { AssistantMessage, Context, StopReason, TextContent, ThinkingContent, ToolCall, Tool } from "../ai_type_Message.ts";
-import type { Model } from "../ai_type_Model.ts";
-import type { StreamOptions } from "../ai_type_StreamOptions.ts";
+import type { AssistantMessage, Context, StopReason, TextContent, ThinkingContent, ToolCall, Tool } from "../ai/type_Message.ts";
+import type { Model } from "../ai/type_Model.ts";
+import type { StreamOptions } from "../ai/type_StreamOptions.ts";
 import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./EventStream.ts";
 import { ai_getEnvApiKey } from "./getEnvApiKey.ts";
 import { ai_calculateCost } from "./calculateCost.ts";

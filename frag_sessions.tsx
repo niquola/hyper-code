@@ -1,4 +1,4 @@
-import type { Ctx } from "./agent_type_Ctx.ts";
+import type { Ctx } from "./agent/type_Ctx.ts";
 import type { SessionRow } from "./chat/db.ts";
 import { escapeHtml } from "./jsx.ts";
 
