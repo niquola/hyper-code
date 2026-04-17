@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { agent_abort } from "./abort.ts";
+import agent_abort from "./abort.ts";
 import type { Session } from "../chat/type_Session.ts";
 
 function s(): Session {

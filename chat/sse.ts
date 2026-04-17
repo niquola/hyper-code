@@ -67,7 +67,7 @@ function sendSSE(controller: ReadableStreamDefaultController<Uint8Array>, encode
   }
 }
 
-export function chat_createSSEStream(
+export default function chat_createSSEStream(
   session: Session,
   runAgent: (onEvent: (event: AgentEvent) => void) => Promise<void>,
 ): Response {

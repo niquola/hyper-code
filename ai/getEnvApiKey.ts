@@ -21,7 +21,7 @@ const ENV_MAP: Record<string, string> = {
   "github-copilot": "GITHUB_TOKEN",
 };
 
-export function ai_getEnvApiKey(home: string, provider: string, env?: Env): string | undefined {
+export default function ai_getEnvApiKey(home: string, provider: string, env?: Env): string | undefined {
   const e = env ?? (process.env as Env);
 
   // Anthropic: OAuth token takes precedence

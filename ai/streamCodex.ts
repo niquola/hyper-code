@@ -7,14 +7,14 @@ import type { AssistantMessage, Context, StopReason, TextContent, ThinkingConten
 import type { Model } from "../ai/type_Model.ts";
 import type { StreamOptions } from "../ai/type_StreamOptions.ts";
 import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./EventStream.ts";
-import { ai_getEnvApiKey } from "./getEnvApiKey.ts";
+import ai_getEnvApiKey from "./getEnvApiKey.ts";
 import { auth_codexRefresh } from "../auth/codex.ts";
 import { chat_saveApiKey } from "../chat/apiKeys.ts";
-import { ai_calculateCost } from "./calculateCost.ts";
-import { ai_parseStreamingJson } from "./parseStreamingJson.ts";
-import { ai_sanitizeSurrogates } from "./sanitizeSurrogates.ts";
-import { ai_transformMessages } from "./transformMessages.ts";
-import { ai_shortHash } from "./shortHash.ts";
+import ai_calculateCost from "./calculateCost.ts";
+import ai_parseStreamingJson from "./parseStreamingJson.ts";
+import ai_sanitizeSurrogates from "./sanitizeSurrogates.ts";
+import ai_transformMessages from "./transformMessages.ts";
+import ai_shortHash from "./shortHash.ts";
 import type { ResponseInput, ResponseInputContent } from "openai/resources/responses/responses.js";
 
 const DEFAULT_CODEX_BASE_URL = "https://chatgpt.com/backend-api";
@@ -101,7 +101,7 @@ function isRetryableError(status: number, text: string): boolean {
 
 // --- Main stream function ---
 
-export function ai_streamCodex(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
+export default function ai_streamCodex(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
   const stream = ai_stream_createAssistantMessageEventStream();
 
   (async () => {

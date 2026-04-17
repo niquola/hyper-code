@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { ai_streamAnthropic } from "./streamAnthropic.ts";
+import ai_streamAnthropic from "./streamAnthropic.ts";
 import type { Model } from "./type_Model.ts";
 
 const KIMI_MODEL: Model = {

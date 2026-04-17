@@ -1,6 +1,6 @@
 import { parse as partialParse } from "partial-json";
 
-export function ai_parseStreamingJson<T = any>(partialJson: string | undefined): T {
+export default function ai_parseStreamingJson<T = any>(partialJson: string | undefined): T {
   if (!partialJson || partialJson.trim() === "") {
     return {} as T;
   }

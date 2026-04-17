@@ -45,7 +45,7 @@ function loadContextFiles(cwd: string): string[] {
   return results;
 }
 
-export function agent_buildSystemPrompt(cwd: string, tools: AgentTool[], sessionFilename?: string, modelName?: string): string {
+export default function agent_buildSystemPrompt(cwd: string, tools: AgentTool[], sessionFilename?: string, modelName?: string): string {
   const toolList = tools.map((t) => `- **${t.name}**: ${t.description}`).join("\n");
   const contextFiles = loadContextFiles(cwd);
   const contextSection = contextFiles.length > 0

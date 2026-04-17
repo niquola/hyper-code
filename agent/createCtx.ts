@@ -4,7 +4,7 @@ import type { AgentTool } from "../agent/type_Tool.ts";
 import type { Ctx } from "../agent/type_Ctx.ts";
 import type { chat_db } from "../chat/db.ts";
 
-export function agent_createCtx(opts: {
+export default function agent_createCtx(opts: {
   model: Model;
   apiKey: string;
   systemPrompt?: string;

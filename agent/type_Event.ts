@@ -1,6 +1,6 @@
-import type { AssistantMessage, Message, ToolCall } from "./ai_type_Message.ts";
-import type { AssistantMessageEvent } from "./ai_type_Event.ts";
-import type { AgentToolResult } from "./agent_type_Tool.ts";
+import type { AssistantMessage, Message, ToolCall } from "../ai/type_Message.ts";
+import type { AssistantMessageEvent } from "../ai/type_Event.ts";
+import type { AgentToolResult } from "./type_Tool.ts";
 
 export type AgentEvent =
   | { type: "agent_start" }

@@ -7,10 +7,10 @@ import type {
 } from "openai/resources/chat/completions.js";
 import type { Context, Message, TextContent, ThinkingContent, ToolCall, ToolResultMessage } from "../ai/type_Message.ts";
 import type { Model } from "../ai/type_Model.ts";
-import { ai_sanitizeSurrogates } from "./sanitizeSurrogates.ts";
-import { ai_transformMessages } from "./transformMessages.ts";
+import ai_sanitizeSurrogates from "./sanitizeSurrogates.ts";
+import ai_transformMessages from "./transformMessages.ts";
 
-export function ai_convertMessages(model: Model, context: Context): ChatCompletionMessageParam[] {
+export default function ai_convertMessages(model: Model, context: Context): ChatCompletionMessageParam[] {
   const params: ChatCompletionMessageParam[] = [];
   const transformed = ai_transformMessages(context.messages);
 

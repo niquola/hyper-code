@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { chat_createSSEStream } from "./sse.ts";
+import chat_createSSEStream from "./sse.ts";
 import type { AgentEvent } from "../agent/type_Event.ts";
 import type { Session } from "./type_Session.ts";
 

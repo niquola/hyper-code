@@ -1,5 +1,5 @@
 /** Fast deterministic hash to shorten long strings */
-export function ai_shortHash(str: string): string {
+export default function ai_shortHash(str: string): string {
   let h1 = 0xdeadbeef;
   let h2 = 0x41c6ce57;
   for (let i = 0; i < str.length; i++) {

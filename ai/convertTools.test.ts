@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { ai_convertTools } from "./convertTools.ts";
+import ai_convertTools from "./convertTools.ts";
 
 test("converts tools to OpenAI format", () => {
   const result = ai_convertTools([

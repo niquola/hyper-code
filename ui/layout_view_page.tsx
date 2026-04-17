@@ -7,7 +7,7 @@ type SessionMeta = {
   parentTitle?: string;
 };
 
-export function layout_view_page(title: string, body: string, modelName?: string, session?: SessionMeta): string {
+export default function layout_view_page(title: string, body: string, modelName?: string, session?: SessionMeta): string {
   return (
     <html>
       <head>

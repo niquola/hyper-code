@@ -1,6 +1,6 @@
-import type { TextContent, ImageContent, HtmlContent } from "./ai_type_Message.ts";
-import type { Ctx } from "./agent_type_Ctx.ts";
-import type { Session } from "./chat_type_Session.ts";
+import type { TextContent, ImageContent, HtmlContent } from "../ai/type_Message.ts";
+import type { Ctx } from "./type_Ctx.ts";
+import type { Session } from "../chat/type_Session.ts";
 
 export type AgentToolResult = {
   content: (TextContent | ImageContent | HtmlContent)[];

@@ -1,13 +1,13 @@
 import { test, expect, describe } from "bun:test";
-import { ai_models_getAll } from "./models_getAll.ts";
-import { ai_getModel } from "./getModel.ts";
-import { ai_getProviders } from "./getProviders.ts";
+import ai_models_getAll from "./models_getAll.ts";
+import ai_getModel from "./getModel.ts";
+import ai_getProviders from "./getProviders.ts";
 import type { Ctx } from "../agent/type_Ctx.ts";
 import type { Model } from "./type_Model.ts";
-import { agent_createCtx } from "../agent/createCtx.ts";
-import { ai_getModels } from "./getModels.ts";
-import { ai_models_loadIndex } from "./models_loadIndex.ts";
-import { ai_getEnvApiKey } from "./getEnvApiKey.ts";
+import agent_createCtx from "../agent/createCtx.ts";
+import ai_getModels from "./getModels.ts";
+import ai_models_loadIndex from "./models_loadIndex.ts";
+import ai_getEnvApiKey from "./getEnvApiKey.ts";
 
 const M: Model = { id: "t", name: "T", provider: "test", baseUrl: "", reasoning: false, input: ["text"], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 128000, maxTokens: 32000 };
 

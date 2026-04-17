@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { layout_view_page } from "./layout_view_page.tsx";
+import layout_view_page from "./layout_view_page.tsx";
 import { queryExists, queryTexts } from "../test_html.ts";
 
 describe("layout_view_page", () => {

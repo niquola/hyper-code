@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { ai_transformMessages } from "./transformMessages.ts";
+import ai_transformMessages from "./transformMessages.ts";
 import type { AssistantMessage, Message, ToolResultMessage } from "./type_Message.ts";
 
 const usage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0, cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } };

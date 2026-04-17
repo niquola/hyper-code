@@ -4,21 +4,21 @@ import type { AssistantMessage, Context, StopReason, TextContent, ThinkingConten
 import type { Model } from "../ai/type_Model.ts";
 import type { StreamOptions } from "../ai/type_StreamOptions.ts";
 import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./EventStream.ts";
-import { ai_convertMessages } from "./convertMessages.ts";
-import { ai_convertTools } from "./convertTools.ts";
-import { ai_getEnvApiKey } from "./getEnvApiKey.ts";
-import { ai_calculateCost } from "./calculateCost.ts";
-import { ai_parseStreamingJson } from "./parseStreamingJson.ts";
-import { ai_streamResponses } from "./streamResponses.ts";
-import { ai_streamCodex } from "./streamCodex.ts";
-import { ai_streamAnthropic } from "./streamAnthropic.ts";
+import ai_convertMessages from "./convertMessages.ts";
+import ai_convertTools from "./convertTools.ts";
+import ai_getEnvApiKey from "./getEnvApiKey.ts";
+import ai_calculateCost from "./calculateCost.ts";
+import ai_parseStreamingJson from "./parseStreamingJson.ts";
+import ai_streamResponses from "./streamResponses.ts";
+import ai_streamCodex from "./streamCodex.ts";
+import ai_streamAnthropic from "./streamAnthropic.ts";
 
 // Providers that use OpenAI Responses API instead of Completions
 const RESPONSES_API_PROVIDERS = new Set(["openai", "azure-openai-responses", "github-copilot"]);
 // Providers that use Anthropic Messages API
 const ANTHROPIC_API_PROVIDERS = new Set(["anthropic", "kimi-coding"]);
 
-export function ai_stream(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
+export default function ai_stream(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
   // Route Codex to dedicated codex stream (raw fetch, custom headers)
   if (model.provider === "openai-codex") {
     return ai_streamCodex(model, context, options);

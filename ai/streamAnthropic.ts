@@ -4,13 +4,13 @@ import type { AssistantMessage, Context, StopReason, TextContent, ThinkingConten
 import type { Model } from "../ai/type_Model.ts";
 import type { StreamOptions } from "../ai/type_StreamOptions.ts";
 import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./EventStream.ts";
-import { ai_getEnvApiKey } from "./getEnvApiKey.ts";
-import { ai_calculateCost } from "./calculateCost.ts";
-import { ai_parseStreamingJson } from "./parseStreamingJson.ts";
-import { ai_sanitizeSurrogates } from "./sanitizeSurrogates.ts";
-import { ai_transformMessages } from "./transformMessages.ts";
+import ai_getEnvApiKey from "./getEnvApiKey.ts";
+import ai_calculateCost from "./calculateCost.ts";
+import ai_parseStreamingJson from "./parseStreamingJson.ts";
+import ai_sanitizeSurrogates from "./sanitizeSurrogates.ts";
+import ai_transformMessages from "./transformMessages.ts";
 
-export function ai_streamAnthropic(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
+export default function ai_streamAnthropic(model: Model, context: Context, options?: StreamOptions): AssistantMessageEventStream {
   const stream = ai_stream_createAssistantMessageEventStream();
 
   (async () => {

@@ -76,7 +76,7 @@ CREATE TRIGGER IF NOT EXISTS messages_ad AFTER DELETE ON messages BEGIN
 END;
 `;
 
-export function chat_db(path?: string) {
+export default function chat_db(path?: string) {
   const dbPath = path || `${process.env.HYPER_SESSION_DIR || ".hyper"}/hyper.db`;
   if (dbPath !== ":memory:") {
     const { mkdirSync } = require("node:fs");

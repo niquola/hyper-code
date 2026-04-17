@@ -1,6 +1,6 @@
 // Per-provider API key storage — ~/.hyper/keys.json (global, shared across projects)
 // Priority: ENV → ~/.hyper/keys.json → auto-detect (kimi CLI etc.)
-import { ai_getEnvApiKey } from "../ai/getEnvApiKey.ts";
+import ai_getEnvApiKey from "../ai/getEnvApiKey.ts";
 
 function keysPath(home: string): string {
   return `${home}/.hyper/keys.json`;

@@ -1,7 +1,7 @@
-import type { Model } from "./ai_type_Model.ts";
-import type { ModelIndex } from "./ai_type_ModelIndex.ts";
-import type { AgentTool } from "./agent_type_Tool.ts";
-import type { chat_db } from "./chat_db.ts";
+import type { Model } from "../ai/type_Model.ts";
+import type { ModelIndex } from "../ai/type_ModelIndex.ts";
+import type { AgentTool } from "./type_Tool.ts";
+import type chat_db from "../chat/db.ts";
 
 export type Env = Record<string, string | undefined>;
 

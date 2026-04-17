@@ -1,6 +1,6 @@
 import type { AssistantMessage, Message, ToolCall, ToolResultMessage } from "../ai/type_Message.ts";
 
-export function ai_transformMessages(messages: Message[]): Message[] {
+export default function ai_transformMessages(messages: Message[]): Message[] {
   const toolCallIdMap = new Map<string, string>();
 
   const transformed = messages.map((msg) => {

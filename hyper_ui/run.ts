@@ -11,7 +11,7 @@ const RUNNERS: Record<string, string[]> = {
   sh: ["bash"],
 };
 
-export async function hyper_ui_run(
+export default async function hyper_ui_run(
   cwd: string,
   name: string,
   req: HyperUIRequest,

@@ -1,5 +1,5 @@
-import type { Message } from "./ai_type_Message.ts";
-import type { Model } from "./ai_type_Model.ts";
+import type { Message } from "../ai/type_Message.ts";
+import type { Model } from "../ai/type_Model.ts";
 
 export type SSEListener = (html: string) => void;
 export type DialogResolver = (response: string) => void;

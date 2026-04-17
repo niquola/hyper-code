@@ -1,4 +1,4 @@
-import { ai_getModels } from "../ai/getModels.ts";
+import ai_getModels from "../ai/getModels.ts";
 import type { Ctx } from "../agent/type_Ctx.ts";
 
 export default async function (ctx: Ctx, req: Request) {

@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { router_buildRoutes } from "./router_buildRoutes.ts";
+import router_buildRoutes from "./router_buildRoutes.ts";
 
 const mockCtx = {} as any;
 

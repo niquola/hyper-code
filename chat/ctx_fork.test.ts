@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { chat_db } from "./db.ts";
+import chat_db from "./db.ts";
 
 describe("fork/subagent full context", () => {
   test("getFullMessages chains parent messages for child", () => {

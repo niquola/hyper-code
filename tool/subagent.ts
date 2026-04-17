@@ -1,4 +1,4 @@
-import { agent_run } from "../agent/run.ts";
+import agent_run from "../agent/run.ts";
 
 export const name = "subagent";
 export const description = "Launch a sub-agent in a forked session. Inherits full conversation history. Blocks until sub-agent calls subagent_report.";

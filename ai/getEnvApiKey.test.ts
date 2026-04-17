@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { ai_getEnvApiKey } from "./getEnvApiKey.ts";
+import ai_getEnvApiKey from "./getEnvApiKey.ts";
 
 const HOME = process.env.HOME || "/tmp";
 

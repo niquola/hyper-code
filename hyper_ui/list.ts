@@ -4,7 +4,7 @@ import { readdirSync } from "node:fs";
 export type { HyperUIWidget } from "./type_Widget.ts";
 
 // Detects hyper_ui_<name>.ts/py/sh files (prefix convention)
-export async function hyper_ui_list(cwd: string): Promise<HyperUIWidget[]> {
+export default async function hyper_ui_list(cwd: string): Promise<HyperUIWidget[]> {
   const widgets: HyperUIWidget[] = [];
   try {
     const entries = readdirSync(cwd);

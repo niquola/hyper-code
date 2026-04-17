@@ -1,6 +1,6 @@
 import type { Session } from "../chat/type_Session.ts";
 
-export function agent_reset(session: Session): void {
+export default function agent_reset(session: Session): void {
   session.abortController?.abort();
   session.messages = [];
   session.isStreaming = false;

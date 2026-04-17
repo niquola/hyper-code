@@ -1,4 +1,4 @@
-import type { AssistantMessage, StopReason, ToolCall } from "./ai_type_Message.ts";
+import type { AssistantMessage, StopReason, ToolCall } from "../ai/type_Message.ts";
 
 export type AssistantMessageEvent =
   | { type: "start"; partial: AssistantMessage }

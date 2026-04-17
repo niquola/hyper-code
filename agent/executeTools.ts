@@ -3,7 +3,7 @@ import type { Ctx } from "../agent/type_Ctx.ts";
 import type { Session } from "../chat/type_Session.ts";
 import type { AgentEvent } from "../agent/type_Event.ts";
 
-export async function agent_executeTools(
+export default async function agent_executeTools(
   ctx: Ctx,
   session: Session,
   toolCalls: ToolCall[],

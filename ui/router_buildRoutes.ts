@@ -39,7 +39,7 @@ function parseApiFile(filename: string): { method: string; path: string } {
   return { method, path: "/api" + parsePath(pathParts) };
 }
 
-export async function router_buildRoutes(dir: string, ctx: Ctx) {
+export default async function router_buildRoutes(dir: string, ctx: Ctx) {
   const globs = [
     { glob: new Bun.Glob("page_*.tsx"), parse: parsePageFile },
     { glob: new Bun.Glob("frag_*.tsx"), parse: parseFragFile },

@@ -1,11 +1,11 @@
-import { hyper_ui_run } from "./run.ts";
-import { hyper_ui_list } from "./list.ts";
+import hyper_ui_run from "./run.ts";
+import hyper_ui_list from "./list.ts";
 
 /**
  * Handle requests to /ui/{name}/{path...}
  * Runs the corresponding .hyper_ui.* CGI script
  */
-export async function hyper_ui_handleRequest(cwd: string, req: Request): Promise<Response> {
+export default async function hyper_ui_handleRequest(cwd: string, req: Request): Promise<Response> {
   const url = new URL(req.url);
   const match = url.pathname.match(/^\/ui\/([^/]+)(\/.*)?$/);
   if (!match) {

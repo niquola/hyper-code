@@ -4,7 +4,7 @@
 
 import { resolve } from "node:path";
 
-export async function widget_editor(req: Request, cwd: string): Promise<Response> {
+export default async function widget_editor(req: Request, cwd: string): Promise<Response> {
   const url = new URL(req.url);
   const path = url.pathname.replace(/^\/w\/editor\/?/, "/") || "/";
 

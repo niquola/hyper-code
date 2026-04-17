@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { agent_buildSystemPrompt } from "./buildSystemPrompt.ts";
+import agent_buildSystemPrompt from "./buildSystemPrompt.ts";
 import type { AgentTool } from "./type_Tool.ts";
 
 describe("agent_buildSystemPrompt", () => {

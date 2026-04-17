@@ -1,9 +1,9 @@
 // Entry point — create ctx, load namespaces, start server, REPL, file watcher
 import { loader_loadAll, loader_loadFile, loader_watch, loader_genTypes } from "./loader.ts";
-import { agent_createCtx } from "./agent/createCtx.ts";
-import { agent_buildSystemPrompt } from "./agent/buildSystemPrompt.ts";
-import { chat_db } from "./chat/db.ts";
-import { ai_models_loadIndex } from "./ai/models_loadIndex.ts";
+import agent_createCtx from "./agent/createCtx.ts";
+import agent_buildSystemPrompt from "./agent/buildSystemPrompt.ts";
+import chat_db from "./chat/db.ts";
+import ai_models_loadIndex from "./ai/models_loadIndex.ts";
 import build_tools from "./tool/build_tools.ts";
 import start from "./server/start.ts";
 
