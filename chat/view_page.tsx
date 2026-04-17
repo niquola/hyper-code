@@ -1,7 +1,8 @@
 import type { Message, ToolCall, AssistantMessage, ToolResultMessage, TextContent, ThinkingContent, HtmlContent } from "../ai/type_Message.ts";
 import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall } from "./view_message.tsx";
 import { escapeHtml } from "../jsx.ts";
-import { detectToolLang, getToolCode } from "./toolCode.ts";
+import detectToolLang from "./detectToolLang.ts";
+import getToolCode from "./getToolCode.ts";
 import { CHAT_SCRIPT } from "./script.ts";
 
 export default async function chat_view_page(ctx: any, messages: Message[], sessionFilename?: string, isStreaming?: boolean): Promise<string> {

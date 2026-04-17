@@ -2,7 +2,7 @@
 // buttons, inputs without needing Tailwind classes on every element.
 // Injected into layout <head> as <style>.
 
-export const HYPER_UI_STYLES = `
+const HYPER_UI_STYLES = `
 /* hyper-ui widget defaults */
 .hyper-ui { font-size: 14px; line-height: 1.6; color: #1f2937; }
 
@@ -116,3 +116,4 @@ pre.shiki code { font-size: inherit; background: none !important; color: inherit
 /* Tool results code blocks */
 [data-entity="tool"] pre.shiki { border-radius: 0; }
 `;
+export default HYPER_UI_STYLES;

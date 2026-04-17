@@ -1,5 +1,4 @@
 import { PAGE_STATE_SCRIPT } from "./pageState_script.ts";
-import { HYPER_UI_STYLES } from "../hyper_ui/styles.ts";
 
 type SessionMeta = {
   sessionId?: string;
@@ -7,7 +6,8 @@ type SessionMeta = {
   parentTitle?: string;
 };
 
-export default function layout_view_page(title: string, body: string, modelName?: string, session?: SessionMeta): string {
+export default function layout_view_page(ctx: any, title: string, body: string, modelName?: string, session?: SessionMeta): string {
+  const HYPER_UI_STYLES = ctx.hyper_ui.styles;
   return (
     <html>
       <head>

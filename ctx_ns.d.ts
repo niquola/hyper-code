@@ -30,10 +30,21 @@ export default interface CtxNs {
     streamResponses: typeof import("./ai/streamResponses").default;
     transformMessages: typeof import("./ai/transformMessages").default;
   };
+  auth: {
+    codexLogin: typeof import("./auth/codexLogin").default;
+    codexRefresh: typeof import("./auth/codexRefresh").default;
+  };
   chat: {
     db: typeof import("./chat/db").default;
+    detectToolLang: typeof import("./chat/detectToolLang").default;
+    findParentSession: typeof import("./chat/findParentSession").default;
     getApiKey: typeof import("./chat/getApiKey").default;
+    getSession: typeof import("./chat/getSession").default;
+    getToolCode: typeof import("./chat/getToolCode").default;
+    loadMessages: typeof import("./chat/loadMessages").default;
+    loadSessionByName: typeof import("./chat/loadSessionByName").default;
     loadSettings: typeof import("./chat/loadSettings").default;
+    resetSessions: typeof import("./chat/resetSessions").default;
     resolveApiKey: typeof import("./chat/resolveApiKey").default;
     resolveModel: typeof import("./chat/resolveModel").default;
     resolveSessionModel: typeof import("./chat/resolveSessionModel").default;
@@ -41,11 +52,15 @@ export default interface CtxNs {
     saveSettings: typeof import("./chat/saveSettings").default;
     sse: typeof import("./chat/sse").default;
     start: typeof import("./chat/start").default;
+    stripLineNumbers: typeof import("./chat/stripLineNumbers").default;
+    view_assistantMessage: typeof import("./chat/view_assistantMessage").default;
+    view_page: typeof import("./chat/view_page").default;
   };
   hyper_ui: {
     list: typeof import("./hyper_ui/list").default;
     route: typeof import("./hyper_ui/route").default;
     run: typeof import("./hyper_ui/run").default;
+    styles: typeof import("./hyper_ui/styles").default;
   };
   server: {
     start: typeof import("./server/start").default;

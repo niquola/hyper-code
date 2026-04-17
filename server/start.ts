@@ -191,7 +191,7 @@ export default async function start(appCtx: Ctx) {
           parentId: sessionRow?.parent || undefined,
           parentTitle: parentRow?.title || undefined,
         };
-        return new Response(appCtx.ui.layout_view_page("Hyper Code", body, session.model.name || session.model.id, sessionMeta), {
+        return new Response(appCtx.ui.layout_view_page(appCtx, "Hyper Code", body, session.model.name || session.model.id, sessionMeta), {
           headers: { "Content-Type": "text/html; charset=utf-8" },
         });
       }

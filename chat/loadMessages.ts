@@ -23,7 +23,7 @@ export type SessionInfo = { parent: string | null; offset: number | null };
  *   - messages: sessionId → own MessageRow[]
  *   - cache: sessionId → already-computed Message[] (mutated: populated lazily)
  */
-export function chat_loadMessages(
+export default function chat_loadMessages(
   sessionId: string,
   sessions: (id: string) => SessionInfo | null,
   messages: (id: string) => MessageRow[],
