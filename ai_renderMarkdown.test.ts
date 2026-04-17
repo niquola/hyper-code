@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { ai_renderMarkdown, ai_highlightCode } from "./ai_renderMarkdown.ts";
+import { ai_renderMarkdown, ai_highlightCode } from "./ai/renderMarkdown.ts";
 
 describe("ai_renderMarkdown", () => {
   test("returns empty for blank input", async () => {

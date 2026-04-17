@@ -1,5 +1,5 @@
 import type { Ctx } from "./agent_type_Ctx.ts";
-import { chat_loadSettings, chat_saveSettings } from "./chat_settings.ts";
+import { chat_loadSettings, chat_saveSettings } from "./chat/settings.ts";
 
 export default async function (ctx: Ctx, req: Request) {
   const form = await req.formData();

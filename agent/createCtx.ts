@@ -2,7 +2,7 @@ import type { Model } from "../ai_type_Model.ts";
 import type { ModelIndex } from "../ai_type_ModelIndex.ts";
 import type { AgentTool } from "../agent_type_Tool.ts";
 import type { Ctx } from "../agent_type_Ctx.ts";
-import type { chat_db } from "../chat_db.ts";
+import type { chat_db } from "../chat/db.ts";
 
 export function agent_createCtx(opts: {
   model: Model;

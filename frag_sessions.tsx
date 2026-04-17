@@ -1,5 +1,5 @@
 import type { Ctx } from "./agent_type_Ctx.ts";
-import type { SessionRow } from "./chat_db.ts";
+import type { SessionRow } from "./chat/db.ts";
 import { escapeHtml } from "./jsx.ts";
 
 type TreeNode = SessionRow & { children: TreeNode[]; depth: number; msgCount: number };

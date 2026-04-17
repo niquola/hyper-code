@@ -2,9 +2,9 @@ import type { AssistantMessage, ToolCall, Tool } from "../ai_type_Message.ts";
 import type { Ctx } from "../agent_type_Ctx.ts";
 import type { Session } from "../chat_type_Session.ts";
 import type { AgentEvent } from "../agent_type_Event.ts";
-import { ai_stream } from "../ai_stream.ts";
+import { ai_stream } from "../ai/stream.ts";
 import { agent_executeTools } from "./executeTools.ts";
-import { chat_getApiKey } from "../chat_apiKeys.ts";
+import { chat_getApiKey } from "../chat/apiKeys.ts";
 
 export async function agent_run(
   ctx: Ctx,

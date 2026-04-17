@@ -66,8 +66,8 @@ describe("keys page rendering", () => {
 
 describe("form_keys_POST", () => {
   test("saves key and redirects to /settings", async () => {
-    const { chat_db } = await import("./chat_db.ts");
-    const { chat_saveApiKey, chat_getApiKey } = await import("./chat_apiKeys.ts");
+    const { chat_db } = await import("./chat/db.ts");
+    const { chat_saveApiKey, chat_getApiKey } = await import("./chat/apiKeys.ts");
 
     // Save a key
     const home = "/tmp/hyper-keys-test-flow";

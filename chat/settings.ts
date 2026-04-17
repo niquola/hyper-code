@@ -1,6 +1,6 @@
 import type { ChatSettings } from "../chat_type_ChatSettings.ts";
-import { ai_models_readProvider } from "../ai_models_readProvider.ts";
-import { ai_getEnvApiKey } from "../ai_getEnvApiKey.ts";
+import { ai_models_readProvider } from "../ai/models_readProvider.ts";
+import { ai_getEnvApiKey } from "../ai/getEnvApiKey.ts";
 import type { Model } from "../ai_type_Model.ts";
 
 export type { ChatSettings } from "../chat_type_ChatSettings.ts";

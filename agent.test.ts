@@ -1,8 +1,8 @@
 import { test, expect, describe } from "bun:test";
-import { agent_createCtx } from "./agent_createCtx.ts";
-import { agent_run } from "./agent_run.ts";
-import { agent_abort } from "./agent_abort.ts";
-import { agent_executeTools } from "./agent_executeTools.ts";
+import { agent_createCtx } from "./agent/createCtx.ts";
+import { agent_run } from "./agent/run.ts";
+import { agent_abort } from "./agent/abort.ts";
+import { agent_executeTools } from "./agent/executeTools.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
 import type { Session } from "./chat_type_Session.ts";
 import type { AgentEvent } from "./agent_type_Event.ts";

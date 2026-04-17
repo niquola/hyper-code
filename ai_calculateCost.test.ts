@@ -1,5 +1,5 @@
 import { test, expect } from "bun:test";
-import { ai_calculateCost } from "./ai_calculateCost.ts";
+import { ai_calculateCost } from "./ai/calculateCost.ts";
 import type { Model } from "./ai_type_Model.ts";
 import type { Usage } from "./ai_type_Message.ts";
 

@@ -1,6 +1,6 @@
 import { test, expect, describe } from "bun:test";
-import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall, chat_view_error } from "./chat_view_message.tsx";
-import { chat_view_page } from "./chat_view_page.tsx";
+import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall, chat_view_error } from "./chat/view_message.tsx";
+import { chat_view_page } from "./chat/view_page.tsx";
 import { pageState } from "./cdp_pageState.ts";
 import { queryExists, queryTexts, queryAttrs } from "./test_html.ts";
 import type { Message } from "./ai_type_Message.ts";

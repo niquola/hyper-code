@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { chat_loadMessages, rowToMessage, type SessionInfo, type MessageRow } from "./chat_loadMessages.ts";
+import { chat_loadMessages, rowToMessage, type SessionInfo, type MessageRow } from "./chat/loadMessages.ts";
 import type { Message } from "./ai_type_Message.ts";
 
 function mkRow(content: string, role = "user"): MessageRow {

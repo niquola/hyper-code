@@ -1,5 +1,5 @@
 import { test, expect, describe, beforeEach } from "bun:test";
-import { chat_db } from "./chat_db.ts";
+import { chat_db } from "./chat/db.ts";
 
 describe("memory_search (FTS5+BM25)", () => {
   let db: ReturnType<typeof chat_db>;

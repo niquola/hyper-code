@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { chat_db } from "./chat_db.ts";
+import { chat_db } from "./chat/db.ts";
 
 describe("POST /session/:id/fork", () => {
   test("forkSession creates child with parent link and offset", () => {

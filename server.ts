@@ -2,11 +2,11 @@ import type { HtmlContent } from "./ai_type_Message.ts";
 import { router_buildRoutes } from "./router_buildRoutes.ts";
 import { hyper_ui_handleRequest } from "./hyper_ui_route.ts";
 import { widget_editor } from "./widget_editor.ts";
-import { chat_getCtx, chat_loadSessionByName } from "./chat_ctx.ts";
-import { chat_createSSEStream } from "./chat_sse.ts";
-import { agent_run } from "./agent_run.ts";
+import { chat_getCtx, chat_loadSessionByName } from "./chat/ctx.ts";
+import { chat_createSSEStream } from "./chat/sse.ts";
+import { agent_run } from "./agent/run.ts";
 import { layout_view_page } from "./layout_view_page.tsx";
-import { chat_view_page } from "./chat_view_page.tsx";
+import { chat_view_page } from "./chat/view_page.tsx";
 
 const appCtx = await chat_getCtx();
 const routes = await router_buildRoutes(".", appCtx);

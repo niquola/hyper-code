@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { ai_convertMessages } from "./ai_convertMessages.ts";
+import { ai_convertMessages } from "./ai/convertMessages.ts";
 import type { Model } from "./ai_type_Model.ts";
 import type { AssistantMessage, Context } from "./ai_type_Message.ts";
 

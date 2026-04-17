@@ -1,6 +1,6 @@
 import { test, expect } from "bun:test";
-import { chat_resolveModel, chat_resolveApiKey } from "./chat_settings.ts";
-import type { ChatSettings } from "./chat_settings.ts";
+import { chat_resolveModel, chat_resolveApiKey } from "./chat/settings.ts";
+import type { ChatSettings } from "./chat/settings.ts";
 
 test("resolveModel returns registry model for known provider", async () => {
   const s: ChatSettings = { provider: "openai", modelId: "gpt-4o", apiKey: "" };

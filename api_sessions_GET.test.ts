@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from "bun:test";
 import api_sessions_GET from "./api_sessions_GET.ts";
-import { chat_db } from "./chat_db.ts";
+import { chat_db } from "./chat/db.ts";
 import type { Ctx } from "./agent_type_Ctx.ts";
 
 function createTestCtx(): Ctx {

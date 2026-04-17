@@ -1,6 +1,6 @@
 import { test, expect, describe } from "bun:test";
-import { agent_executeTools } from "./agent_executeTools.ts";
-import { agent_createCtx } from "./agent_createCtx.ts";
+import { agent_executeTools } from "./agent/executeTools.ts";
+import { agent_createCtx } from "./agent/createCtx.ts";
 import type { AgentEvent } from "./agent_type_Event.ts";
 import type { ToolCall } from "./ai_type_Message.ts";
 import type { Model } from "./ai_type_Model.ts";

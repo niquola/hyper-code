@@ -6,7 +6,7 @@ import {
   ai_stream_end,
   ai_stream_result,
   ai_stream_iter,
-} from "./ai_EventStream.ts";
+} from "./ai/EventStream.ts";
 import type { AssistantMessage } from "./ai_type_Message.ts";
 
 function makeMsg(text: string): AssistantMessage {

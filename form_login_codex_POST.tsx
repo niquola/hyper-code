@@ -1,8 +1,8 @@
 import type { Ctx } from "./agent_type_Ctx.ts";
 import { auth_codexLogin } from "./auth_codex.ts";
-import { chat_loadSettings, chat_saveSettings } from "./chat_settings.ts";
-import { chat_resetCtx, chat_resetConfig } from "./chat_ctx.ts";
-import { chat_saveApiKey } from "./chat_apiKeys.ts";
+import { chat_loadSettings, chat_saveSettings } from "./chat/settings.ts";
+import { chat_resetCtx, chat_resetConfig } from "./chat/ctx.ts";
+import { chat_saveApiKey } from "./chat/apiKeys.ts";
 
 export default async function (ctx: Ctx, req: Request) {
   try {

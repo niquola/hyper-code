@@ -1,5 +1,5 @@
-import { agent_createCtx } from "../agent_createCtx.ts";
-import { agent_buildSystemPrompt } from "../agent_buildSystemPrompt.ts";
+import { agent_createCtx } from "../agent/createCtx.ts";
+import { agent_buildSystemPrompt } from "../agent/buildSystemPrompt.ts";
 import type { Ctx } from "../agent_type_Ctx.ts";
 import type { Session } from "../chat_type_Session.ts";
 import type { Message } from "../ai_type_Message.ts";

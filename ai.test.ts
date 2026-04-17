@@ -1,16 +1,16 @@
 import { test, expect, describe } from "bun:test";
-import { ai_sanitizeSurrogates } from "./ai_sanitizeSurrogates.ts";
-import { ai_parseStreamingJson } from "./ai_parseStreamingJson.ts";
-import { ai_calculateCost } from "./ai_calculateCost.ts";
-import { ai_getEnvApiKey } from "./ai_getEnvApiKey.ts";
-import { ai_transformMessages } from "./ai_transformMessages.ts";
-import { ai_convertMessages } from "./ai_convertMessages.ts";
-import { ai_convertTools } from "./ai_convertTools.ts";
-import { ai_stream } from "./ai_stream.ts";
+import { ai_sanitizeSurrogates } from "./ai/sanitizeSurrogates.ts";
+import { ai_parseStreamingJson } from "./ai/parseStreamingJson.ts";
+import { ai_calculateCost } from "./ai/calculateCost.ts";
+import { ai_getEnvApiKey } from "./ai/getEnvApiKey.ts";
+import { ai_transformMessages } from "./ai/transformMessages.ts";
+import { ai_convertMessages } from "./ai/convertMessages.ts";
+import { ai_convertTools } from "./ai/convertTools.ts";
+import { ai_stream } from "./ai/stream.ts";
 import { ai_models_getAll } from "./ai_models.ts";
-import { ai_models_loadIndex } from "./ai_models_loadIndex.ts";
-import { agent_createCtx } from "./agent_createCtx.ts";
-import { ai_stream_createAssistantMessageEventStream } from "./ai_EventStream.ts";
+import { ai_models_loadIndex } from "./ai/models_loadIndex.ts";
+import { agent_createCtx } from "./agent/createCtx.ts";
+import { ai_stream_createAssistantMessageEventStream } from "./ai/EventStream.ts";
 import type { AssistantMessage, Message, ToolCall, Usage } from "./ai_type_Message.ts";
 import type { Model } from "./ai_type_Model.ts";
 

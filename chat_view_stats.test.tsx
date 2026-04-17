@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { chat_view_stats } from "./chat_view_stats.tsx";
+import { chat_view_stats } from "./chat/view_stats.tsx";
 import { queryExists, queryTexts } from "./test_html.ts";
 import type { Message, AssistantMessage } from "./ai_type_Message.ts";
 

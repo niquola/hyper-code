@@ -2,7 +2,7 @@ import type { Message, ToolCall, AssistantMessage, ToolResultMessage, TextConten
 import { chat_view_userMessage, chat_view_assistantMessage, chat_view_toolCall } from "./view_message.tsx";
 import { escapeHtml } from "../jsx.ts";
 import { detectToolLang, getToolCode } from "./toolCode.ts";
-import { ai_highlightCode } from "../ai_renderMarkdown.ts";
+import { ai_highlightCode } from "../ai/renderMarkdown.ts";
 import { CHAT_SCRIPT } from "./script.ts";
 
 export async function chat_view_page(messages: Message[], sessionFilename?: string, isStreaming?: boolean): Promise<string> {

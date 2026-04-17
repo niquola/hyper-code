@@ -5,10 +5,10 @@ import { Database } from "bun:sqlite";
 // Using in-memory DB for tests
 
 describe("chat_db", () => {
-  let db: ReturnType<typeof import("./chat_db.ts")["chat_db"]>;
+  let db: ReturnType<typeof import("./chat/db.ts")["chat_db"]>;
 
   beforeEach(async () => {
-    const mod = await import("./chat_db.ts");
+    const mod = await import("./chat/db.ts");
     db = mod.chat_db(":memory:");
   });
 

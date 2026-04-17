@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { agent_reset } from "./agent_reset.ts";
+import { agent_reset } from "./agent/reset.ts";
 import type { Session } from "./chat_type_Session.ts";
 
 function createSession(): Session {

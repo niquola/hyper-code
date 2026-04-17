@@ -1,5 +1,5 @@
 import { escapeHtml } from "../jsx.ts";
-import { ai_renderMarkdown } from "../ai_renderMarkdown.ts";
+import { ai_renderMarkdown } from "../ai/renderMarkdown.ts";
 
 export async function chat_view_assistantMessage(text: string, thinking?: string): Promise<string> {
   const html = await ai_renderMarkdown(text);

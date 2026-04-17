@@ -1,7 +1,7 @@
 import type { AgentEvent } from "../agent_type_Event.ts";
 import type { HtmlContent } from "../ai_type_Message.ts";
 import { escapeHtml } from "../jsx.ts";
-import { ai_renderMarkdown, ai_highlightCode } from "../ai_renderMarkdown.ts";
+import { ai_renderMarkdown, ai_highlightCode } from "../ai/renderMarkdown.ts";
 import { chat_view_toolCall } from "./view_toolCall.tsx";
 import { detectToolLang, getToolCode } from "./toolCode.ts";
 
