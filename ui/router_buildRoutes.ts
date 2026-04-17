@@ -45,6 +45,7 @@ export async function router_buildRoutes(dir: string, ctx: Ctx) {
     { glob: new Bun.Glob("frag_*.tsx"), parse: parseFragFile },
     { glob: new Bun.Glob("form_*.tsx"), parse: parseFormFile },
     { glob: new Bun.Glob("api_*.tsx"), parse: parseApiFile },
+    { glob: new Bun.Glob("api_*.ts"), parse: parseApiFile },
   ];
 
   const routes: Record<string, Record<string, Function>> = {};

@@ -1,18 +1,53 @@
-// Entry point — load all namespaces, start server, watch for changes
-import { loader_loadAll, loader_watch, loader_genTypes } from "./loader.ts";
+// Entry point — load namespaces, start server (with REPL), watch files
+import { loader_loadAll, loader_loadFile, loader_watch, loader_genTypes } from "./loader.ts";
 import start from "./server/start.ts";
 
-// Build ctx with all namespaces loaded
-const loaded = await loader_loadAll({}, ".");
+const ctx: any = {};
+const projectDir = ".";
+
+// Load all namespaces
+const loaded = await loader_loadAll(ctx, projectDir);
+await loader_genTypes(projectDir);
 console.log(`[loader] ${loaded.length} modules loaded`);
 
-// Generate types
-await loader_genTypes(".");
+// REPL handler
+async function handleRepl(body: any) {
+  if (body.op === "load_all") {
+    const res = await loader_loadAll(ctx, projectDir);
+    await loader_genTypes(projectDir);
+    return { loaded: res, count: res.length };
+  }
+  if (body.op === "reload") {
+    const result = await loader_loadFile(ctx, projectDir, body.path);
+    return result ? { ok: true, ...result } : { error: "no default export" };
+  }
+  if (body.op === "eval") {
+    const names: string[] = [];
+    const values: any[] = [];
+    for (const [ns, fns] of Object.entries(ctx)) {
+      if (typeof fns !== "object" || fns === null || ns === "_meta") continue;
+      if (!names.includes(ns)) { names.push(ns); values.push(fns); }
+      for (const [name, fn] of Object.entries(fns as any)) {
+        if (typeof fn !== "function") continue;
+        if (!names.includes(name)) { names.push(name); values.push(fn); }
+      }
+    }
+    const fn = new Function(...names, "ctx", `return (async () => (${body.code}))()`);
+    const result = await fn(...values, ctx);
+    return { result: String(result) };
+  }
+  if (body.op === "gen_types") {
+    await loader_genTypes(projectDir);
+    return { ok: true };
+  }
+  return { error: "unknown op" };
+}
 
-// Start HTTP server
-const server = await start();
+// Expose repl handler globally for api_repl_POST.ts
+(globalThis as any).__repl = handleRepl;
 
-// Watch for file changes — hot reload
-loader_watch({}, ".", () => {
-  console.log("[watch] reloaded");
-});
+// Start server
+await start();
+
+// File watcher — hot reload
+loader_watch(ctx, projectDir, () => {});

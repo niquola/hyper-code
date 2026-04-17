@@ -31,7 +31,7 @@ export async function chat_getCtx(): Promise<Ctx> {
     // Build AgentTool[] from loaded tool/ namespace
     const tools = build_tools(tempCtx);
 
-    const { chat_loadSettings, chat_resolveModel, chat_resolveApiKey } = await import("./chat_settings.ts");
+    const { chat_loadSettings, chat_resolveModel, chat_resolveApiKey } = await import("./settings.ts");
     const settings = await chat_loadSettings();
     const model = await chat_resolveModel(cwd, settings);
     const apiKey = chat_resolveApiKey(home, settings);

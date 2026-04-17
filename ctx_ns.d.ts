@@ -22,6 +22,7 @@ export default interface CtxNs {
     write: typeof import("./tool/write").default;
   };
   ui: {
+    api_repl_POST: typeof import("./ui/api_repl_POST").default;
     api_sessions_GET: typeof import("./ui/api_sessions_GET").default;
     form_login_codex_POST: typeof import("./ui/form_login_codex_POST").default;
     form_session_create_POST: typeof import("./ui/form_session_create_POST").default;
