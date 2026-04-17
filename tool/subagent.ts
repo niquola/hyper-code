@@ -1,4 +1,3 @@
-import agent_run from "../agent/run.ts";
 
 export const name = "subagent";
 export const description = "Launch a sub-agent in a forked session. Inherits full conversation history. Blocks until sub-agent calls subagent_report.";
@@ -26,7 +25,7 @@ export default async function subagent(ctx: Ctx, session: any, params: { task: s
   const taskWithInstructions = `[SUB-AGENT TASK] ${params.task}\n\nWhen done, call subagent_report({ result: "..." }).`;
 
   const msgsBefore = childSession.messages.length;
-  agent_run(ctx, childSession, taskWithInstructions, (event) => {
+  ctx.agent.run(ctx, childSession, taskWithInstructions, (event) => {
     if (event.type === "agent_end") {
       const newMsgs = childSession.messages.slice(msgsBefore);
       for (const m of newMsgs) db.addMessage(childFilename, { role: m.role, content: m.role === "user" ? (typeof m.content === "string" ? m.content : JSON.stringify(m.content)) : JSON.stringify(m), timestamp: m.timestamp });

@@ -8,8 +8,6 @@ import type { Model } from "../ai/type_Model.ts";
 import type { StreamOptions } from "../ai/type_StreamOptions.ts";
 import { ai_stream_createAssistantMessageEventStream, type AssistantMessageEventStream } from "./EventStream.ts";
 import ai_getEnvApiKey from "./getEnvApiKey.ts";
-import { auth_codexRefresh } from "../auth/codex.ts";
-import chat_saveApiKey from "../chat/saveApiKey.ts";
 import ai_calculateCost from "./calculateCost.ts";
 import ai_parseStreamingJson from "./parseStreamingJson.ts";
 import ai_sanitizeSurrogates from "./sanitizeSurrogates.ts";
@@ -197,14 +195,14 @@ export default function ai_streamCodex(model: Model, context: Context, options?:
                   const auth = JSON.parse(require("node:fs").readFileSync(authFile, "utf-8"));
                   const refreshToken = auth.tokens?.refresh_token;
                   if (refreshToken) {
-                    const creds = await auth_codexRefresh(refreshToken);
+                    const creds = await ((await import("../auth/codex.ts")).auth_codexRefresh)(refreshToken);
                     // Save refreshed token
                     auth.tokens.access_token = creds.access;
                     auth.tokens.refresh_token = creds.refresh;
                     auth.tokens.account_id = creds.accountId;
                     auth.last_refresh = new Date().toISOString();
                     require("node:fs").writeFileSync(authFile, JSON.stringify(auth, null, 2));
-                    await chat_saveApiKey(home, "openai-codex", creds.access);
+                    await ((await import("../chat/saveApiKey.ts")).default)(home, "openai-codex", creds.access);
                     message = `CODEX_AUTH_REFRESHED: Token refreshed. Please retry your message.`;
                   } else {
                     message = `CODEX_AUTH_EXPIRED: Codex token expired. Please re-login.`;

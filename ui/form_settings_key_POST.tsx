@@ -1,5 +1,4 @@
 import type { Ctx } from "../agent/type_Ctx.ts";
-import chat_saveApiKey from "../chat/saveApiKey.ts";
 
 export default async function (ctx: Ctx, req: Request) {
   const form = await req.formData();
@@ -7,7 +6,7 @@ export default async function (ctx: Ctx, req: Request) {
   const apiKey = (form.get("apiKey") as string)?.trim();
 
   if (provider && apiKey) {
-    await chat_saveApiKey(ctx.home, provider, apiKey);
+    await ctx.chat.saveApiKey(ctx.home, provider, apiKey);
   }
 
   return new Response(null, { status: 302, headers: { Location: "/settings" } });

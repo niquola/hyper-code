@@ -1,10 +1,9 @@
-import ai_getModels from "../ai/getModels.ts";
 import type { Ctx } from "../agent/type_Ctx.ts";
 
 export default async function (ctx: Ctx, req: Request) {
   const url = new URL(req.url, "http://localhost");
   const provider = url.searchParams.get("provider") || "";
-  const models = await ai_getModels(ctx, provider);
+  const models = await ctx.ai.getModels(ctx, provider);
 
   let html = "";
   for (const m of models) {

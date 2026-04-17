@@ -2,9 +2,7 @@ import type { AssistantMessage, ToolCall, Tool } from "../ai/type_Message.ts";
 import type { Ctx } from "../agent/type_Ctx.ts";
 import type { Session } from "../chat/type_Session.ts";
 import type { AgentEvent } from "../agent/type_Event.ts";
-import ai_stream from "../ai/stream.ts";
 import agent_executeTools from "./executeTools.ts";
-import chat_getApiKey from "../chat/getApiKey.ts";
 
 export default async function agent_run(
   ctx: Ctx,
@@ -45,9 +43,9 @@ export default async function agent_run(
       }));
 
       // Resolve API key fresh each turn (picks up re-login tokens)
-      const freshApiKey = await chat_getApiKey(ctx.home, session.model.provider) || session.apiKey;
+      const freshApiKey = await ctx.chat.getApiKey(ctx.home, session.model.provider) || session.apiKey;
 
-      const stream = ai_stream(
+      const stream = ctx.ai.stream(
         session.model,
         {
           systemPrompt: session.systemPrompt,
@@ -128,8 +126,8 @@ export default async function agent_run(
         }
         onEvent({ type: "turn_start" });
         const llmTools: Tool[] = ctx.tools.map((t) => ({ name: t.name, description: t.description, parameters: t.parameters }));
-        const followUpApiKey = await chat_getApiKey(ctx.home, session.model.provider) || session.apiKey;
-        const stream = ai_stream(session.model, { systemPrompt: session.systemPrompt, messages: session.messages, tools: llmTools.length > 0 ? llmTools : undefined }, { apiKey: followUpApiKey, signal: session.abortController.signal });
+        const followUpApiKey = await ctx.chat.getApiKey(ctx.home, session.model.provider) || session.apiKey;
+        const stream = ctx.ai.stream(session.model, { systemPrompt: session.systemPrompt, messages: session.messages, tools: llmTools.length > 0 ? llmTools : undefined }, { apiKey: followUpApiKey, signal: session.abortController.signal });
         let assistantMessage: AssistantMessage | null = null;
         for await (const event of stream) {
           if (event.type === "text_delta") onEvent({ type: "text_delta", delta: event.delta });

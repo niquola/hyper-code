@@ -1,8 +1,7 @@
 import { escapeHtml } from "../jsx.ts";
-import ai_renderMarkdown from "../ai/renderMarkdown.ts";
 
-export async function chat_view_assistantMessage(text: string, thinking?: string): Promise<string> {
-  const html = await ai_renderMarkdown(text);
+export default async function chat_view_assistantMessage(ctx: any, text: string, thinking?: string): Promise<string> {
+  const html = await ctx.ai.renderMarkdown(text);
   return (
     <div data-entity="message" data-status="assistant" className="mb-4">
       {thinking && (

@@ -1,13 +1,9 @@
 import layout_view_page from "./layout_view_page.tsx";
-import chat_loadSettings from "../chat/loadSettings.ts";
-import ai_getProviders from "../ai/getProviders.ts";
-import ai_getModels from "../ai/getModels.ts";
 import type { Ctx } from "../agent/type_Ctx.ts";
 
 export default async function (ctx: Ctx, req: Request) {
-  const settings = await chat_loadSettings();
-  const providers = ai_getProviders(ctx);
-import ai_getModels from "../ai/getModels.ts";
+  const settings = await ctx.chat.loadSettings();
+  const providers = ctx.ai.getProviders(ctx);
   const allProviders = providers.includes(settings.provider) ? providers : [settings.provider, ...providers];
   const modelOptions = await renderModelOptions(ctx, settings.provider, settings.modelId);
 
@@ -49,7 +45,7 @@ import ai_getModels from "../ai/getModels.ts";
 }
 
 async function renderModelOptions(ctx: Ctx, provider: string, selectedId?: string): Promise<string> {
-  const models = await ai_getModels(ctx, provider);
+  const models = await ctx.ai.getModels(ctx, provider);
   let html = "";
   for (const m of models) {
     const sel = m.id === selectedId ? " selected" : "";

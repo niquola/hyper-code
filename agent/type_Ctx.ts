@@ -17,4 +17,6 @@ export type Ctx = {
   modelIndex: ModelIndex;
   modelProviders: Map<string, Record<string, Model>>;
   modelAll: Record<string, Model> | null;
+  // Namespace functions — populated by loader
+  [ns: string]: any;
 };

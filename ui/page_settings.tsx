@@ -1,9 +1,5 @@
 import type { Ctx } from "../agent/type_Ctx.ts";
 import layout_view_page from "./layout_view_page.tsx";
-import chat_getApiKey from "../chat/getApiKey.ts";
-import chat_loadSettings from "../chat/loadSettings.ts";
-import ai_getProviders from "../ai/getProviders.ts";
-import ai_getModels from "../ai/getModels.ts";
 import { escapeHtml } from "../jsx.ts";
 
 type KeyInfo = {
@@ -59,16 +55,15 @@ const PROVIDERS: { provider: string; label: string; oauth?: boolean }[] = [
 ];
 
 export default async function (ctx: Ctx, req: Request) {
-  const settings = await chat_loadSettings();
+  const settings = await ctx.chat.loadSettings();
   const url = new URL(req.url, "http://localhost");
   const currentProvider = url.searchParams.get("provider") || settings.provider;
-  const providers = ai_getProviders(ctx);
-import ai_getModels from "../ai/getModels.ts";
-  const models = await ai_getModels(ctx, currentProvider);
+  const providers = ctx.ai.getProviders(ctx);
+  const models = await ctx.ai.getModels(ctx, currentProvider);
 
   const keys: KeyInfo[] = [];
   for (const p of PROVIDERS) {
-    const key = await chat_getApiKey(ctx.home, p.provider);
+    const key = await ctx.chat.getApiKey(ctx.home, p.provider);
     keys.push({
       provider: p.provider,
       label: p.label,

@@ -1,27 +1,22 @@
 import type { Ctx } from "../agent/type_Ctx.ts";
-import chat_saveSettings from "../chat/saveSettings.ts";
-import { auth_codexLogin } from "../auth/codex.ts";
-import chat_loadSettings from "../chat/loadSettings.ts";
-import { chat_resetSessions } from "../chat/start.ts";
-import chat_saveApiKey from "../chat/saveApiKey.ts";
 
 export default async function (ctx: Ctx, req: Request) {
   try {
     const form = await req.formData().catch(() => null);
     const orgId = form?.get("org") as string | null;
     const port = Number(await Bun.file(".port").text().catch(() => "3000"));
-    const { authUrl, waitForCredentials } = await auth_codexLogin(port, orgId || undefined);
+    const { authUrl, waitForCredentials } = await ctx.auth.codexLogin(port, orgId || undefined);
 
     // Wait for OAuth callback in background, save credentials when done
     waitForCredentials()
       .then(async (creds) => {
-        const settings = await chat_loadSettings();
+        const settings = await ctx.chat.loadSettings();
         settings.provider = "openai-codex";
         settings.modelId = settings.modelId.startsWith("gpt-5") ? settings.modelId : "gpt-5.2-codex";
         settings.apiKey = ""; // Keys stored per-provider now
-        await chat_saveSettings(settings);
-        await chat_saveApiKey(ctx.home, "openai-codex", creds.access);
-        chat_resetSessions();
+        await ctx.chat.saveSettings(settings);
+        await ctx.chat.saveApiKey(ctx.home, "openai-codex", creds.access);
+        ctx.chat.resetSessions();
         
         console.log("[codex] Login successful, account:", creds.accountId);
       })

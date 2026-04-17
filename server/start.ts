@@ -1,16 +1,8 @@
 import type { HtmlContent } from "../ai/type_Message.ts";
 import type { Ctx } from "../agent/type_Ctx.ts";
-import router_buildRoutes from "../ui/router_buildRoutes.ts";
-import hyper_ui_handleRequest from "../hyper_ui/route.ts";
-import widget_editor from "../ui/widget_editor.ts";
-import { chat_loadSessionByName } from "../chat/start.ts";
-import chat_createSSEStream from "../chat/sse.ts";
-import agent_run from "../agent/run.ts";
-import layout_view_page from "../ui/layout_view_page.tsx";
-import { chat_view_page } from "../chat/view_page.tsx";
 
 export default async function start(appCtx: Ctx) {
-  const routes = await router_buildRoutes("./ui", appCtx);
+  const routes = await appCtx.ui.router_buildRoutes("./ui", appCtx);
   const cwd = appCtx.cwd;
 
   const savedPort = await Bun.file(".port").text().catch(() => "");
@@ -25,12 +17,12 @@ export default async function start(appCtx: Ctx) {
 
       // /w/editor/* — built-in editor widget
       if (url.pathname.startsWith("/w/editor")) {
-        return widget_editor(req, cwd);
+        return appCtx.ui.widget_editor(req, cwd);
       }
 
       // /ui/{name}/* — user CGI widgets from workspace
       if (url.pathname.startsWith("/ui/")) {
-        return hyper_ui_handleRequest(cwd, req);
+        return appCtx.hyper_ui.route(cwd, req);
       }
 
       // POST /session/:id/fork
@@ -61,7 +53,7 @@ export default async function start(appCtx: Ctx) {
       if (actionMatch) {
         const sessionFilename = decodeURIComponent(actionMatch[1]!);
         const action = actionMatch[2]!;
-        const session = await chat_loadSessionByName(sessionFilename);
+        const session = await appCtx.chat.loadSessionByName(sessionFilename);
 
         // GET /session/:id/stream — SSE reconnect
         if (action === "stream" && req.method === "GET") {
@@ -112,8 +104,8 @@ export default async function start(appCtx: Ctx) {
           }
           const ctx = appCtx;
           const msgsBefore = session.messages.length;
-          return chat_createSSEStream(session, (onEvent) =>
-            agent_run(ctx, session, prompt, (event) => {
+          return appCtx.chat.sse(session, (onEvent) =>
+            appCtx.agent.run(ctx, session, prompt, (event) => {
               onEvent(event);
               if (event.type === "agent_end") {
                 const newMsgs = session.messages.slice(msgsBefore);
@@ -184,14 +176,14 @@ export default async function start(appCtx: Ctx) {
       if (sessionMatch && req.method === "GET") {
         const filename = decodeURIComponent(sessionMatch[1]!);
         const ctx = appCtx;
-        const session = await chat_loadSessionByName(filename);
+        const session = await appCtx.chat.loadSessionByName(filename);
         appCtx.db.markRead(session.session_id, session.messages.length);
         const db = appCtx.db;
         const visibleMessages = db.getMessages(filename).map((r) => {
           if (r.role === "user") return { role: "user" as const, content: r.content, timestamp: r.timestamp };
           try { return JSON.parse(r.content); } catch { return { role: "user" as const, content: r.content, timestamp: r.timestamp }; }
         });
-        const body = await chat_view_page(visibleMessages, session.session_id, session.isStreaming);
+        const body = await appCtx.chat.view_page(appCtx, visibleMessages, session.session_id, session.isStreaming);
         const sessionRow = appCtx.db.getSession(filename);
         const parentRow = sessionRow?.parent ? appCtx.db.getSession(sessionRow.parent) : null;
         const sessionMeta = {
@@ -199,7 +191,7 @@ export default async function start(appCtx: Ctx) {
           parentId: sessionRow?.parent || undefined,
           parentTitle: parentRow?.title || undefined,
         };
-        return new Response(layout_view_page("Hyper Code", body, session.model.name || session.model.id, sessionMeta), {
+        return new Response(appCtx.ui.layout_view_page("Hyper Code", body, session.model.name || session.model.id, sessionMeta), {
           headers: { "Content-Type": "text/html; charset=utf-8" },
         });
       }

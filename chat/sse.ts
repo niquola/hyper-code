@@ -1,8 +1,6 @@
 import type { AgentEvent } from "../agent/type_Event.ts";
 import type { HtmlContent } from "../ai/type_Message.ts";
 import { escapeHtml } from "../jsx.ts";
-import ai_renderMarkdown from "../ai/renderMarkdown.ts";
-import ai_highlightCode from "../ai/highlightCode.ts";
 import { chat_view_toolCall } from "./view_toolCall.tsx";
 import { detectToolLang, getToolCode } from "./toolCode.ts";
 
@@ -128,13 +126,13 @@ export default function chat_createSSEStream(
         let highlighted: string | undefined;
         if (lang) {
           const code = getToolCode(t.name, t.args, t.result);
-          if (code) highlighted = await ai_highlightCode(code, lang);
+          if (code) highlighted = await ctx.ai.highlightCode(code, lang);
         }
         html += renderToolBlock(t, highlighted, session.session_id);
       }
 
       if (finalText) {
-        const rendered = await ai_renderMarkdown(finalText);
+        const rendered = await ctx.ai.renderMarkdown(finalText);
         html += `<div class="text-gray-900 prose max-w-none text-[14px]" data-role="content">${rendered}</div>`;
       }
 

@@ -2,7 +2,6 @@
 import type { Ctx } from "../agent/type_Ctx.ts";
 import type { Session } from "./type_Session.ts";
 import type { Message } from "../ai/type_Message.ts";
-import agent_buildSystemPrompt from "../agent/buildSystemPrompt.ts";
 import chat_resolveSessionModel from "./resolveSessionModel.ts";
 import chat_loadMessages from "./loadMessages.ts";
 
@@ -44,7 +43,7 @@ async function loadSession(filename: string): Promise<Session> {
   );
 
   const { model: sessionModel, apiKey: sessionApiKey } = await chat_resolveSessionModel(ctx.home, ctx.cwd, db, filename);
-  const systemPrompt = agent_buildSystemPrompt(ctx.cwd, ctx.tools, filename, sessionModel.name || sessionModel.id);
+  const systemPrompt = ctx.agent.buildSystemPrompt(ctx.cwd, ctx.tools, filename, sessionModel.name || sessionModel.id);
 
   const session: Session = {
     session_id: filename,
