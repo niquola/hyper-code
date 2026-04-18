@@ -1,6 +1,6 @@
 import { escapeHtml } from "../jsx.ts";
 
-export function chat_view_userMessage(content: string, messageIndex?: number, sessionId?: string): string {
+export default function chat_view_userMessage(content: string, messageIndex?: number, sessionId?: string): string {
   const base = sessionId ? `/session/${encodeURIComponent(sessionId)}` : "";
   const show = messageIndex != null && sessionId;
 

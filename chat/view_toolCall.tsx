@@ -1,6 +1,6 @@
 import { escapeHtml } from "../jsx.ts";
 
-export function chat_view_toolCall(toolName: string, args: string, result?: string, isError?: boolean, htmlContent?: string): string {
+export default function chat_view_toolCall(toolName: string, args: string, result?: string, isError?: boolean, htmlContent?: string): string {
   const hasContent = result != null || htmlContent;
   const border = isError ? "border-red-200 bg-red-50" : hasContent ? "border-gray-200 bg-gray-50" : "border-yellow-200 bg-yellow-50";
   const icon = isError ? "text-red-500" : hasContent ? "text-green-500" : "text-yellow-500";

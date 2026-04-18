@@ -1,4 +1,4 @@
-export function chat_view_spinner(): string {
+export default function chat_view_spinner(): string {
   return (
     <div id="spinner" className="mb-4 flex items-center gap-2 text-gray-400 text-sm">
       <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">

@@ -37,7 +37,7 @@ export default function ai_streamAnthropic(ctx: any, model: Model, context: Cont
       });
 
       // Build params
-      const messages = convertMessages(context);
+      const messages = convertMessages(ctx, context);
       const params: any = {
         model: model.id,
         messages,
@@ -170,7 +170,7 @@ export default function ai_streamAnthropic(ctx: any, model: Model, context: Cont
 
 // --- Message conversion ---
 
-function convertMessages(context: Context): any[] {
+function convertMessages(ctx: any, context: Context): any[] {
   const messages: any[] = [];
   const transformed = ctx.ai.transformMessages(context.messages);
 

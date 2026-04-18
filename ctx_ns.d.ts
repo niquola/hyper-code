@@ -63,7 +63,12 @@ export default interface CtxNs {
     start: typeof import("./chat/start").default;
     stripLineNumbers: typeof import("./chat/stripLineNumbers").default;
     view_assistantMessage: typeof import("./chat/view_assistantMessage").default;
+    view_error: typeof import("./chat/view_error").default;
     view_page: typeof import("./chat/view_page").default;
+    view_spinner: typeof import("./chat/view_spinner").default;
+    view_stats: typeof import("./chat/view_stats").default;
+    view_toolCall: typeof import("./chat/view_toolCall").default;
+    view_userMessage: typeof import("./chat/view_userMessage").default;
   };
   hyper_ui: {
     list: typeof import("./hyper_ui/list").default;

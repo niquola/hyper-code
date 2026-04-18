@@ -37,7 +37,7 @@ export default function ai_streamResponses(ctx: any, model: Model, context: Cont
         defaultHeaders: { ...model.headers, ...options?.headers },
       });
 
-      const input = convertMessages(model, context);
+      const input = convertMessages(ctx, model, context);
       const params: ResponseCreateParamsStreaming = {
         model: model.id,
         input,
@@ -187,7 +187,7 @@ export default function ai_streamResponses(ctx: any, model: Model, context: Cont
   return stream;
 }
 
-function convertMessages(model: Model, context: Context): ResponseInput {
+function convertMessages(ctx: any, model: Model, context: Context): ResponseInput {
   const messages: ResponseInput = [];
   const transformed = ctx.ai.transformMessages(context.messages);
 

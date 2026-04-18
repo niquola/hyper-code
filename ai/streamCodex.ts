@@ -116,7 +116,7 @@ export default function ai_streamCodex(ctx: any, model: Model, context: Context,
       const accountId = extractAccountId(apiKey);
       const headers = buildCodexHeaders(accountId, apiKey, { ...model.headers, ...options?.headers });
 
-      const input = convertMessages(model, context);
+      const input = convertMessages(ctx, model, context);
       const body: Record<string, unknown> = {
         model: model.id,
         store: false,
@@ -360,7 +360,7 @@ export default function ai_streamCodex(ctx: any, model: Model, context: Context,
 
 // --- Message conversion (same as ai_streamResponses) ---
 
-function convertMessages(model: Model, context: Context): ResponseInput {
+function convertMessages(ctx: any, model: Model, context: Context): ResponseInput {
   const messages: ResponseInput = [];
   const transformed = ctx.ai.transformMessages(context.messages);
 
