@@ -52,7 +52,7 @@ export default async function chat_view_page(ctx: any, messages: Message[], sess
       }
 
       if (text) {
-        rendered.push(await chat_view_assistantMessage(text, thinking || undefined));
+        rendered.push(await ctx.chat.view_assistantMessage(ctx, text, thinking || undefined));
       }
     }
   }
