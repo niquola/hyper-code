@@ -196,6 +196,18 @@ export default async function start(appCtx: Ctx) {
         });
       }
 
+      // POST /repl — REPL endpoint
+      if (url.pathname === "/repl" && req.method === "POST") {
+        const handler = (globalThis as any).__repl;
+        if (!handler) return Response.json({ error: "REPL not initialized" }, { status: 500 });
+        try {
+          const body = await req.json();
+          return Response.json(await handler(body));
+        } catch (e: any) {
+          return Response.json({ error: e.message }, { status: 500 });
+        }
+      }
+
       return new Response("Not found", { status: 404 });
     },
   });

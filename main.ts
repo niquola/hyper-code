@@ -40,6 +40,16 @@ const ctx = agent_createCtx({
   modelIndex,
 });
 
+// Copy namespace functions from loader onto ctx
+for (const [ns, fns] of Object.entries(tempCtx)) {
+  if (ns === '_meta' || ns === 'cwd' || ns === 'home' || ns === 'env' || ns === 'db') continue;
+  if (typeof fns === 'object' && fns !== null) {
+    (ctx as any)[ns] = fns;
+  }
+}
+(ctx as any)._meta = tempCtx._meta;
+(ctx as any).state = tempCtx.state || {};
+
 // --- REPL handler ---
 async function handleRepl(body: any) {
   if (body.op === "load_all") {

@@ -12,6 +12,7 @@
     "groq",
     "huggingface",
     "kimi-coding",
+    "lmstudio",
     "minimax",
     "minimax-cn",
     "mistral",

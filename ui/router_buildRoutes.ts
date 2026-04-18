@@ -51,7 +51,7 @@ export default async function router_buildRoutes(dir: string, ctx: Ctx) {
   const routes: Record<string, Record<string, Function>> = {};
 
   for (const { glob, parse } of globs) {
-    const files = Array.from(glob.scanSync(dir)).sort();
+    const files = Array.from(glob.scanSync(dir)).sort().filter(f => !f.includes('.test.'));
     for (const file of files) {
       const { method, path } = parse(file);
       const abs = require("node:path").resolve(dir, file);

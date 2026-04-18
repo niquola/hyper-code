@@ -17,6 +17,7 @@ export default interface CtxNs {
     getModels: typeof import("./ai/getModels").default;
     getProviders: typeof import("./ai/getProviders").default;
     highlightCode: typeof import("./ai/highlightCode").default;
+    lmstudio_models: typeof import("./ai/lmstudio_models").default;
     models_getAll: typeof import("./ai/models_getAll").default;
     models_loadIndex: typeof import("./ai/models_loadIndex").default;
     models_loadProvider: typeof import("./ai/models_loadProvider").default;
@@ -38,6 +39,7 @@ export default interface CtxNs {
   cdp: {
     createCtx: typeof import("./cdp/createCtx").default;
     nextId: typeof import("./cdp/nextId").default;
+    send: typeof import("./cdp/send").default;
     start: typeof import("./cdp/start").default;
   };
   chat: {
