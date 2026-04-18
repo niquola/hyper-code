@@ -24,6 +24,9 @@ const ENV_MAP: Record<string, string> = {
 export default function ai_getEnvApiKey(home: string, provider: string, env?: Env): string | undefined {
   const e = env ?? (process.env as Env);
 
+  // LM Studio: local, no key needed
+  if (provider === "lmstudio") return "lm-studio";
+
   // Anthropic: OAuth token takes precedence
   if (provider === "anthropic") {
     return e.ANTHROPIC_OAUTH_TOKEN || e.ANTHROPIC_API_KEY;
